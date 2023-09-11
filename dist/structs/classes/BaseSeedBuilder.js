@@ -92,6 +92,9 @@ export default class BaseSeedBuilder extends BaseBuilder {
     get notes() {
         return super._getProp("notes");
     }
+    get overrideStartScreen() {
+        return super._getProp("override_start_screen");
+    }
     get pseudoboots() {
         return super._getProp("pseudoboots");
     }
@@ -187,6 +190,18 @@ export default class BaseSeedBuilder extends BaseBuilder {
             return this;
         }
         return super._setProp("notes", notes);
+    }
+    setOverrideStartScreen(array) {
+        if (typeof array === "undefined") {
+            delete this._body.override_start_screen;
+            return this;
+        }
+        if (array.length < 5) {
+            throw new Error("Array must contain 5 elements.");
+        }
+        const copy = Array.from(array);
+        copy.length = 5;
+        return super._setProp("override_start_screen", copy);
     }
     setPseudoboots(enable) {
         if (typeof enable === "undefined") {

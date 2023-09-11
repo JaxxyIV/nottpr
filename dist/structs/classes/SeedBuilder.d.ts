@@ -5,7 +5,6 @@ export default class SeedBuilder extends BaseSeedBuilder {
     get entrances(): EntranceShuffle;
     setEntrances(shuffle: EntranceShuffle): this;
 }
-type SeedOptions = BaseSeedOptions & {
+export type SeedOptions = BaseSeedOptions & {
     entrances?: EntranceShuffle;
 };
-export {};

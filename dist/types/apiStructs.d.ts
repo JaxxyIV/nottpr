@@ -103,6 +103,7 @@ export type BasePayload = {
     mode: types.WorldState;
     name?: string;
     notes?: string;
+    override_start_screen?: StartHashOverride;
     pseudoboots?: boolean;
     spoilers: types.SpoilerSetting;
     tournament: boolean;
@@ -199,3 +200,4 @@ export type SpoilerSpecialData = {
     ["Misery Mire"]: types.Medalion;
     ["Turtle Rock"]: types.Medalion;
 };
+export type StartHashOverride = [number, number, number, number, number];

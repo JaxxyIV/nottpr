@@ -19,6 +19,7 @@ export default class BaseSeedBuilder extends BaseBuilder {
     get mode(): types.WorldState;
     get name(): string | undefined;
     get notes(): string | undefined;
+    get overrideStartScreen(): structs.StartHashOverride | undefined;
     get pseudoboots(): boolean | undefined;
     get spoilers(): types.SpoilerSetting;
     get tournament(): boolean;
@@ -37,6 +38,7 @@ export default class BaseSeedBuilder extends BaseBuilder {
     setMode(mode: types.WorldState): this;
     setName(name?: string): this;
     setNotes(notes?: string): this;
+    setOverrideStartScreen(array?: structs.StartHashOverride): this;
     setPseudoboots(enable?: boolean): this;
     setSpoilers(spoilers: types.SpoilerSetting): this;
     setTournament(tournament: boolean): this;
@@ -57,6 +59,7 @@ export type BaseSeedOptions = {
     mode?: types.WorldState;
     name?: string;
     notes?: string;
+    override_start_screen?: structs.StartHashOverride;
     pseudoboots?: boolean;
     spoilers?: types.SpoilerSetting;
     tournament?: boolean;

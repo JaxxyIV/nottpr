@@ -1,21 +1,24 @@
-import Request from "./Request.js";
-import Seed from "../classes/Seed.js";
-import Sprite from "../classes/Sprite.js";
+import Request from "./Request";
+import Seed from "../classes/Seed";
+import Sprite from "../classes/Sprite";
 export default class ALTTPR {
     static #cache = new Map();
-    static async randomizer(payload) {
+    static async randomizer(data) {
         const response = await new Request("/api/randomizer")
-            .post(JSON.stringify(payload), "json", {
-                "Accept": "application/json, text/plain, */*",
-                "Content-Type": "application/json"
-            });
+            .post(JSON.stringify(data), "json", {
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json"
+        });
         const seed = new Seed(response);
         this.#cache.set(seed.hash, seed);
         return new Seed(response);
     }
-    static async customizer(payload) {
+    static async customizer(data) {
         const response = await new Request("/api/customizer")
-            .post(JSON.stringify(payload), "json");
+            .post(JSON.stringify(data), "json", {
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json"
+        });
         const seed = new Seed(response);
         this.#cache.set(seed.hash, seed);
         return new Seed(response);
@@ -39,7 +42,9 @@ export default class ALTTPR {
         catch (_) {
             throw new Error("No seed found.");
         }
-        return new Seed(parsed);
+        const seed = new Seed(parsed);
+        this.#cache.set(hash, seed);
+        return seed;
     }
     static async fetchSprite(name) {
         const response = await new Request("/api/sprites").get("json");
