@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "ES2022",
+        "target": "ES2022",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "declaration": true,
+        "outDir": "dist",
+        "allowJs": false,
+        "moduleDetection": "force",
+        "moduleResolution": "Node"
+    },
+    "include": ["src"]
+}
