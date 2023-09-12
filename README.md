@@ -144,7 +144,7 @@ const builder = new SeedBuilder()
         boss_shuffle: "full"
     })
     .setPseudoboots(true)
-    .sestOverrideStartScreen([0, 1, 2, 3, 4]); // You can even override the file select hash!
+    .setOverrideStartScreen([0, 1, 2, 3, 4]); // You can even override the file select hash!
 
 const sprite = await ALTTPR.fetchSprite("Dark Boy");
 const darkBoy = await sprite.fetch();
