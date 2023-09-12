@@ -140,6 +140,7 @@ import fs from "fs/promises";
 
 // MC boss with pseudoboots
 const builder = new SeedBuilder()
+    .setDungeonItems("mc")
     .setEnemizer({
         boss_shuffle: "full"
     })
