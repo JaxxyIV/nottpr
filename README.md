@@ -96,7 +96,7 @@ const buffer = await sprite.fetch(); // You can even download the sprite as buff
 ```
 
 ### Generating Mystery Seeds
-Mystery weightsets can be easily created using the `MysteryWeightset` object. Unlike builder objects, mystery weightsets have no default values and any setting not specified in the weightset will default to what it is in an open 7/7 when selecting settings.
+Mystery weightsets can be easily created using the `MysteryWeightset` object. Unlike builder objects, mystery weightsets have no default values and any setting not specified in the weightset will default to what it is in an open 7/7 when selecting settings. Customizer seeds are not supported at this time.
 
 When setting a weight for a weightset, the total does not have to equal 100. If you want to force a particular setting, input only the setting you want and give it a value of 1. Decimal values are rounded to the nearest whole.
 
@@ -156,7 +156,7 @@ const patched = await seed.patchRom(pathToJp10Rom, {
     heartColor: "green",
     menuSpeed: "normal",
     quickswap: true,
-    backgroundMusic: true
+    backgroundMusic: true,
     msu1resume: true,
     sprite: darkBoy,
     reduceFlash: true
