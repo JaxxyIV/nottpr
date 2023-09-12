@@ -1,7 +1,7 @@
 import BaseSeedBuilder, { BaseSeedOptions } from "./BaseSeedBuilder";
 import { EntranceShuffle } from "../../types/types";
 
-export default class SeedBuilder extends BaseSeedBuilder {
+export default class SeedBuilder extends BaseSeedBuilder<"entrances"> {
     constructor(data?: SeedOptions) {
         if (typeof data === "undefined") {
             super();

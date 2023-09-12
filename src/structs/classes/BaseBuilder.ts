@@ -1,18 +1,18 @@
-export default class BaseBuilder {
-    protected _body: { [x: string | number]: any } = {};
+export default class BaseBuilder<K extends string, V> {
+    protected _body: { [x in K]?: V } = {};
 
     constructor() { }
 
-    protected _getProp(key: string | number): any {
+    protected _getProp(key: K): V {
         return this._body[key];
     }
 
-    protected _setProp(key: string | number, value: any): this {
+    protected _setProp(key: K, value: V): this {
         this._body[key] = value;
         return this;
     }
 
-    toJSON(): { [x: string | number]: any } {
+    toJSON(): { [x in K]?: V } {
         return this._body;
     }
 }

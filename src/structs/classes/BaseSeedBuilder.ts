@@ -2,7 +2,7 @@ import BaseBuilder from "./BaseBuilder";
 import * as types from "../../types/types";
 import * as structs from "../../types/apiStructs";
 
-export default class BaseSeedBuilder extends BaseBuilder {
+export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | types.BaseSettings, any> {
     static readonly #default: BaseSeedOptions = {
         accessibility: "items",
         crystals: {

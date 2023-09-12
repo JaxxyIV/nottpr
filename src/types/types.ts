@@ -37,3 +37,8 @@ export type SmallKey = "KeyA1" | "KeyA2" | "KeyD1" | "KeyD2" | "KeyD3" | "KeyD4"
 export type DungeonMap = "MapA1" | "MapA2" | "MapD1" | "MapD2" | "MapD3" | "MapD4" | "MapD5" | "MapD6" | "MapD7" | "MapH2" | "MapP1" | "MapP2" | "MapP3";
 export type Item = CapacityUpgrade | BigKey | Bottle | Subweapon | Compass | Equipment | Clock | SmallKey | DungeonMap | "Arrow" | "Bomb" | "FiftyRupees" | "FiveRupees" | "Heart" | "Nothing" | "OneHundredRupees" | "OneRupee" | "Rupoor" | "SmallMagic" | "TenArrows" | "TenBombs" | "ThreeBombs" | "ThreeHundredRupees" | "Triforce" | "TriforcePiece" | "TwentyRupees" | "TwentyRupees2";
 export type Droppable = "ArrowRefill10" | "ArrowRefill5" | "Bee" | "BeeGood" | "BombRefill1" | "BombRefill4" | "BombRefill8" | "Fairy" | "Heart" | "MagicRefillFull" | "MagicRefillSmall" | "RupeeBlue" | "RupeeGreen" | "RupeeRed";
+
+export type BaseSettings = "accessibility" | "allow_quickswap" | "crystals" | "dungeon_items" | "enemizer" | "glitches" | "goal" | "hints" | "item" | "item_placement" | "lang" | "mode" | "name" | "notes" | "override_start_screen" | "pseudoboots" | "spoilers" | "tournament" | "weapons";
+export type CustomizerSettings = "l" | "eq" | "drops" | "custom" | "texts";
+export type RomSettings = "dungeonCount" | "freeItemMenu" | "freeItemText" | "mapOnPickup" | "timerMode" | "rupeeBow" | "genericKeys" | "logicMode";
+export type RegionSettings = "bossNormalLocation" | "wildBigKeys" | "wildCompasses" | "wildKeys" | "wildMaps" | "requireBetterBow" | "requireBetterSword" | "forceSkullWoodsKey" | "swordsInPool" | "bossHeartsInPool" | "bossesHaveItem" | "takeAnys";
