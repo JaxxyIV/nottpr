@@ -1,5 +1,6 @@
 import SeedBuilder, { SeedOptions } from "./SeedBuilder";
-import { unflatten } from "flat";
+import * as flat from "flat";
+const { unflatten } = flat;
 
 export default class MysteryWeightset {
     #weights: Map<string, Weights> = new Map<ConfigurableOptions, Weights>;
@@ -53,6 +54,6 @@ export default class MysteryWeightset {
     }
 }
 
-type ConfigurableOptions = "accessibility" | "allow_quickswap" | "crystals.ganon" | "crystals.tower" | "dungeon_items" | "enemizer.boss_shuffle" | "enemizer.enemy_damage" | "enemizer.enemy_health" | "enemizer.enemy_shuffle" | "enemizer.pot_shuffle" | "glitches" | "goal" | "hints" | "item.functionality" | "item.pool" | "item_placement" | "mode" | "pseudoboots" | "weapons";
+type ConfigurableOptions = "accessibility" | "allow_quickswap" | "crystals.ganon" | "crystals.tower" | "dungeon_items" | "enemizer.boss_shuffle" | "enemizer.enemy_damage" | "enemizer.enemy_health" | "enemizer.enemy_shuffle" | "enemizer.pot_shuffle" | "entrances" | "glitches" | "goal" | "hints" | "item.functionality" | "item.pool" | "item_placement" | "mode" | "pseudoboots" | "weapons";
 
 type Weights = { [x: string]: number };
