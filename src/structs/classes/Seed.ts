@@ -1,6 +1,5 @@
 import * as types from "../../types/types";
 import * as structs from "../../types/apiStructs";
-import * as enums from "../../types/enums";
 import Request from "../util/Request";
 import * as fs from "node:fs/promises";
 import { SnesRom } from "rommage/SnesRom";
@@ -93,7 +92,16 @@ export default class Seed {
         }
 
         const [bytes]: Array<Array<number>> = Object.values(codeLoc as object);
-        return bytes.map(b => enums.Hash[b]);
+        const hashStrings: Array<string> = [
+            "Bow", "Boomerang", "Hookshot", "Bomb", "Mushroom",
+            "Powder", "Ice Rod", "Pendant", "Bombos", "Ether",
+            "Quake", "Lantern", "Hammer", "Shovel", "Ocarina",
+            "Bug Net", "Book", "Bottle", "Green Potion", "Somaria",
+            "Cape", "Mirror", "Boots", "Glove", "Flippers",
+            "Moon Pearl", "Shield", "Mail", "Heart", "Map",
+            "Compass", "Big Key",
+        ];
+        return bytes.map(b => hashStrings[b]);
     }
 
     /**

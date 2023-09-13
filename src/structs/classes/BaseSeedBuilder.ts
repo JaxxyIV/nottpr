@@ -1,6 +1,7 @@
 import BaseBuilder from "./BaseBuilder";
 import * as types from "../../types/types";
 import * as structs from "../../types/apiStructs";
+import { Hash } from "../../types/enums";
 
 export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | types.BaseSettings, any> {
     static readonly #default: BaseSeedOptions = {
@@ -75,6 +76,10 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._getProp("enemizer") as structs.EnemizerPayloadData;
     }
 
+    get fastrom(): boolean | undefined {
+        return super._getProp("fastrom");
+    }
+
     get glitches(): types.GlitchesRequired {
         return super._getProp("glitches") as types.GlitchesRequired;
     }
@@ -111,7 +116,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._getProp("notes");
     }
 
-    get overrideStartScreen(): structs.StartHashOverride | undefined {
+    get overrideStartScreen(): HashTuple | undefined {
         return super._getProp("override_start_screen");
     }
 
@@ -183,6 +188,10 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("enemizer", current);
     }
 
+    setFastrom(enable: boolean): this {
+        return super._setProp("fastrom", enable);
+    }
+
     setGlitches(glitches: types.GlitchesRequired): this {
         return super._setProp("glitches", glitches);
     }
@@ -244,7 +253,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
      * @param array A 5-element array of numbers between 0 and 31.
      * @returns The current object, for chaining.
      */
-    setOverrideStartScreen(array?: structs.StartHashOverride): this {
+    setOverrideStartScreen(array?: HashTuple): this {
         if (typeof array === "undefined") {
             delete this._body.override_start_screen;
             return this;
@@ -288,6 +297,7 @@ export type BaseSeedOptions = {
     crystals?: CrystalOptions
     dungeon_items?: types.DungeonItems
     enemizer?: EnemizerOptions
+    fastrom?: boolean
     glitches?: types.GlitchesRequired
     goal?: types.Goal
     hints?: types.OptionToggle
@@ -297,7 +307,7 @@ export type BaseSeedOptions = {
     mode?: types.WorldState
     name?: string
     notes?: string
-    override_start_screen?: structs.StartHashOverride
+    override_start_screen?: HashTuple
     pseudoboots?: boolean
     spoilers?: types.SpoilerSetting
     tournament?: boolean
@@ -321,3 +331,5 @@ type ItemOptions = {
     functionality?: types.ItemFunctionality
     pool?: types.ItemPool
 };
+
+type HashTuple = [number, number, number, number, number];
