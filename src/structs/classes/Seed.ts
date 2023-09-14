@@ -1,6 +1,7 @@
 import * as types from "../../types/types";
 import * as structs from "../../types/apiStructs";
 import Request from "../util/Request";
+import Patcher from "../util/Patcher";
 import * as fs from "node:fs/promises";
 import { SnesRom } from "rommage/SnesRom";
 import { BpsPatch } from "rommage/BpsPatch";
@@ -138,21 +139,32 @@ export default class Seed {
         if (!options.sprite) options.sprite = "Link";
         if (options.reduceFlash === undefined) options.reduceFlash = false;
 
-        if (this.#current_rom_hash === undefined) {
+        const romBuffer: Buffer = await fs.readFile(base);
+        const rom: SnesRom = SnesRom.fromBuffer(romBuffer);
+
+        const patcher: Patcher = new Patcher(rom.buffer);
+        patcher.seedPatches = this.#patch;
+        patcher.backgroundMusic = options.backgroundMusic;
+        patcher.heartColor = options.heartColor;
+        patcher.heartSpeed = options.heartSpeed;
+        patcher.menuSpeed = options.menuSpeed;
+        patcher.msu1Resume = options.msu1Resume;
+        patcher.quickswap = options.quickswap;
+        patcher.reduceFlashing = options.reduceFlash;
+        // patcher.sprite = options.sprite;
+
+        const basePatch: Buffer = await this.fetchBasePatch();
+        const bpsPatch: BpsPatch = new BpsPatch(basePatch);
+        return bpsPatch.applyTo(patcher.buffer);
+    }
+
+    async fetchBasePatch(): Promise<Buffer> {
+        if (typeof this.#current_rom_hash === "undefined") {
             await this.#setRomHash();
         }
 
-        const romBuffer: Buffer = await fs.readFile(base);
-
-        const basePatch: ArrayBuffer = await new Request(`/bps/${this.#current_rom_hash}.bps`).get("buffer");
-        const patchBuffer: Buffer = Buffer.from(basePatch);
-
-        const bpsPatch: BpsPatch = new BpsPatch(patchBuffer);
-
-        const patched: Buffer = bpsPatch.applyTo(romBuffer);
-        const rom: SnesRom = SnesRom.fromBuffer(patched);
-
-        return patched;
+        const response: ArrayBuffer = await new Request(`/bps/${this.#current_rom_hash}.bps`).get("buffer");
+        return Buffer.from(response);
     }
 
     async #setRomHash(): Promise<void> {

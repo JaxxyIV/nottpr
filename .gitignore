@@ -3,3 +3,4 @@ tests
 .vscode
 dist
 .npmignore
+*.sfc
