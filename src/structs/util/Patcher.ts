@@ -9,7 +9,7 @@ export default class Patcher {
     }
 
     get buffer(): Buffer {
-        return Buffer.copyBytesFrom(this.#buffer);
+        return Buffer.from(this.#buffer);
     }
 
     set seedPatches(patches: Array<PatchElement>) {
