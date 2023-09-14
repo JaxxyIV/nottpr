@@ -3,8 +3,7 @@ import * as flat from "flat";
 const { unflatten } = flat;
 
 export default class MysteryWeightset {
-    #weights: Map<string, Weights> = new Map<ConfigurableOptions, Weights>;
-    constructor() { }
+    #weights: Map<ConfigurableOptions, Weights> = new Map<ConfigurableOptions, Weights>;
 
     getWeight(key: ConfigurableOptions): Weights | undefined {
         return this.#weights.get(key);

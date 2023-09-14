@@ -1,8 +1,6 @@
 export default class BaseBuilder<K extends string, V> {
     protected _body: { [x in K]?: V } = {};
 
-    constructor() { }
-
     protected _getProp(key: K): V {
         return this._body[key];
     }

@@ -230,3 +230,9 @@ export type SpoilerSpecialData = {
 };
 
 export type StartHashOverride = [number, number, number, number, number];
+
+export type CustomizerPrizeOptions = {
+    crossWorld: boolean
+    shufflePendants: boolean
+    shuffleCrystals: boolean
+};

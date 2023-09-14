@@ -1,7 +1,6 @@
 import BaseBuilder from "./BaseBuilder";
 import * as types from "../../types/types";
 import * as structs from "../../types/apiStructs";
-import { Hash } from "../../types/enums";
 
 export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | types.BaseSettings, any> {
     static readonly #default: BaseSeedOptions = {
@@ -76,10 +75,6 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._getProp("enemizer") as structs.EnemizerPayloadData;
     }
 
-    get fastrom(): boolean | undefined {
-        return super._getProp("fastrom");
-    }
-
     get glitches(): types.GlitchesRequired {
         return super._getProp("glitches") as types.GlitchesRequired;
     }
@@ -116,7 +111,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._getProp("notes");
     }
 
-    get overrideStartScreen(): HashTuple | undefined {
+    get overrideStartScreen(): structs.StartHashOverride | undefined {
         return super._getProp("override_start_screen");
     }
 
@@ -140,12 +135,16 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("accessibility", access);
     }
 
-    setAllowQuickswap(allow?: boolean): this {
-        if (typeof allow === "undefined") {
-            delete super._body.allow_quickswap;
-            return this;
-        }
-
+    /**
+     * Sets whether or not this seed should be generated with quickswap
+     * as a post-generation option.
+     *
+     * Default behavior: always allow quickswap
+     *
+     * @param allow Should quickswap be allowed?
+     * @returns The current object, for chaining.
+     */
+    setAllowQuickswap(allow: boolean): this {
         return super._setProp("allow_quickswap", allow);
     }
 
@@ -186,10 +185,6 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         }
 
         return super._setProp("enemizer", current);
-    }
-
-    setFastrom(enable: boolean): this {
-        return super._setProp("fastrom", enable);
     }
 
     setGlitches(glitches: types.GlitchesRequired): this {
@@ -250,31 +245,34 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
     /**
      * Overrides the random start screen hash with a custom input.
      *
-     * @param array A 5-element array of numbers between 0 and 31.
+     * @param hash A 5-element array of numbers between 0 and 31.
      * @returns The current object, for chaining.
      */
-    setOverrideStartScreen(array?: HashTuple): this {
-        if (typeof array === "undefined") {
+    setOverrideStartScreen(hash?: structs.StartHashOverride): this {
+        if (typeof hash === "undefined") {
             delete this._body.override_start_screen;
             return this;
-        }
-
-        if (array.length < 5) {
+        } else if (!Array.isArray(hash)) {
+            throw new Error("Parameter hash must be an array.");
+        } else if (hash.length < 5) {
             throw new Error("Array must contain 5 elements.");
         }
 
-        const copy = Array.from(array);
+        const copy = Array.from(hash); // deep copy to not modify original arg
         copy.length = 5;
 
         return super._setProp("override_start_screen", copy);
     }
 
-    setPseudoboots(enable?: boolean): this {
-        if (typeof enable === "undefined") {
-            delete super._body.pseudoboots;
-            return this;
-        }
-
+    /**
+     * Sets whether or not this seed is generated with pseudoboots equipped.
+     *
+     * Default behavior: seed is generated with pseudoboots disabled
+     *
+     * @param enable Should pseudoboots be enabled?
+     * @returns The current object, for chaining.
+     */
+    setPseudoboots(enable: boolean): this {
         return super._setProp("pseudoboots", enable);
     }
 
@@ -297,7 +295,6 @@ export type BaseSeedOptions = {
     crystals?: CrystalOptions
     dungeon_items?: types.DungeonItems
     enemizer?: EnemizerOptions
-    fastrom?: boolean
     glitches?: types.GlitchesRequired
     goal?: types.Goal
     hints?: types.OptionToggle
@@ -307,7 +304,7 @@ export type BaseSeedOptions = {
     mode?: types.WorldState
     name?: string
     notes?: string
-    override_start_screen?: HashTuple
+    override_start_screen?: structs.StartHashOverride
     pseudoboots?: boolean
     spoilers?: types.SpoilerSetting
     tournament?: boolean
@@ -331,5 +328,3 @@ type ItemOptions = {
     functionality?: types.ItemFunctionality
     pool?: types.ItemPool
 };
-
-type HashTuple = [number, number, number, number, number];
