@@ -1,19 +1,27 @@
-import Request from "./Request";
 import {
-    RandomizerPayload,
     CustomizerPayload,
     DailyAPIData,
+    GenerateSeedAPIData,
+    RandomizerPayload,
     SeedAPIData,
-    SpriteAPIData,
-    GenerateSeedAPIData
+    SpriteAPIData
 } from "../../types/apiStructs";
-import Seed from "../classes/Seed";
-import Sprite from "../classes/Sprite";
-import SeedBuilder from "../classes/SeedBuilder";
 import CustomizerBuilder from "../classes/CustomizerBuilder";
+import Seed from "../classes/Seed";
+import SeedBuilder from "../classes/SeedBuilder";
+import Sprite from "../classes/Sprite";
+import Request from "./Request";
 
 export default class ALTTPR {
-    static #cache: Map<string, Seed> = new Map<string, Seed>();
+    static #seedCache: Map<string, Seed> = new Map<string, Seed>();
+
+    /**
+     * Returns a Map of cached Seed objects. You can retrieve cached Seeds by
+     * specifying their hash.
+     */
+    static get seeds(): Map<string, Seed> {
+        return this.#seedCache;
+    }
 
     /**
      * Generates a randomized seed on alttpr.com.
@@ -28,7 +36,7 @@ export default class ALTTPR {
                 "Content-Type": "application/json"
             });
         const seed: Seed = new Seed(response);
-        this.#cache.set(seed.hash, seed);
+        this.#seedCache.set(seed.hash, seed);
         return new Seed(response);
     }
 
@@ -45,7 +53,7 @@ export default class ALTTPR {
                 "Content-Type": "application/json"
             });
         const seed: Seed = new Seed(response);
-        this.#cache.set(seed.hash, seed);
+        this.#seedCache.set(seed.hash, seed);
         return new Seed(response);
     }
 
@@ -60,7 +68,7 @@ export default class ALTTPR {
     }
 
     /**
-     * Fetches the seed with the given hash.
+     * Fetches the seed with the given hash and returns it as a Seed object.
      *
      * @param hash The seed hash.
      * @param force Whether to skip the cache check and request the API.
@@ -68,7 +76,7 @@ export default class ALTTPR {
      */
     static async fetchSeed(hash: string, force: boolean = false): Promise<Seed> {
         if (!force) {
-            const cached: Seed | undefined = this.#cache.get(hash);
+            const cached: Seed | undefined = this.#seedCache.get(hash);
             if (typeof cached !== "undefined") {
                 return cached;
             }
@@ -84,7 +92,7 @@ export default class ALTTPR {
         }
 
         const seed: Seed = new Seed(parsed);
-        this.#cache.set(hash, seed);
+        this.#seedCache.set(hash, seed);
         return seed;
     }
 

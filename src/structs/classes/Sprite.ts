@@ -44,13 +44,18 @@ export default class Sprite {
         return Array.from(this.#usage);
     }
 
+    get [Symbol.toStringTag](): string {
+        return `Sprite-${this.#name}`;
+    }
+
+    /**
+     * Fetches the ZSPR data for this Sprite and returns it as a buffer.
+     *
+     * @returns The buffered data.
+     */
     async fetch(): Promise<Buffer> {
         const response: Response = await fetch(this.#file);
         const arrayBuffer: ArrayBuffer = await response.arrayBuffer();
         return Buffer.from(arrayBuffer);
-    }
-
-    get [Symbol.toStringTag](): string {
-        return "Sprite";
     }
 }

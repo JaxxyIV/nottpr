@@ -148,43 +148,52 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("allow_quickswap", allow);
     }
 
-    setCrystals(options: CrystalOptions): this {
-        const current: structs.CrystalPayloadData = this.crystals;
+    /**
+     * Sets the crystal settings for the seed.
+     *
+     * @param options The new crystal requirements.
+     * @param reset If true, reset any setting unspecified to its default value.
+     * Default value is false.
+     * @returns The current object, for chaining.
+     */
+    setCrystals(options: CrystalOptions, reset: boolean = false): this {
+        const settings: CrystalOptions = reset === true
+            ? BaseSeedBuilder.#default.crystals
+            : this.crystals;
 
         if ("ganon" in options) {
-            ({ ganon: current.ganon } = options);
+            ({ ganon: settings.ganon } = options);
         }
         if ("tower" in options) {
-            ({ tower: current.tower } = options);
+            ({ tower: settings.tower } = options);
         }
 
-        return super._setProp("crystals", current);
+        return super._setProp("crystals", settings);
     }
 
     setDungeonItems(shufle: types.DungeonItems): this {
         return super._setProp("dungeon_items", shufle);
     }
 
-    setEnemizer(options: EnemizerOptions): this {
-        const current: structs.EnemizerPayloadData = this.enemizer;
+    /**
+     * Sets the enemizer settings for the seed.
+     *
+     * @param options The new enemizer settings.
+     * @param reset If true, reset any setting unspecified to its default value.
+     * Default value is false.
+     * @returns The current object, for chaining.
+     */
+    setEnemizer(options: EnemizerOptions, reset: boolean = false): this {
+        const settings: EnemizerOptions = reset === true
+            ? BaseSeedBuilder.#default.enemizer
+            : this.enemizer;
+        const keys: Array<keyof typeof options> = Object.keys(options) as Array<keyof typeof options>;
 
-        if ("boss_shuffle" in options) {
-            ({ boss_shuffle: current.boss_shuffle } = options);
-        }
-        if ("enemy_damage" in options) {
-            ({ enemy_damage: current.enemy_damage } = options);
-        }
-        if ("enemy_health" in options) {
-            ({ enemy_health: current.enemy_health } = options);
-        }
-        if ("enemy_shuffle" in options) {
-            ({ enemy_shuffle: current.enemy_shuffle } = options);
-        }
-        if ("pot_shuffle" in options) {
-            ({ pot_shuffle: current.pot_shuffle } = options);
+        for (const key of keys) {
+            settings[key] = options[key] as never; // errors unless asserted as never
         }
 
-        return super._setProp("enemizer", current);
+        return super._setProp("enemizer", settings);
     }
 
     setGlitches(glitches: types.GlitchesRequired): this {
@@ -199,17 +208,27 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("hints", toggle);
     }
 
-    setItem(options: ItemOptions): this {
-        const current: structs.ItemPayloadData = this.item;
+    /**
+     * Sets the item settings for the seed.
+     *
+     * @param options The new item settings.
+     * @param reset If true, reset any setting unspecified to its default value.
+     * Default value is false.
+     * @returns The current object, for chaining.
+     */
+    setItem(options: ItemOptions, reset: boolean = false): this {
+        const settings: ItemOptions = reset === true
+            ? BaseSeedBuilder.#default.item
+            : this.item;
 
         if ("functionality" in options) {
-            ({ functionality: current.functionality } = options);
+            ({ functionality: settings.functionality } = options);
         }
         if ("pool" in options) {
-            ({ pool: current.pool } = options);
+            ({ pool: settings.pool } = options);
         }
 
-        return super._setProp("item", current);
+        return super._setProp("item", settings);
     }
 
     setItemPlacement(placement: types.ItemPlacement): this {
