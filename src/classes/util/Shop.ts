@@ -57,8 +57,4 @@ export default class Shop {
     get item2(): string | ShopItem | undefined {
         return this.#item_2;
     }
-
-    get [Symbol.toStringTag](): string {
-        return "Shop";
-    }
 }

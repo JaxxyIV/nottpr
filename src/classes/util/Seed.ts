@@ -170,7 +170,7 @@ export default class Seed {
     }
 
     get [Symbol.toStringTag](): string {
-        return "Seed";
+        return `Seed-${this.#hash}`;
     }
 }
 

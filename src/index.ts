@@ -1,7 +1,6 @@
-export { default as MysteryWeightset } from "./structs/builders/MysteryWeightset";
-export { default as RegionBuilder } from "./structs/builders/RegionBuilder";
-export { default as SeedBuilder } from "./structs/builders/SeedBuilder";
-export { default } from "./structs/util/ALTTPR";
+export { default as RegionBuilder } from "./classes/builders/RegionBuilder";
+export { default as SeedBuilder } from "./classes/builders/SeedBuilder";
+export { default } from "./classes/util/ALTTPR";
 export {
     Accessibility, BossShuffle, Crystals, EnemyDamage,
     EnemyHealth, EnemyShuffle, Entrances, Glitches,

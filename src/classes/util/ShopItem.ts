@@ -17,8 +17,4 @@ export default class ShopItem {
     get price(): number {
         return this.#price;
     }
-
-    get [Symbol.toStringTag](): string {
-        return "ShopItem";
-    }
 }
