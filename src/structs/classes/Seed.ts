@@ -2,21 +2,10 @@ import * as types from "../../types/types";
 import * as structs from "../../types/apiStructs";
 import Request from "../util/Request";
 import Patcher from "../util/Patcher";
+import Sprite from "./Sprite";
 import * as fs from "node:fs/promises";
-import { SnesRom } from "rommage/SnesRom";
 import { BpsPatch } from "rommage/BpsPatch";
-
-type SeedData = structs.SeedAPIData | structs.GenerateSeedAPIData;
-type PostGenOptions = {
-    heartSpeed?: types.HeartSpeed
-    heartColor?: types.HeartColor
-    menuSpeed?: types.MenuSpeed
-    quickswap?: boolean
-    backgroundMusic?: boolean
-    msu1Resume?: boolean
-    sprite?: string
-    reduceFlash?: boolean
-};
+import ALTTPR from "../util/ALTTPR";
 
 export default class Seed {
     #logic: string;
@@ -130,32 +119,36 @@ export default class Seed {
         reduceFlash: false
     }): Promise<Buffer> {
         // Set defaults
-        if (!options.heartSpeed) options.heartSpeed = "normal";
-        if (!options.heartColor) options.heartColor = "red";
-        if (!options.menuSpeed) options.menuSpeed = "normal";
-        if (options.quickswap === undefined) options.quickswap = true;
-        if (options.backgroundMusic === undefined) options.backgroundMusic = true;
-        if (options.msu1Resume === undefined) options.msu1Resume = true;
-        if (!options.sprite) options.sprite = "Link";
-        if (options.reduceFlash === undefined) options.reduceFlash = false;
+        if (!options.sprite) {
+            options.sprite = await (await ALTTPR.fetchSprite("Link")).fetch();
+        } else if (typeof options.sprite === "string") {
+            options.sprite = await (await ALTTPR.fetchSprite(options.sprite)).fetch();
+        } else if (options.sprite instanceof Sprite) {
+            options.sprite = await options.sprite.fetch();
+        } else if (!(options.sprite instanceof Buffer)) {
+            throw new TypeError("Invalid argument for sprite.");
+        }
 
         const romBuffer: Buffer = await fs.readFile(base);
-        const rom: SnesRom = SnesRom.fromBuffer(romBuffer);
 
-        const patcher: Patcher = new Patcher(rom.buffer);
-        patcher.seedPatches = this.#patch;
-        patcher.backgroundMusic = options.backgroundMusic;
-        patcher.heartColor = options.heartColor;
-        patcher.heartSpeed = options.heartSpeed;
-        patcher.menuSpeed = options.menuSpeed;
-        patcher.msu1Resume = options.msu1Resume;
-        patcher.quickswap = options.quickswap;
-        patcher.reduceFlashing = options.reduceFlash;
-        // patcher.sprite = options.sprite;
-
+        // Base patch is applied first.
         const basePatch: Buffer = await this.fetchBasePatch();
         const bpsPatch: BpsPatch = new BpsPatch(basePatch);
-        return bpsPatch.applyTo(patcher.buffer);
+        const patched: Buffer = bpsPatch.applyTo(romBuffer);
+
+        // Then the seed-specific stuff is applied.
+        const patcher: Patcher = new Patcher(patched);
+        patcher.seedPatches = this.#patch;
+        patcher.backgroundMusic = options.backgroundMusic ?? true;
+        patcher.heartColor = options.heartColor ?? "red";
+        patcher.heartSpeed = options.heartSpeed ?? "normal";
+        patcher.menuSpeed = options.menuSpeed ?? "normal";
+        patcher.msu1Resume = options.msu1Resume ?? true;
+        patcher.quickswap = options.quickswap ?? true;
+        patcher.reduceFlashing = options.reduceFlash ?? true;
+        patcher.sprite = options.sprite;
+
+        return patcher.buffer;
     }
 
     async fetchBasePatch(): Promise<Buffer> {
@@ -176,3 +169,15 @@ export default class Seed {
         return "Seed";
     }
 }
+
+type SeedData = structs.SeedAPIData | structs.GenerateSeedAPIData;
+type PostGenOptions = {
+    heartSpeed?: types.HeartSpeed
+    heartColor?: types.HeartColor
+    menuSpeed?: types.MenuSpeed
+    quickswap?: boolean
+    backgroundMusic?: boolean
+    msu1Resume?: boolean
+    sprite?: string | Sprite | Buffer
+    reduceFlash?: boolean
+};

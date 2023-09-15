@@ -25,12 +25,14 @@
   },
   "license": "ISC",
   "dependencies": {
+    "center-align": "^1.0.1",
     "flat": "^5.0.2",
     "node-fetch": "^3.3.2",
     "rommage": "^3.1.2"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.1",
+    "@types/center-align": "^1.0.0",
     "@types/flat": "^5.0.2",
     "@types/node": "^20.5.9"
   }
