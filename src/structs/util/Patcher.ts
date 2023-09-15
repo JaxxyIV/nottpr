@@ -164,6 +164,20 @@ export default class Patcher {
             this.#write(0xdedf5 + i, data[palOffset + 120 + i]);
     }
 
+    fixChecksum(): void {
+        // Also VT
+        const total: number = this.#buffer.reduce(
+            (sum, byte, i) => i >= 0x7fdc && i < 0x7fe0 ? sum : sum + byte);
+        const checksum: number = (total + 0x1fe) & 0xffff;
+        const inverse: number = checksum ^ 0xffff;
+        this.#write(0x7fdc, [
+            inverse & 0xff,
+            inverse >> 8,
+            checksum & 0xff,
+            checksum >> 8
+        ]);
+    }
+
     #write(offset: number, bytes: Array<number> | number): void {
         if (typeof bytes === "number") {
             this.#buffer[offset] = bytes;

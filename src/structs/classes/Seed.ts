@@ -135,6 +135,7 @@ export default class Seed {
         const basePatch: Buffer = await this.fetchBasePatch();
         const bpsPatch: BpsPatch = new BpsPatch(basePatch);
         const patched: Buffer = bpsPatch.applyTo(romBuffer);
+        bpsPatch.patchChecksumCalc
 
         // Then the seed-specific stuff is applied.
         const patcher: Patcher = new Patcher(patched);
@@ -147,6 +148,9 @@ export default class Seed {
         patcher.quickswap = options.quickswap ?? true;
         patcher.reduceFlashing = options.reduceFlash ?? true;
         patcher.sprite = options.sprite;
+
+        // Finally, correct the buffer's checksum.
+        patcher.fixChecksum();
 
         return patcher.buffer;
     }
