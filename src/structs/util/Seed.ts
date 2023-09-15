@@ -1,11 +1,11 @@
 import * as types from "../../types/types";
 import * as structs from "../../types/apiStructs";
-import Request from "../util/Request";
-import Patcher from "../util/Patcher";
+import Request from "./Request";
+import Patcher from "./Patcher";
 import Sprite from "./Sprite";
 import * as fs from "node:fs/promises";
 import { BpsPatch } from "rommage/BpsPatch";
-import ALTTPR from "../util/ALTTPR";
+import ALTTPR from "./ALTTPR";
 
 export default class Seed {
     #logic: string;

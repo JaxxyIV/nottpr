@@ -38,14 +38,14 @@ const seed = await ALTTPR.randomizer({
     accessibility: "locations",
     crystals: {
         ganon: "7",
-        tower: "7",
+        tower: "7"
     },
     dungeon_items: "full",
     enemizer: {
         boss_shuffle: "none",
         enemy_damage: "default",
         enemy_health: "default",
-        enemy_shuffle: "none",
+        enemy_shuffle: "none"
     },
     entrances: "crossed",
     glitches: "none",
@@ -53,14 +53,14 @@ const seed = await ALTTPR.randomizer({
     hints: "off",
     item: {
         functionality: "normal",
-        pool: "normal",
+        pool: "normal"
     },
     item_placement: "advanced",
     lang: "en",
     mode: "open",
     spoilers: "on",
     tournament: false,
-    weapons: "randomized",
+    weapons: "randomized"
 });
 
 console.log(seed.permalink);
@@ -69,17 +69,21 @@ console.log(seed.permalink);
 While this works, it is substantially more work to type out. A builder solves that problem by default filling settings as an open 7/7. In essence, if you're fine with a default setting as it is, you don't have to specify it later.
 
 Builders come equipped with a number of setter methods whose return value is the current object. As such, they can be chained.
-
-Using a builder:
 ```js
-import ALTTPR, { SeedBuilder } from "z3rscript";
+import ALTTPR, {
+    SeedBuilder,
+    Accessibility,
+    Entrances,
+    Goals,
+    Keysanity
+} from "z3rscript";
 
 // Crosskeys 2023 settings
 const builder = new SeedBuilder()
-    .setAccessibility("locations")
-    .setDungeonItems("full")
-    .setEntrances("crossed")
-    .setGoal("fast_ganon");
+    .setAccessibility(Accessibility.Locations)
+    .setDungeonItems(Keysanity.Full)
+    .setEntrances(Entrances.Crossed)
+    .setGoal(Goals.FastGanon);
 
 const seed = await ALTTPR.randomizer(builder);
 console.log(seed.permalink);
@@ -102,8 +106,10 @@ Seeds are cached locally upon generation or retrieval in the `ALTTPR.seeds` obje
 ```js
 import ALTTPR from "z3rscript";
 
-let seed = await ALTTPR.fetchSeed("Rv2legZlGl"); // Not cached. API is requested and data is cached.
-seed = await ALTTPR.fetchSeed("Rv2legZlGl", true); // Cache check is skipped. API is requested again and data is recached.
+// Not cached. API is requested and data is cached.
+let seed = await ALTTPR.fetchSeed("Rv2legZlGl");
+// Cache check is skipped. API is requested again and data is recached.
+seed = await ALTTPR.fetchSeed("Rv2legZlGl", true);
 ```
 
 ### Fetching Sprites
@@ -118,26 +124,40 @@ const buffer = await sprite.fetch(); // You can even download the sprite as buff
 ### Patching
 z3rscript allows you to patch randomizer seeds yourself with the `Seed.patchRom` method. Be advised that when patching a ROM, it is returned as a buffer. It will not create a new file on your system. How the buffered data is handled is up to the implementer.
 ```js
-import ALTTPR, { SeedBuilder } from "z3rscript";
+import ALTTPR, {
+    SeedBuilder,
+    BossShuffle,
+    Hash,
+    HeartColor.
+    HeartSpeed,
+    Keysanity,
+    MenuSpeed
+} from "z3rscript";
 import fs from "fs/promises";
 
 // MC boss with pseudoboots
 const builder = new SeedBuilder()
-    .setDungeonItems("mc")
+    .setDungeonItems(Keysanity.Mc)
     .setEnemizer({
-        boss_shuffle: "full"
+        boss_shuffle: BossShuffle.Full
     })
     .setPseudoboots(true)
-    .setOverrideStartScreen([0, 1, 2, 3, 4]); // You can even override the file select hash!
+    .setOverrideStartScreen([ // You can even override the file select hash!
+        Hash.Bow,
+        Hash.BigKey,
+        Hash.Hookshot,
+        Hash.Mail,
+        Hash.Ocarina
+    ]);
 
 const sprite = await ALTTPR.fetchSprite("Dark Boy");
 const darkBoy = await sprite.fetch();
 
 const seed = await ALTTPR.randomizer(builder);
 const patched = await seed.patchRom(pathToJp10Rom, {
-    heartSpeed: "half",
-    heartColor: "green",
-    menuSpeed: "normal",
+    heartSpeed: HeartSpeed.Half,
+    heartColor: HeartColor.Green,
+    menuSpeed: MenuSpeed.Normal,
     quickswap: true,
     backgroundMusic: true,
     msu1resume: true,

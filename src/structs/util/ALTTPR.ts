@@ -6,10 +6,10 @@ import {
     SeedAPIData,
     SpriteAPIData
 } from "../../types/apiStructs";
-import CustomizerBuilder from "../classes/CustomizerBuilder";
-import Seed from "../classes/Seed";
-import SeedBuilder from "../classes/SeedBuilder";
-import Sprite from "../classes/Sprite";
+import CustomizerBuilder from "../builders/CustomizerBuilder";
+import Seed from "./Seed";
+import SeedBuilder from "../builders/SeedBuilder";
+import Sprite from "./Sprite";
 import Request from "./Request";
 
 export default class ALTTPR {
