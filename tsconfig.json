@@ -9,7 +9,8 @@
         "outDir": "dist",
         "allowJs": false,
         "moduleDetection": "force",
-        "moduleResolution": "Node"
+        "moduleResolution": "Node",
+        "allowSyntheticDefaultImports": true
     },
     "include": ["src"]
 }

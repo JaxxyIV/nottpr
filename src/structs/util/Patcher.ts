@@ -1,6 +1,6 @@
 import { PatchElement } from "../../types/apiStructs";
 import { HeartColor, HeartSpeed, MenuSpeed } from "../../types/types";
-const center = await import("center-align");
+import center from "center-align";
 
 export default class Patcher {
     #buffer: Uint8Array;
