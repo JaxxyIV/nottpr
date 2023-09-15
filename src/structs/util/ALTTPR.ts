@@ -95,7 +95,7 @@ export default class ALTTPR {
      * @returns The requested Sprite.
      */
     static async fetchSprite(name: string): Promise<Sprite> {
-        const response: Array<SpriteAPIData> = await new Request("/api/sprites").get("json");
+        const response: Array<SpriteAPIData> = await new Request("/sprites").get("json");
         const sprite: SpriteAPIData | undefined = response.find(({ name: sName }) => name === sName);
 
         if (typeof sprite === "undefined") {
