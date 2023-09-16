@@ -1,5 +1,5 @@
-import BaseBuilder from "./BaseBuilder";
 import { RegionSettings } from "../../types/types";
+import BaseBuilder from "./BaseBuilder";
 
 export default class RegionBuilder extends BaseBuilder<RegionSettings, boolean> {
     static readonly #default: RegionOptions = {

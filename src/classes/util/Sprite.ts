@@ -1,5 +1,5 @@
-import { SpriteAPIData } from "../../types/apiStructs";
 import fetch, { Response } from "node-fetch";
+import { SpriteAPIData } from "../../types/apiStructs";
 
 export default class Sprite {
     #name: string;

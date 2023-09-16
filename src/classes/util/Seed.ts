@@ -1,11 +1,11 @@
-import * as types from "../../types/types";
-import * as structs from "../../types/apiStructs";
-import Request from "./Request";
-import Patcher from "./Patcher";
-import Sprite from "./Sprite";
 import * as fs from "node:fs/promises";
 import { BpsPatch } from "rommage/BpsPatch";
+import * as structs from "../../types/apiStructs";
+import * as types from "../../types/types";
 import ALTTPR from "./ALTTPR";
+import Patcher from "./Patcher";
+import Request from "./Request";
+import Sprite from "./Sprite";
 
 export default class Seed {
     #logic: string;
@@ -37,9 +37,9 @@ export default class Seed {
         return this.#logic;
     }
 
-    // get patch(): Array<structs.PatchElement> {
-    //     return Array.from(this.#patch);
-    // }
+    get patch(): Array<structs.PatchElement> {
+        return Array.from(this.#patch);
+    }
 
     get spoiler(): structs.SpoilerAPIData {
         return this.#spoiler;
@@ -102,11 +102,12 @@ export default class Seed {
     }
 
     /**
-     * Patches a base ALTTP ROM with this Seed's bps patch and returns the
-     * patched ROM as a buffer.
+     * Patches a base ALTTP ROM with this Seed's JSON data and bps patch and
+     * returns the result as a buffer.
      *
-     * @param base The path to the base ROM
-     * @param options Post-generation options
+     * @param base The path to the base ROM.
+     * @param options The post-generation options.
+     * @returns The patched ROM as a buffer.
      */
     async patchRom(base: string, options: PostGenOptions = {
         heartSpeed: "normal",
@@ -135,7 +136,6 @@ export default class Seed {
         const basePatch: Buffer = await this.fetchBasePatch();
         const bpsPatch: BpsPatch = new BpsPatch(basePatch);
         const patched: Buffer = bpsPatch.applyTo(romBuffer);
-        bpsPatch.patchChecksumCalc
 
         // Then the seed-specific stuff is applied.
         const patcher: Patcher = new Patcher(patched);
