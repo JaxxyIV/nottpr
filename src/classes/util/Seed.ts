@@ -8,23 +8,39 @@ import Request from "./Request";
 import Sprite from "./Sprite";
 
 export default class Seed {
-    #logic: string;
-    #patch: Array<structs.PatchElement>;
-    #spoiler: structs.SpoilerAPIData;
-    #hash: string;
-    #generated: string;
-    #size: number;
+    readonly #logic: string;
+    readonly #spoiler: structs.SpoilerAPIData;
+    readonly #hash: string;
+    readonly #generated: string;
+    readonly #size: number;
     #current_rom_hash?: string;
+    readonly #patchMap: Map<number, Array<number>>;
+
+    static readonly #hashStrings: Array<string> = [
+        "Bow", "Boomerang", "Hookshot", "Bomb", "Mushroom",
+        "Powder", "Ice Rod", "Pendant", "Bombos", "Ether",
+        "Quake", "Lantern", "Hammer", "Shovel", "Ocarina",
+        "Bug Net", "Book", "Bottle", "Green Potion", "Somaria",
+        "Cape", "Mirror", "Boots", "Glove", "Flippers",
+        "Moon Pearl", "Shield", "Mail", "Heart", "Map",
+        "Compass", "Big Key",
+    ];
 
     constructor(json: SeedData) {
         ({
             logic: this.#logic,
-            patch: this.#patch,
             spoiler: this.#spoiler,
             hash: this.#hash,
             generated: this.#generated,
             size: this.#size,
         } = json);
+
+        // By converting the patch data in the JSON to a Map, operations like
+        // obtaining the file select hash will be much easier.
+        this.#patchMap = new Map<number, Array<number>>(json.patch.map(o => {
+            const [[key, values]] = Object.entries(o);
+            return [parseInt(key), values];
+        }));
 
         if ("current_rom_hash" in json) {
             ({ current_rom_hash: this.#current_rom_hash } = json);
@@ -37,8 +53,12 @@ export default class Seed {
         return this.#logic;
     }
 
-    get patch(): Array<structs.PatchElement> {
-        return Array.from(this.#patch);
+    /**
+     * Returns this Seed's JSON patch data as a Map object. Elements in the Map
+     * are keyed by their offsets.
+     */
+    get patchAsMap(): Map<number, Array<number>> {
+        return this.#patchMap;
     }
 
     get spoiler(): structs.SpoilerAPIData {
@@ -75,23 +95,13 @@ export default class Seed {
      * Returns the start screen hash of this Seed as a string array.
      */
     get hashCode(): Array<string> {
-        const codeLoc = this.#patch.find(e => parseInt(Object.keys(e)[0]) === 1573397);
+        const loc: Array<number> | undefined = this.#patchMap.get(1573397);
 
-        if (typeof codeLoc === "undefined") {
-            throw new TypeError("Expected number[] but returned undefined");
+        if (typeof loc === "undefined") {
+            throw new TypeError("Expected number[] but returned undefined.");
         }
 
-        const [bytes]: Array<Array<number>> = Object.values(codeLoc as object);
-        const hashStrings: Array<string> = [
-            "Bow", "Boomerang", "Hookshot", "Bomb", "Mushroom",
-            "Powder", "Ice Rod", "Pendant", "Bombos", "Ether",
-            "Quake", "Lantern", "Hammer", "Shovel", "Ocarina",
-            "Bug Net", "Book", "Bottle", "Green Potion", "Somaria",
-            "Cape", "Mirror", "Boots", "Glove", "Flippers",
-            "Moon Pearl", "Shield", "Mail", "Heart", "Map",
-            "Compass", "Big Key",
-        ];
-        return bytes.map(b => hashStrings[b]);
+        return loc.map(b => Seed.#hashStrings[b]);
     }
 
     /**
@@ -139,7 +149,7 @@ export default class Seed {
 
         // Then the seed-specific stuff is applied.
         const patcher: Patcher = new Patcher(patched);
-        patcher.seedPatches = this.#patch;
+        patcher.seedPatches = this.#patchMap;
         patcher.backgroundMusic = options.backgroundMusic ?? true;
         patcher.heartColor = options.heartColor ?? "red";
         patcher.heartSpeed = options.heartSpeed ?? "normal";

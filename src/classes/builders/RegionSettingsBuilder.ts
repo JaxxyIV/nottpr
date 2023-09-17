@@ -1,8 +1,9 @@
+import { CustomizerRegionOptions } from "../../types/apiStructs";
 import { RegionSettings } from "../../types/types";
 import BaseBuilder from "./BaseBuilder";
 
-export default class RegionBuilder extends BaseBuilder<RegionSettings, boolean> {
-    static readonly #default: RegionOptions = {
+export default class RegionSettingsBuilder extends BaseBuilder<keyof CustomizerRegionOptions, boolean> {
+    static readonly #default: CustomizerRegionOptions = {
         bossNormalLocation: true,
         wildBigKeys: false,
         wildCompasses: false,
@@ -13,9 +14,9 @@ export default class RegionBuilder extends BaseBuilder<RegionSettings, boolean> 
     constructor(data?: RegionOptions) {
         super();
         if (typeof data !== "object") {
-            this._body = RegionBuilder.#default;
+            this._body = RegionSettingsBuilder.#default;
         } else {
-            this._body = RegionBuilder.#fill(data, RegionBuilder.#default);
+            this._body = RegionSettingsBuilder.#fill(data, RegionSettingsBuilder.#default);
         }
     }
 

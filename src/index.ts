@@ -1,4 +1,8 @@
-export { default as RegionBuilder } from "./classes/builders/RegionBuilder";
+export { default as CustomizerBuilder } from "./classes/builders/CustomizerBuilder";
+export { default as CustomSettingsBuilder } from "./classes/builders/CustomSettingsBuilder";
+export { default as RegionSettingsBuilder } from "./classes/builders/RegionSettingsBuilder";
+export { default as ItemSettingsBuilder } from "./classes/builders/ItemSettingsBuilder";
+export { default as RomSettingsBuilder } from "./classes/builders/RomSettingsBuilder";
 export { default as SeedBuilder } from "./classes/builders/SeedBuilder";
 export { default } from "./classes/util/ALTTPR";
 export {

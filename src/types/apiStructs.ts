@@ -128,7 +128,7 @@ export type CustomizerPayload = BasePayload & {
     drops: any
     eq: Array<types.Item>
     l: any
-
+    texts?: any
 };
 
 export type CrystalPayloadData = {
@@ -150,8 +150,16 @@ export type ItemPayloadData = {
 };
 
 export type CustomOptions = AllowedGlitches & {
+    customPrizePacks?: boolean
     drop: {
         count: CustomDropCounts
+    }
+    item: CustomizerItemOptions
+    prize: CustomizerPrizeOptions
+    region: CustomizerRegionOptions
+    rom: CustomizerRomOptions
+    spoil: {
+        BootsLocation: boolean
     }
 };
 
@@ -177,9 +185,20 @@ export type CustomDropCounts = {
     [x in types.Droppable]: number
 };
 
-export type CustomItemOptions = {
-    count: {
-        [x in types.Item]: number
+export type CustomizerItemOptions = {
+    count: ItemCountOptions
+    Goal: {
+        Required: "" | number
+    }
+    overflow?: ItemOverflowOptions
+    require: {
+        Lamp: boolean
+    }
+    value: {
+        BlueClock: "" | number
+        GreenClock: "" | number
+        RedClock: "" | number
+        Rupoor: "" | number
     }
 };
 
@@ -235,4 +254,38 @@ export type CustomizerPrizeOptions = {
     crossWorld: boolean
     shufflePendants: boolean
     shuffleCrystals: boolean
+};
+
+export type CustomizerRegionOptions = {
+    [x in types.RequiredRegionSettings]: boolean
+} & {
+        [x in types.RegionSettings]?: boolean
+    };
+
+export type RequiredRomOptions = {
+    [x in types.RequiredRomBoolSettings]: boolean
+} & {
+    timerMode: types.ClockMode
+    timerStart: "" | number
+    dungeonCount: types.CompassMode
+    logicMode: types.RomMode
+};
+
+export type CustomizerRomOptions = RequiredRomOptions & {
+
+};
+
+export type ItemCountOptions = {
+    [x in types.RequiredItemCountOptions]: number
+} & {
+    TwentyRupees2?: number
+};
+
+export type ItemOverflowOptions = {
+    count: {
+        [x in types.Restrictable]?: number
+    }
+    replacement: {
+        [x in types.Restrictable]?: types.Item
+    }
 };

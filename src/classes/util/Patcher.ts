@@ -1,5 +1,4 @@
 import center from "center-align";
-import { PatchElement } from "../../types/apiStructs";
 import { HeartColor, HeartSpeed, MenuSpeed } from "../../types/types";
 
 export default class Patcher {
@@ -13,12 +12,9 @@ export default class Patcher {
         return Buffer.from(this.#buffer);
     }
 
-    set seedPatches(patches: Array<PatchElement>) {
-        for (const patch of patches) {
-            for (const [key, values] of Object.entries(patch)) {
-                const offset: number = parseInt(key);
-                this.#write(offset, values);
-            }
+    set seedPatches(patches: Map<number, Array<number>>) {
+        for (const [offset, values] of patches) {
+            this.#write(offset, values);
         }
     }
 
@@ -114,7 +110,9 @@ export default class Patcher {
         let junk: number = 2;
 
         while (metaIndex < gfxOffset && junk > 0) {
-            if (!data[metaIndex + 1] && !data[metaIndex]) --junk;
+            if (!data[metaIndex + 1] && !data[metaIndex]) {
+                --junk;
+            }
             metaIndex += 2;
         }
 
@@ -153,15 +151,19 @@ export default class Patcher {
             this.#write(0x118020 + index, low);
         });
 
-        if (gfxOffset !== 0xFFFFFFFF)
-            for (let i: number = 0; i < 0x7000; ++i)
+        if (gfxOffset !== 0xFFFFFFFF) {
+            for (let i: number = 0; i < 0x7000; ++i) {
                 this.#write(0x80000 + i, data[gfxOffset + i]);
+            }
+        }
 
-        for (let i: number = 0; i < 120; ++i)
+        for (let i: number = 0; i < 120; ++i) {
             this.#write(0xdd308 + i, data[palOffset + i]);
+        }
 
-        for (let i: number = 0; i < 4; ++i)
+        for (let i: number = 0; i < 4; ++i) {
             this.#write(0xdedf5 + i, data[palOffset + 120 + i]);
+        }
     }
 
     fixChecksum(): void {
@@ -174,7 +176,7 @@ export default class Patcher {
             inverse & 0xff,
             inverse >> 8,
             checksum & 0xff,
-            checksum >> 8
+            checksum >> 8,
         ]);
     }
 

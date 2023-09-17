@@ -64,7 +64,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
     }
 
     get crystals(): structs.CrystalPayloadData {
-        return super._getProp("crystals") as structs.CrystalPayloadData;
+        return super._deepCopy(super._getProp("crystals")) as structs.CrystalPayloadData;
     }
 
     get dungeonItems(): types.DungeonItems {
@@ -72,7 +72,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
     }
 
     get enemizer(): structs.EnemizerPayloadData {
-        return super._getProp("enemizer") as structs.EnemizerPayloadData;
+        return super._deepCopy(super._getProp("enemizer")) as structs.EnemizerPayloadData;
     }
 
     get glitches(): types.GlitchesRequired {
@@ -88,7 +88,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
     }
 
     get item(): structs.ItemPayloadData {
-        return super._getProp("item") as structs.ItemPayloadData;
+        return super._deepCopy(super._getProp("item")) as structs.ItemPayloadData;
     }
 
     get itemPlacement(): types.ItemPlacement {
@@ -112,7 +112,10 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
     }
 
     get overrideStartScreen(): structs.StartHashOverride | undefined {
-        return super._getProp("override_start_screen");
+        const val: structs.StartHashOverride | undefined = super._getProp("override_start_screen");
+        return typeof val === "undefined"
+            ? undefined
+            : super._deepCopy(val);
     }
 
     get pseudoboots(): boolean | undefined {
@@ -158,7 +161,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
      */
     setCrystals(options: CrystalOptions, reset: boolean = false): this {
         const settings: CrystalOptions = reset === true
-            ? BaseSeedBuilder.#default.crystals
+            ? super._deepCopy(BaseSeedBuilder.#default.crystals) as CrystalOptions
             : this.crystals;
 
         if ("ganon" in options) {
@@ -185,7 +188,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
      */
     setEnemizer(options: EnemizerOptions, reset: boolean = false): this {
         const settings: EnemizerOptions = reset === true
-            ? BaseSeedBuilder.#default.enemizer
+            ? super._deepCopy(BaseSeedBuilder.#default.enemizer) as EnemizerOptions
             : this.enemizer;
         const keys: Array<keyof typeof options> = Object.keys(options) as Array<keyof typeof options>;
 
@@ -218,7 +221,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
      */
     setItem(options: ItemOptions, reset: boolean = false): this {
         const settings: ItemOptions = reset === true
-            ? BaseSeedBuilder.#default.item
+            ? super._deepCopy(BaseSeedBuilder.#default.item) as ItemOptions
             : this.item;
 
         if ("functionality" in options) {

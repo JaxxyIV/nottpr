@@ -10,7 +10,11 @@ export default class BaseBuilder<K extends string, V> {
         return this;
     }
 
-    toJSON(): { [x in K]?: V } {
+    protected _deepCopy(value: V): V {
+        return JSON.parse(JSON.stringify(value)) as V;
+    }
+
+    toJSON(): unknown {
         return this._body;
     }
 }
