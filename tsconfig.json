@@ -6,7 +6,6 @@
         "removeComments": false,
         "preserveConstEnums": true,
         "declaration": true,
-        "declarationDir": "dist/declare",
         "outDir": "dist",
         "allowJs": false,
         "moduleDetection": "force",
