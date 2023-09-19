@@ -2,6 +2,7 @@ import * as flat from "flat";
 import { CustomSettings } from "../../types/types";
 import BaseBuilder from "./BaseBuilder";
 import { AllowedGlitches, CustomDropCounts, CustomOptions } from "../../types/apiStructs";
+import RegionSettingsBuilder from "./RegionSettingsBuilder";
 const { unflatten } = flat;
 
 export default class CustomSettingsBuilder extends BaseBuilder<keyof CustomOptions, any> {
@@ -58,6 +59,15 @@ export default class CustomSettingsBuilder extends BaseBuilder<keyof CustomOptio
 
     setCustomPrizePacks(enable: boolean): this {
         return super._setProp("customPrizePacks", enable);
+    }
+
+    setRegion(region: RegionSettingsBuilder | ((builder: RegionSettingsBuilder) => RegionSettingsBuilder)): this {
+        if (typeof region === "function") {
+            return super._setProp("region", region(new RegionSettingsBuilder()));
+        } else if (region instanceof RegionSettingsBuilder) {
+            return super._setProp("region", region);
+        }
+        throw new TypeError("region must be a function or RegionSettingsBuilder");
     }
 }
 

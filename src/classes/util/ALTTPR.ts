@@ -13,14 +13,14 @@ import Sprite from "./Sprite";
 import Request from "./Request";
 
 export default class ALTTPR {
-    static #seedCache: Map<string, Seed> = new Map<string, Seed>();
+    static #seeds: Map<string, Seed> = new Map<string, Seed>();
 
     /**
      * Returns a Map of cached Seed objects. You can retrieve cached Seeds by
      * specifying their hash.
      */
     static get seeds(): Map<string, Seed> {
-        return this.#seedCache;
+        return this.#seeds;
     }
 
     /**
@@ -36,7 +36,7 @@ export default class ALTTPR {
                 "Content-Type": "application/json"
             });
         const seed: Seed = new Seed(response);
-        this.#seedCache.set(seed.hash, seed);
+        this.#seeds.set(seed.hash, seed);
         return new Seed(response);
     }
 
@@ -53,7 +53,7 @@ export default class ALTTPR {
                 "Content-Type": "application/json"
             });
         const seed: Seed = new Seed(response);
-        this.#seedCache.set(seed.hash, seed);
+        this.#seeds.set(seed.hash, seed);
         return new Seed(response);
     }
 
@@ -76,7 +76,7 @@ export default class ALTTPR {
      */
     static async fetchSeed(hash: string, force: boolean = false): Promise<Seed> {
         if (!force) {
-            const cached: Seed | undefined = this.#seedCache.get(hash);
+            const cached: Seed | undefined = this.#seeds.get(hash);
             if (typeof cached !== "undefined") {
                 return cached;
             }
@@ -92,7 +92,7 @@ export default class ALTTPR {
         }
 
         const seed: Seed = new Seed(parsed);
-        this.#seedCache.set(hash, seed);
+        this.#seeds.set(hash, seed);
         return seed;
     }
 

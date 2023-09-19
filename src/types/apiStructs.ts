@@ -42,8 +42,11 @@ export type GenerateSeedAPIData = SeedAPIData & {
 export type SpoilerAPIData = {
     ["Agahnims Tower"]?: WorldRegion
     Bosses?: BossLocations
+    ["Castle Tower"]?: WorldRegion
     Caves?: WorldRegion
+    ["Dark Palace"]?: WorldRegion
     ["Dark World"]?: WorldRegion
+    ["Death Mountain"]?: WorldRegion
     ["Desert Palace"]?: WorldRegion
     ["Eastern Palace"]?: WorldRegion
     Entrances?: Array<Entrance>
