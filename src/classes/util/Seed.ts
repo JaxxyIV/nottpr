@@ -37,10 +37,11 @@ export default class Seed {
 
         // By converting the patch data in the JSON to a Map, operations like
         // obtaining the file select hash will be much easier.
-        this.#patchMap = new Map<number, Array<number>>(json.patch.map(o => {
-            const [[key, values]] = Object.entries(o);
-            return [parseInt(key), values];
-        }));
+        this.#patchMap = new Map<number, Array<number>>();
+        json.patch.forEach(p => {
+            const [[offset, bytes]] = Object.entries(p);
+            this.#patchMap.set(parseInt(offset), bytes);
+        });
 
         if ("current_rom_hash" in json) {
             ({ current_rom_hash: this.#current_rom_hash } = json);
