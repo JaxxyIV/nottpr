@@ -434,7 +434,7 @@ export default class Seed {
                 }
             }
 
-            return pack.map(b => getDropSprite(b)).toString();
+            return pack.map(b => getDropSprite(b)).join(", ");
         }
     }
 }
