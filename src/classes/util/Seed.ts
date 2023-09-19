@@ -8,13 +8,13 @@ import Request from "./Request";
 import Sprite from "./Sprite";
 
 export default class Seed {
-    readonly #logic: string;
-    readonly #spoiler: structs.SpoilerAPIData;
-    readonly #hash: string;
-    readonly #generated: string;
-    readonly #size: number;
+    #logic: string;
+    #spoiler: structs.SpoilerAPIData;
+    #hash: string;
+    #generated: string;
+    #size: number;
     #current_rom_hash?: string;
-    readonly #patchMap: Map<number, Array<number>>;
+    #patchMap: Map<number, Array<number>>;
 
     static readonly #hashStrings: Array<string> = [
         "Bow", "Boomerang", "Hookshot", "Bomb", "Mushroom",
@@ -38,10 +38,12 @@ export default class Seed {
         // By converting the patch data in the JSON to a Map, operations like
         // obtaining the file select hash will be much easier.
         this.#patchMap = new Map<number, Array<number>>();
-        json.patch.forEach(p => {
-            const [[offset, bytes]] = Object.entries(p);
-            this.#patchMap.set(parseInt(offset), bytes);
-        });
+        for (const patch of json.patch) {
+            for (const key in patch) {
+                const bytes: Array<number> = patch[key];
+                this.#patchMap.set(parseInt(key, 10), bytes);
+            }
+        }
 
         if ("current_rom_hash" in json) {
             ({ current_rom_hash: this.#current_rom_hash } = json);
@@ -212,6 +214,8 @@ export default class Seed {
             log.Drops = readDrops(this.#patchMap);
         }
 
+        log.meta = spoiler.meta;
+
         return Buffer.from(JSON.stringify(log, undefined, 4), "utf8");
 
         // Thanks clearmouse
@@ -261,9 +265,9 @@ export default class Seed {
             const packs: Array<Array<number>> = [[], [], [], [], [], [], []];
             let pIndex: number = 0;
 
-            data.get(offsets.PrizePacks).forEach((byte: number, index: number) => {
+            data.get(offsets.PrizePacks).forEach((byte: number) => {
                 packs[pIndex].push(byte);
-                if (index % 8 === 0 && index !== 0) ++pIndex;
+                if (packs[pIndex].length >= 8) ++pIndex;
             });
 
             packs.forEach((pack: Array<number>, i: number) => {
@@ -297,11 +301,11 @@ export default class Seed {
                 // If the array contains one of these two bytes, we can safely assume
                 // that the pack is not vanilla.
                 if (pack.some(b => b === 121 || b === 178)) {
-                    return pack.map(b => getDropSprite(b)).toString();
+                    return pack.map(b => getDropSprite(b)).join(", ");
                 }
 
                 for (const [key, values] of Object.entries(vanillaPacks)) {
-                    if (pack === values) {
+                    if (pack.toString() === values.toString()) {
                         return key;
                     }
                 }
