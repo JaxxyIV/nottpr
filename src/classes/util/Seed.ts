@@ -100,8 +100,10 @@ export default class Seed {
     get hashCode(): Array<string> {
         const patch: Array<number> | undefined = this.#patchMap.get(1573397);
 
+        // Entrance seeds always seem to return undefined when looking up the
+        // hash for some reason and I have no idea how to address that.
         if (typeof patch === "undefined") {
-            throw new TypeError("Expected number[] but returned undefined.");
+            throw new TypeError("Unable to retrieve hash code.");
         }
 
         return patch.map(b => Seed.#hashStrings[b]);
