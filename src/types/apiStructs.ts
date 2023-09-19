@@ -62,6 +62,7 @@ export type SpoilerAPIData = {
     ["Swamp Palace"]?: WorldRegion
     ["Thieves Town"]?: WorldRegion
     ["Tower of Hera"]?: WorldRegion
+    ["Tower Of Hera"]?: WorldRegion
     ["Turtle Rock"]?: WorldRegion
     meta: SeedMeta
     paths?: EntrancePaths

@@ -98,13 +98,13 @@ export default class Seed {
      * Returns the start screen hash of this Seed as a string array.
      */
     get hashCode(): Array<string> {
-        const loc: Array<number> | undefined = this.#patchMap.get(1573397);
+        const patch: Array<number> | undefined = this.#patchMap.get(1573397);
 
-        if (typeof loc === "undefined") {
+        if (typeof patch === "undefined") {
             throw new TypeError("Expected number[] but returned undefined.");
         }
 
-        return loc.map(b => Seed.#hashStrings[b]);
+        return patch.map(b => Seed.#hashStrings[b]);
     }
 
     /**
@@ -112,6 +112,10 @@ export default class Seed {
      */
     get permalink(): string {
         return `https://alttpr.com/h/${this.#hash}`;
+    }
+
+    get [Symbol.toStringTag](): string {
+        return `Seed-${this.#hash}`;
     }
 
     /**
@@ -122,7 +126,7 @@ export default class Seed {
      * @returns The formatted spoiler log as a buffer.
      */
     formatSpoilerLog(showDrops: boolean = false): Buffer {
-        const dungeonTranslations = {
+        const dungeons = {
             "A1": "CastleTower",
             "A2": "GanonsTower",
             "H2": "HyruleCastle",
@@ -142,14 +146,13 @@ export default class Seed {
 
         // if "off" or "mystery", nothing special happens. Just return the
         // spoiler as-is.
-        if (spoiler.meta.spoilers === "off" ||
-            spoiler.meta.spoilers === "mystery") {
+        if (spoiler.meta.spoilers === "off" || spoiler.meta.spoilers === "mystery") {
             return Buffer.from(JSON.stringify(spoiler, undefined, 4), "utf8");
         }
 
         const log: { [x: string]: any } = {};
 
-        if ("shuffle" in spoiler.meta) { // Thanks ER...
+        if ("shuffle" in spoiler.meta) {
             log.Prizes = {
                 "Eastern Palace": undefined,
                 "Desert Palace": undefined,
@@ -187,7 +190,18 @@ export default class Seed {
                 log.Prizes[key] = values.find(v => v.startsWith("Crystal") || v.endsWith("Pendant"));
             }
         } else {
-            log.Prizes = {};
+            log.Prizes = {
+                "Eastern Palace": undefined,
+                "Desert Palace": undefined,
+                "Tower Of Hera": undefined,
+                "Dark Palace": undefined,
+                "Swamp Palace": undefined,
+                "Skull Woods": undefined,
+                "Thieves Town": undefined,
+                "Ice Palace": undefined,
+                "Misery Mire": undefined,
+                "Turtle Rock": undefined,
+            };
             log.Special = {};
             log.Bosses = {};
             log["Light World"] = {};
@@ -196,7 +210,7 @@ export default class Seed {
             log["Hyrule Castle"] = {};
             log["Eastern Palace"] = {};
             log["Desert Palace"] = {};
-            log["Tower of Hera"] = {};
+            log["Tower Of Hera"] = {};
             log["Castle Tower"] = {};
             log["Dark Palace"] = {};
             log["Swamp Palace"] = {};
@@ -206,113 +220,58 @@ export default class Seed {
             log["Misery Mire"] = {};
             log["Turtle Rock"] = {};
             log["Ganons Tower"] = {};
+
+            for (const key of Object.keys(log)) {
+                if (!(key in spoiler)) continue;
+
+                const entries: Array<[string, string]> = Object.entries(spoiler[key as keyof typeof spoiler]);
+                for (const [rawLoc, rawItem] of entries) {
+                    const loc: string = rawLoc.replace(":1", "");
+                    let item: string = rawItem.replace(":1", "");
+                    const dKey: string | undefined = Object.keys(dungeons)
+                        .find(k => item.endsWith(k));
+
+                    if (typeof dKey !== "undefined") {
+                        item += `-${dungeons[dKey as keyof typeof dungeons]}`;
+                    }
+
+                    log[key][loc] = item;
+                }
+            }
+
+            for (const key of Object.keys(log.Prizes)) {
+                let actualKey: string;
+                // Have to deal with inconsistencies in how things are referred to in the log.
+                switch (key) {
+                    case "Dark Palace":
+                        actualKey = "Palace of Darkness";
+                        break;
+                    case "Thieves Town":
+                        actualKey = "Thieves' Town";
+                        break;
+                    case "Tower Of Hera":
+                        actualKey = "Tower of Hera";
+                        break;
+                    default:
+                        actualKey = key;
+                        break;
+                }
+
+                log.Prizes[key] = log[key][`${actualKey} - Prize`];
+            }
         }
 
-        log.Special.DigGameDigs = this.#patchMap.get(982421)[0];
+        [log.Special.DigGameDigs] = this.#patchMap.get(982421);
 
         if (showDrops === true) {
-            log.Drops = readDrops(this.#patchMap);
+            log.Drops = this.#readDrops();
         }
 
         log.meta = spoiler.meta;
+        log.meta.hash = this.#hash;
+        log.meta.permalink = this.permalink;
 
         return Buffer.from(JSON.stringify(log, undefined, 4), "utf8");
-
-        // Thanks clearmouse
-        function readDrops(data: Map<number, Array<number>>): DropsSpoilerData {
-            const offsets = {
-                Stun: 227731,
-                TreePull: 981972,
-                CrabMain: 207304,
-                CrabLast: 207300,
-                Fish: 950988,
-                PrizePacks: 227960,
-            };
-            const vanillaPacks: { [x in types.EnemyPacks]: Array<number> } = {
-                Heart: [216, 216, 216, 216, 217, 216, 216, 217],
-                Rupee: [218, 217, 218, 219, 218, 217, 218, 218],
-                Magic: [224, 223, 223, 218, 224, 223, 216, 223],
-                Bomb: [220, 220, 220, 221, 220, 220, 222, 220],
-                Arrow: [225, 216, 225, 226, 225, 216, 225, 226],
-                SmallVariety: [223, 217, 216, 225, 223, 220, 217, 216],
-                BigVariety: [216, 227, 224, 219, 222, 216, 219, 226],
-            };
-
-            const drops: DropsSpoilerData = {
-                Tree: {},
-                Stun: undefined,
-                Fish: undefined,
-                Crab: {},
-                Packs: {},
-            };
-
-            // Tree Pulls
-            data.get(offsets.TreePull).forEach((byte: number, index: number) => {
-                drops.Tree[(index + 1) as keyof PullTiers] = getDropSprite(byte);
-            });
-
-            // Stun
-            drops.Stun = getDropSprite(data.get(offsets.Stun)[0]);
-
-            // Fish
-            drops.Fish = getDropSprite(data.get(offsets.Fish)[0]);
-
-            // Crab
-            drops.Crab.Main = getDropSprite(data.get(offsets.CrabMain)[0]);
-            drops.Crab.Last = getDropSprite(data.get(offsets.CrabLast)[0]);
-
-            // Enemy Packs
-            const packs: Array<Array<number>> = [[], [], [], [], [], [], []];
-            let pIndex: number = 0;
-
-            data.get(offsets.PrizePacks).forEach((byte: number) => {
-                packs[pIndex].push(byte);
-                if (packs[pIndex].length >= 8) ++pIndex;
-            });
-
-            packs.forEach((pack: Array<number>, i: number) => {
-                const key: string = Object.keys(vanillaPacks)[i];
-                drops.Packs[key as types.EnemyPacks] = getPrizePackName(pack);
-            });
-
-            return drops;
-
-            function getDropSprite(byte: number): types.Droppable {
-                switch (byte) {
-                    case 121: return "Bee";
-                    case 178: return "BeeGood";
-                    case 216: return "Heart";
-                    case 217: return "RupeeGreen";
-                    case 218: return "RupeeBlue";
-                    case 219: return "RupeeRed";
-                    case 220: return "BombRefill1";
-                    case 221: return "BombRefill4";
-                    case 222: return "BombRefill8";
-                    case 223: return "MagicRefillSmall";
-                    case 224: return "MagicRefillFull";
-                    case 225: return "ArrowRefill5";
-                    case 226: return "ArrowRefill10";
-                    case 227: return "Fairy";
-                    default: throw new Error(`No matching droppable found for ${byte}`);
-                }
-            }
-
-            function getPrizePackName(pack: Array<number>): types.EnemyPacks | string {
-                // If the array contains one of these two bytes, we can safely assume
-                // that the pack is not vanilla.
-                if (pack.some(b => b === 121 || b === 178)) {
-                    return pack.map(b => getDropSprite(b)).join(", ");
-                }
-
-                for (const [key, values] of Object.entries(vanillaPacks)) {
-                    if (pack.toString() === values.toString()) {
-                        return key;
-                    }
-                }
-
-                return pack.map(b => getDropSprite(b)).toString();
-            }
-        }
     }
 
     /**
@@ -383,8 +342,100 @@ export default class Seed {
         ({ md5: this.#current_rom_hash } = response);
     }
 
-    get [Symbol.toStringTag](): string {
-        return `Seed-${this.#hash}`;
+    // Thanks clearmouse
+    #readDrops(): DropsSpoilerData {
+        const offsets = {
+            stun: 227731,
+            treePull: 981972,
+            crabMain: 207304,
+            crabLast: 207300,
+            fish: 950988,
+            prizePacks: 227960,
+        };
+        const vanillaPacks: { [x in types.EnemyPacks]: Array<number> } = {
+            Heart: [216, 216, 216, 216, 217, 216, 216, 217],
+            Rupee: [218, 217, 218, 219, 218, 217, 218, 218],
+            Magic: [224, 223, 223, 218, 224, 223, 216, 223],
+            Bomb: [220, 220, 220, 221, 220, 220, 222, 220],
+            Arrow: [225, 216, 225, 226, 225, 216, 225, 226],
+            SmallVariety: [223, 217, 216, 225, 223, 220, 217, 216],
+            BigVariety: [216, 227, 224, 219, 222, 216, 219, 226],
+        };
+
+        const drops: DropsSpoilerData = {
+            Tree: {},
+            Stun: undefined,
+            Fish: undefined,
+            Crab: {},
+            Packs: {},
+        };
+
+        // Tree Pulls
+        this.#patchMap.get(offsets.treePull).forEach((byte, index) => {
+            drops.Tree[(index + 1) as keyof PullTiers] = getDropSprite(byte);
+        });
+
+        // Stun
+        drops.Stun = getDropSprite(this.#patchMap.get(offsets.stun)[0]);
+
+        // Fish
+        drops.Fish = getDropSprite(this.#patchMap.get(offsets.fish)[0]);
+
+        // Crab
+        drops.Crab.Main = getDropSprite(this.#patchMap.get(offsets.crabMain)[0]);
+        drops.Crab.Last = getDropSprite(this.#patchMap.get(offsets.crabLast)[0]);
+
+        // Enemy Packs
+        const packs: Array<Array<number>> = [[], [], [], [], [], [], []];
+        let pIndex: number = 0;
+
+        this.#patchMap.get(offsets.prizePacks).forEach(byte => {
+            packs[pIndex].push(byte);
+            if (packs[pIndex].length >= 8) ++pIndex;
+        });
+
+        packs.forEach((pack, i) => {
+            const key: string = Object.keys(vanillaPacks)[i];
+            drops.Packs[key as types.EnemyPacks] = getPrizePackName(pack);
+        });
+
+        return drops;
+
+        function getDropSprite(byte: number): types.Droppable {
+            switch (byte) {
+                case 121: return "Bee";
+                case 178: return "BeeGood";
+                case 216: return "Heart";
+                case 217: return "RupeeGreen";
+                case 218: return "RupeeBlue";
+                case 219: return "RupeeRed";
+                case 220: return "BombRefill1";
+                case 221: return "BombRefill4";
+                case 222: return "BombRefill8";
+                case 223: return "MagicRefillSmall";
+                case 224: return "MagicRefillFull";
+                case 225: return "ArrowRefill5";
+                case 226: return "ArrowRefill10";
+                case 227: return "Fairy";
+                default: throw new Error(`No matching droppable found for ${byte}`);
+            }
+        }
+
+        function getPrizePackName(pack: Array<number>): types.EnemyPacks | string {
+            // If the array contains one of these two bytes, we can safely assume
+            // that the pack is not vanilla.
+            if (pack.some(b => b === 121 || b === 178)) {
+                return pack.map(b => getDropSprite(b)).join(", ");
+            }
+
+            for (const [key, values] of Object.entries(vanillaPacks)) {
+                if (pack.toString() === values.toString()) {
+                    return key;
+                }
+            }
+
+            return pack.map(b => getDropSprite(b)).toString();
+        }
     }
 }
 
