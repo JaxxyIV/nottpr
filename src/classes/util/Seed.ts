@@ -278,10 +278,10 @@ export default class Seed {
             }
         }
 
-        [log.Special.DigGameDigs] = this.#patchMap.get(982421);
+        [log.Special["Dig Game"]] = this.#patchMap.get(982421);
 
         if (showDrops === true) {
-            log.Drops = this.#readDrops();
+            log.Special.Drops = this.#readDrops();
         }
 
         log.meta = spoiler.meta;
