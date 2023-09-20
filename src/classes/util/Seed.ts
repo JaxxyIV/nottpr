@@ -98,15 +98,30 @@ export default class Seed {
      * Returns the start screen hash of this Seed as a string array.
      */
     get hashCode(): Array<string> {
-        const patch: Array<number> | undefined = this.#patchMap.get(1573397);
-
-        // Entrance seeds always seem to return undefined when looking up the
-        // hash for some reason and I have no idea how to address that.
-        if (typeof patch === "undefined") {
-            throw new TypeError("Unable to retrieve hash code.");
+        let target: number = 1573397;
+        if (this.#patchMap.has(target)) {
+            return this.#patchMap.get(target).map(b => Seed.#hashStrings[b]);
         }
 
-        return patch.map(b => Seed.#hashStrings[b]);
+        const offsets: Array<number> = [];
+        for (const offset of this.#patchMap.keys()) {
+            offsets.push(offset);
+        }
+        offsets.sort((a, b) => a - b);
+
+        let offInd: number = 0;
+        while (offsets[offInd] < target) {
+            ++offInd;
+        }
+        target = offsets[offInd - 1];
+
+        const [, , ...bytes]: Array<number> = this.#patchMap.get(target);
+
+        if (bytes.length !== 5) { // Defensive edge case
+            throw new Error("Unable to retrieve hash code. (Wrong array length)");
+        }
+
+        return bytes.map(b => Seed.#hashStrings[b]);
     }
 
     /**
@@ -339,11 +354,6 @@ export default class Seed {
         return Buffer.from(response);
     }
 
-    async #setRomHash(): Promise<void> {
-        const response: structs.PatchAPIData = await new Request(`/api/h/${this.#hash}`).get("json");
-        ({ md5: this.#current_rom_hash } = response);
-    }
-
     // Thanks clearmouse
     #readDrops(): DropsSpoilerData {
         const offsets = {
@@ -438,6 +448,11 @@ export default class Seed {
 
             return pack.map(b => getDropSprite(b)).join(", ");
         }
+    }
+
+    async #setRomHash(): Promise<void> {
+        const response: structs.PatchAPIData = await new Request(`/api/h/${this.#hash}`).get("json");
+        ({ md5: this.#current_rom_hash } = response);
     }
 }
 
