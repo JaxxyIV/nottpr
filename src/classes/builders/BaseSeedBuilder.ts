@@ -1,6 +1,12 @@
 import BaseBuilder from "./BaseBuilder";
 import * as types from "../../types/types";
 import * as structs from "../../types/apiStructs";
+import {
+    BaseSeedOptions,
+    CrystalOptions,
+    EnemizerOptions,
+    ItemOptions
+} from "../../types/optionObjs";
 
 export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | types.BaseSettings, any> {
     static readonly #default: BaseSeedOptions = {
@@ -310,43 +316,3 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("weapons", weapons);
     }
 }
-
-export type BaseSeedOptions = {
-    accessibility?: types.ItemAccessibility
-    allow_quickswap?: boolean
-    crystals?: CrystalOptions
-    dungeon_items?: types.DungeonItems
-    enemizer?: EnemizerOptions
-    glitches?: types.GlitchesRequired
-    goal?: types.Goal
-    hints?: types.OptionToggle
-    item?: ItemOptions
-    item_placement?: types.ItemPlacement
-    lang?: types.Lang
-    mode?: types.WorldState
-    name?: string
-    notes?: string
-    override_start_screen?: structs.StartHashOverride
-    pseudoboots?: boolean
-    spoilers?: types.SpoilerSetting
-    tournament?: boolean
-    weapons?: types.Weapons
-};
-
-type CrystalOptions = {
-    ganon?: types.CrystalRequirement
-    tower?: types.CrystalRequirement
-};
-
-type EnemizerOptions = {
-    boss_shuffle?: types.BossShuffle
-    enemy_damage?: types.EnemyDamage
-    enemy_health?: types.EnemyHealth
-    enemy_shuffle?: types.EnemyShuffle
-    pot_shuffle?: types.OptionToggle
-};
-
-type ItemOptions = {
-    functionality?: types.ItemFunctionality
-    pool?: types.ItemPool
-};

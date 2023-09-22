@@ -26,6 +26,7 @@ export type Medalion = "Bombos" | "Ether" | "Quake";
 export type HeartSpeed = "off" | "half" | "quarter" | "double" | "normal";
 export type HeartColor = "red" | "blue" | "green" | "yellow";
 export type MenuSpeed = "slow" | "normal" | "fast" | "instant";
+
 export type BigKey = "BigKeyA1" | "BigKeyA2" | "BigKeyD1" | "BigKeyD2" | "BigKeyD3" | "BigKeyD4" | "BigKeyD5" | "BigKeyD6" | "BigKeyD7" | "BigKeyH2" | "BigKeyP1" | "BigKeyP2" | "BigKeyP3";
 export type Bottle = "Bottle" | "BottleWithBee" | "BottleWithBluePotion" | "BottleWithFairy" | "BottleWithGoldBee" | "BottleWithGreenPotion" | "BottleWithRandom" | "BottleWithRedPotion";
 export type CapacityUpgrade = "ArrowUpgrade10" | "ArrowUpgrade5" | "BombUpgrade10" | "BombUpgrade5";
@@ -35,19 +36,34 @@ export type Equipment = "BlueMail" | "BlueShield" | "BossHeartContainer" | "Flip
 export type Clock = "BlueClock" | "GreenClock" | "RedClock";
 export type SmallKey = "KeyA1" | "KeyA2" | "KeyD1" | "KeyD2" | "KeyD3" | "KeyD4" | "KeyD5" | "KeyD6" | "KeyD7" | "KeyH2" | "KeyP1" | "KeyP2" | "KeyP3";
 export type DungeonMap = "MapA1" | "MapA2" | "MapD1" | "MapD2" | "MapD3" | "MapD4" | "MapD5" | "MapD6" | "MapD7" | "MapH2" | "MapP1" | "MapP2" | "MapP3";
-export type RequiredItemCountOptions = CapacityUpgrade | BigKey | Bottle | Subweapon | Compass | Equipment | Clock | SmallKey | DungeonMap | "Arrow" | "Bomb" | "FiftyRupees" | "FiveRupees" | "Heart" | "Nothing" | "OneHundredRupees" | "OneRupee" | "Rupoor" | "SmallMagic" | "TenArrows" | "TenBombs" | "ThreeBombs" | "ThreeHundredRupees" | "Triforce" | "TriforcePiece" | "TwentyRupees";
+export type Crystal<N extends number> = `Crystal${N}`;
+export type Pendant<S extends string> = `PendantOf${S}`;
+type Rupee<S extends string> = `${S}Rupees`;
+export type RupeeAmount = Rupee<"Five" | "Twenty" | "Fifty" | "OneHundred" | "ThreeHundred"> | "OneRupee";
+export type RequiredItemCountOptions = CapacityUpgrade | BigKey | Bottle | Subweapon | Compass | Equipment | Clock | SmallKey | DungeonMap | RupeeAmount | "Arrow" | "Bomb" | "Heart" | "Nothing" | "Rupoor" | "SmallMagic" | "TenArrows" | "TenBombs" | "ThreeBombs" | "Triforce" | "TriforcePiece";
+
+export type StartingEquipment = CapacityUpgrade | BigKey | Bottle | Subweapon |
+    Compass | Equipment | SmallKey | DungeonMap | Crystal<1 | 2 | 3 | 4 | 5 | 6 | 7> |
+    Pendant<"Courage" | "Wisdom" | "Power"> | "Arrow" | "Bomb" | "FiftyRupees" |
+    "FiveRupees" | "OneHundredRupees" | "OneRupee" | "Rupoor" | "SmallMagic" |
+    "TenArrows" | "TenBombs" | "ThreeBombs" | "ThreeHundredRupees" | "TriforcePiece" |
+    "TwentyRupees";
 export type Item = RequiredItemCountOptions | "TwentyRupees2";
 export type Droppable = "ArrowRefill10" | "ArrowRefill5" | "Bee" | "BeeGood" | "BombRefill1" | "BombRefill4" | "BombRefill8" | "Fairy" | "Heart" | "MagicRefillFull" | "MagicRefillSmall" | "RupeeBlue" | "RupeeGreen" | "RupeeRed";
+
 export type EnemyPacks = "Heart" | "Rupee" | "Bomb" | "Magic" | "Arrow" | "SmallVariety" | "BigVariety";
 
 export type BaseSettings = "accessibility" | "allow_quickswap" | "crystals" | "dungeon_items" | "enemizer" | "glitches" | "goal" | "hints" | "item" | "item_placement" | "lang" | "mode" | "name" | "notes" | "override_start_screen" | "pseudoboots" | "spoilers" | "tournament" | "weapons";
 export type CustomizerSettings = "l" | "eq" | "drops" | "custom" | "texts";
 export type RequiredRomBoolSettings = "freeItemMenu" | "freeItemText" | "mapOnPickup" | "rupeeBow" | "genericKeys";
 export type RequiredRomSettings = "dungeonCount" | "timerMode" | "timerStart" | "logicMode";
-// export type RomSettings = ;
+
 export type RequiredRegionSettings = "bossNormalLocation" | "wildBigKeys" | "wildCompasses" | "wildKeys" | "wildMaps";
 export type RegionSettings = "requireBetterBow" | "requireBetterSword" | "forceSkullWoodsKey" | "swordsInPool" | "bossHeartsInPool" | "bossesHaveItem" | "takeAnys";
 export type CustomSettings = "item" | "prize" | "region" | "rom" | "spoil.BootsLocation" | "drop";
 export type Restrictable = "Sword" | "Armor" | "Bow" | "Shield" | "BossHeartContainer" | "PieceOfHeart" | "Bottle";
 export type ClockMode = "stopwatch" | "countdown-ohko" | "countdown-continue" | "countdown-stop" | "countdown-end" | "off";
 export type CompassMode = OptionToggle | "pickup";
+
+export type SpoilerItemString<I extends Item> = `${I}:1`;
+export type CustomizerDrop = Droppable | "auto_fill";

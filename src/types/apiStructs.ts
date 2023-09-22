@@ -190,7 +190,7 @@ export type CustomDropCounts = {
 };
 
 export type CustomizerItemOptions = {
-    count: ItemCountOptions
+    count: ExtendedItemCountOptions
     Goal: {
         Required: "" | number
     }
@@ -281,7 +281,9 @@ export type CustomizerRomOptions = RequiredRomOptions & {
 
 export type ItemCountOptions = {
     [x in types.RequiredItemCountOptions]: number
-} & {
+};
+
+export type ExtendedItemCountOptions = ItemCountOptions & {
     TwentyRupees2?: number
 };
 
@@ -292,4 +294,214 @@ export type ItemOverflowOptions = {
     replacement: {
         [x in types.Restrictable]?: types.Item
     }
+};
+
+export interface CustomizerCustomOptions extends AllowedGlitches {
+    customPrizePacks?: boolean
+    drop: {
+        count: CustomDropCounts
+    }
+    item: {
+        count: ItemCountOptions
+    }
+    /* In an ideal world, the customizer would pass this and a bunch of other
+     * values below as numbers. But for some reason, they are passed as strings.
+     *
+     * Also these should really be sent to the customizer as nested objects, not
+     * these long strings as they are being defined here.
+     */
+    "item.Goal.Required": string | number
+    "item.overflow.count.Armor"?: string | number
+    "item.overflow.count.BossHeartContainer"?: string | number
+    "item.overflow.count.Bow"?: string | number
+    "item.overflow.count.PieceOfHeart"?: string | number
+    "item.overflow.count.Shield"?: string | number
+    "item.overflow.count.Sword"?: string | number
+    "item.overflow.replacement.Armor"?: types.Item
+    "item.overflow.replacement.BossHeartContainer"?: types.Item
+    "item.overflow.replacement.Bow"?: types.Item
+    "item.overflow.replacement.PieceOfHeart"?: types.Item
+    "item.overflow.replacement.Shield"?: types.Item
+    "item.overflow.replacement.Sword"?: types.Item
+    "item.require.Lamp": boolean
+    "item.value.BlueClock": string | number
+    "item.value.GreenClock": string | number
+    "item.value.RedClock": string | number
+    "item.value.Rupoor": string | number
+    "prize.crossWorld": boolean
+    "prize.shuffleCrystals": boolean
+    "prize.shufflePendants": boolean
+    "region.bossNormalLocation": boolean
+    "region.wildBigKeys": boolean
+    "region.wildCompasses": boolean
+    "region.wildKeys": boolean
+    "region.wildMaps": boolean
+    "rom.dungeonCount": types.CompassMode
+    "rom.freeItemText": boolean
+    "rom.genericKeys": boolean
+    "rom.logicMode": types.RomMode
+    "rom.mapOnPickup": boolean
+    "rom.rupeeBow": boolean
+    "rom.timerMode": types.ClockMode
+    "rom.timerStart": string | number
+    "spoil.BootsLocation": boolean
+};
+
+export type CustomizerJSON = {
+    "vt.custom.drops": CustomDropCounts | null
+    "vt.custom.equipment": CustomizerJSONEquipment | null
+    "vt.custom.items": ItemCountOptions | null
+    "vt.custom.name": string | null
+    "vt.custom.notes": string | null
+    "vt.custom.locations": {
+        [x: string]: types.SpoilerItemString<types.RequiredItemCountOptions>
+    } | null
+    "vt.custom.prizepacks": PrizePackGroups | null
+    "vt.custom.settings": CustomizerJSONCustomSettings
+    "vt.custom.glitches": {
+        canBootsClip: boolean
+        canBunnyRevive: boolean
+        canBunnySurf: boolean
+        canDungeonRevive: boolean
+        canFakeFlipper: boolean
+        canMirrorClip: boolean
+        canMirrorWrap: boolean
+        canTransitionWrapped: boolean
+        canOneFrameClipOW: boolean
+        canOneFrameClipUW: boolean
+        canOWYBA: boolean
+        canSuperBunny: boolean
+        canSuperSpeed: boolean
+        canWaterWalk: boolean
+    }
+    "randomizer.glitches_required": types.GlitchesRequired | null
+    "randomizer.item_placement": types.ItemPlacement | null
+    "randomizer.dungeon_items": types.DungeonItems | null
+    "randomizer.accessibility": types.ItemAccessibility | null
+    "randomizer.goal": types.Goal | null
+    "randomizer.tower_open": types.CrystalRequirement | null
+    "randomizer.ganon_open": types.CrystalRequirement | null
+    "randomizer.world_state": types.WorldState | null
+    "randomizer.hints": types.OptionToggle | null
+    "randomizer.boss_shuffle": types.BossShuffle | null
+    "randomizer.enemy_shuffle": types.EnemyShuffle | null
+    "randomizer.weapons": types.Weapons | null
+    "randomizer.item_pool": types.ItemPool | null
+    "randomizer.item_functionality": types.ItemFunctionality | null
+    "randomizer.enemy_damage": types.EnemyDamage | null
+    "randomizer.enemy_health": types.EnemyHealth | null
+};
+
+export type CustomizerJSONEquipment = {
+    ProgressiveArmor: number // Valid from 0-2
+    ProgressiveSword: number // Valid from 0-4
+    ProgressiveShield: number // Valid from 0-3
+    MoonPearl: boolean
+    ProgressiveBow: number // Valid from 0-3
+    Boomerang: number // Valid from 0-3
+    Hookshot: boolean
+    Mushroom: boolean
+    Powder: boolean
+    FireRod: boolean
+    IceRod: boolean
+    Bombos: boolean
+    Ether: boolean
+    Quake: boolean
+    Lamp: boolean
+    Hammer: boolean
+    Shovel: boolean
+    BugCatchingNet: boolean
+    BookOfMudora: boolean
+    Bottle1: number // Valid from 0-7
+    Bottle2: number // Valid from 0-7
+    Bottle3: number // Valid from 0-7
+    Bottle4: number // Valid from 0-7
+    CaneOfSomaria: boolean
+    CaneOfByrna: boolean
+    Cape: boolean
+    MagicMirror: boolean
+    PegasusBoots: boolean
+    ProgressiveGlove: number // Valid from 0-2
+    Flippers: boolean
+    Ocarina: number // Valid from 0-2
+    PendantOfCourage: boolean
+    PendantOfWisdom: boolean
+    PendantOfPower: boolean
+    Crystal1: boolean
+    Crystal2: boolean
+    Crystal3: boolean
+    Crystal4: boolean
+    Crystal5: boolean
+    Crystal6: boolean
+    Crystal7: boolean
+    BossHeartContainer: number // Valid from 1-20
+    Rupees: string
+    empty: boolean // I'm not sure what this is
+};
+
+export type PrizePackGroups = {
+    0: [
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
+    ]
+    1: [
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
+    ]
+    2: [
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
+    ]
+    3: [
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
+    ]
+    4: [
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
+    ]
+    5: [
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
+    ]
+    6: [
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
+        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
+    ]
+    pull: [types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop]
+    crab: [types.CustomizerDrop, types.CustomizerDrop]
+    stun: [types.CustomizerDrop]
+    fish: [types.CustomizerDrop]
+};
+
+export type CustomizerJSONCustomSettings = {
+    "item.Goal.Required": string
+    "item.overflow.count.Armor"?: string
+    "item.overflow.count.BossHeartContainer"?: string
+    "item.overflow.count.Bow"?: string
+    "item.overflow.count.PieceOfHeart"?: string
+    "item.overflow.count.Shield"?: string
+    "item.overflow.count.Sword"?: string
+    "item.require.Lamp": boolean
+    "item.value.BlueClock": string
+    "item.value.GreenClock": string
+    "item.value.RedClock": string
+    "item.value.Rupoor": string
+    "prize.crossWorld": boolean
+    "prize.shuffleCrystals": boolean
+    "prize.shufflePendants": boolean
+    "region.bossNormalLocation": boolean
+    "region.wildBigKeys": boolean
+    "region.wildCompasses": boolean
+    "region.wildKeys": boolean
+    "region.wildMaps": boolean
+    "rom.dungeonCount": types.CompassMode
+    "rom.freeItemText": boolean
+    "rom.genericKeys": boolean
+    "rom.logicMode": types.RomMode
+    "rom.mapOnPickup": boolean
+    "rom.rupeeBow": boolean
+    "rom.timerMode": types.ClockMode
+    "rom.timerStart": string
+    "spoil.BootsLocation": boolean
 };
