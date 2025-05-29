@@ -10,7 +10,7 @@ export default class CustomSettingsBuilder extends BaseBuilder<keyof CustomOptio
         super();
     }
 
-    get customPrizePacks(): boolean | undefined {
+    get customPrizePacks(): boolean {
         return super._getProp("customPrizePacks");
     }
 
@@ -49,10 +49,10 @@ export default class CustomSettingsBuilder extends BaseBuilder<keyof CustomOptio
             for (const [key, value] of Object.entries(deep)) {
                 super._setProp(key as keyof AllowedGlitches, value);
             }
-            return this;
-        }
-        for (const key in options) {
-            super._setProp(key as keyof AllowedGlitches, options[key as keyof AllowGlitchOptions]);
+        } else {
+            for (const key in options) {
+                super._setProp(key as keyof AllowedGlitches, options[key as keyof AllowGlitchOptions]);
+            }
         }
         return this;
     }
@@ -61,6 +61,8 @@ export default class CustomSettingsBuilder extends BaseBuilder<keyof CustomOptio
         return super._setProp("customPrizePacks", enable);
     }
 
+    setRegion(region: RegionSettingsBuilder): this
+    setRegion(region: (builder: RegionSettingsBuilder) => RegionSettingsBuilder): this
     setRegion(region: RegionSettingsBuilder | ((builder: RegionSettingsBuilder) => RegionSettingsBuilder)): this {
         if (typeof region === "function") {
             return super._setProp("region", region(new RegionSettingsBuilder()));

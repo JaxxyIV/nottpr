@@ -2,7 +2,6 @@ import * as fs from "node:fs/promises";
 import { BpsPatch } from "rommage/BpsPatch";
 import * as structs from "../../types/apiStructs";
 import * as types from "../../types/types";
-import ALTTPR from "./ALTTPR";
 import Patcher from "./Patcher";
 import Request from "./Request";
 import Sprite from "./Sprite";
@@ -14,9 +13,12 @@ export default class Seed {
     #generated: string;
     #size: number;
     #current_rom_hash?: string;
-    #patchMap: Map<number, Array<number>>;
+    #patchMap = new Map<number, number[]>();
+    #basePatch?: Buffer;
 
-    static readonly #hashStrings: Array<string> = [
+    readonly #sprites: Map<string, Sprite>;
+
+    static readonly #hashStrings = [
         "Bow", "Boomerang", "Hookshot", "Bomb", "Mushroom",
         "Powder", "Ice Rod", "Pendant", "Bombos", "Ether",
         "Quake", "Lantern", "Hammer", "Shovel", "Ocarina",
@@ -26,7 +28,9 @@ export default class Seed {
         "Compass", "Big Key",
     ];
 
-    constructor(json: SeedData) {
+    constructor(json: SeedData, sprites: Map<string, Sprite>) {
+        this.#sprites = sprites;
+
         ({
             logic: this.#logic,
             spoiler: this.#spoiler,
@@ -37,19 +41,16 @@ export default class Seed {
 
         // By converting the patch data in the JSON to a Map, operations like
         // obtaining the file select hash will be much easier.
-        this.#patchMap = new Map<number, Array<number>>();
         for (const patch of json.patch) {
             for (const key in patch) {
-                const bytes: Array<number> = patch[key];
+                const bytes = patch[key];
                 this.#patchMap.set(parseInt(key, 10), bytes);
             }
         }
 
-        if ("current_rom_hash" in json) {
-            ({ current_rom_hash: this.#current_rom_hash } = json);
-        } else {
-            this.#current_rom_hash = undefined;
-        }
+        this.#current_rom_hash = "current_rom_hash" in json
+            ? json.current_rom_hash
+            : undefined;
     }
 
     get logic(): string {
@@ -60,7 +61,7 @@ export default class Seed {
      * Returns this Seed's JSON patch data as a Map object. Elements in the Map
      * are keyed by their offsets.
      */
-    get patchAsMap(): Map<number, Array<number>> {
+    get patchAsMap(): Map<number, number[]> {
         return this.#patchMap;
     }
 
@@ -90,38 +91,37 @@ export default class Seed {
         return this.#size;
     }
 
-    get currentRomHash(): string | undefined {
+    get currentRomHash(): string {
         return this.#current_rom_hash;
     }
 
     /**
      * Returns the start screen hash of this Seed as a string array.
      */
-    get hashCode(): Array<string> {
-        let target: number = 1573397;
-        if (this.#patchMap.has(target)) {
-            return this.#patchMap.get(target).map(b => Seed.#hashStrings[b]);
+    get hashCode(): string[] {
+        const search = (a: number[], l: number, r: number, t: number): number => {
+            if (l >= r) return l;
+            const m = Math.floor((l + r) / 2);
+            return a[m] === t ? m
+                : a[m] > t ? search(a, l, m - 1, t)
+                    : search(a, m + 1, r, t);
+        };
+        let target = 1573397;
+        let hash = this.#patchMap.get(target);
+
+        if (!hash) { // Entrance rando
+            const offsets: number[] = [];
+            for (const [offset] of this.#patchMap)
+                offsets.push(offset);
+            offsets.sort();
+            let offInd = 0;
+            //const index = search(offsets, 0, offsets.length, target);
+            while (offsets[offInd] < target) ++offInd;
+            target = offsets[offInd - 1];
+            [, , ...hash] = this.#patchMap.get(target);
         }
 
-        const offsets: Array<number> = [];
-        for (const offset of this.#patchMap.keys()) {
-            offsets.push(offset);
-        }
-        offsets.sort((a, b) => a - b);
-
-        let offInd: number = 0;
-        while (offsets[offInd] < target) {
-            ++offInd;
-        }
-        target = offsets[offInd - 1];
-
-        const [, , ...bytes]: Array<number> = this.#patchMap.get(target);
-
-        if (bytes.length !== 5) { // Defensive edge case
-            throw new Error("Unable to retrieve hash code. (Wrong array length)");
-        }
-
-        return bytes.map(b => Seed.#hashStrings[b]);
+        return hash.map(b => Seed.#hashStrings[b]);
     }
 
     /**
@@ -132,7 +132,7 @@ export default class Seed {
     }
 
     get [Symbol.toStringTag](): string {
-        return `Seed-${this.#hash}`;
+        return this.#hash;
     }
 
     /**
@@ -142,7 +142,7 @@ export default class Seed {
      * be included?
      * @returns The formatted spoiler log as a buffer.
      */
-    formatSpoilerLog(showDrops: boolean = false): Buffer {
+    writeSpoiler(showDrops = false): Buffer {
         const dungeons = {
             "A1": "CastleTower",
             "A2": "GanonsTower",
@@ -203,7 +203,7 @@ export default class Seed {
             log.Entrances = spoiler.Entrances;
 
             for (const key in log.Prizes) {
-                const values: Array<string> = Object.values(spoiler[key as keyof structs.SpoilerAPIData]) as Array<string>;
+                const values = Object.values(spoiler[key as keyof structs.SpoilerAPIData]) as string[];
                 log.Prizes[key] = values.find(v => v.startsWith("Crystal") || v.endsWith("Pendant"));
             }
         } else {
@@ -241,12 +241,11 @@ export default class Seed {
             for (const key of Object.keys(log)) {
                 if (!(key in spoiler)) continue;
 
-                const entries: Array<[string, string]> = Object.entries(spoiler[key as keyof typeof spoiler]);
+                const entries: [string, string][] = Object.entries(spoiler[key as keyof typeof spoiler]);
                 for (const [rawLoc, rawItem] of entries) {
-                    const loc: string = rawLoc.replace(":1", "");
-                    let item: string = rawItem.replace(":1", "");
-                    const dKey: string | undefined = Object.keys(dungeons)
-                        .find(k => item.endsWith(k));
+                    const loc = rawLoc.replace(":1", "");
+                    let item = rawItem.replace(":1", "");
+                    const dKey = Object.keys(dungeons).find(k => item.endsWith(k));
 
                     if (typeof dKey !== "undefined") {
                         item += `-${dungeons[dKey as keyof typeof dungeons]}`;
@@ -280,7 +279,7 @@ export default class Seed {
 
         [log.Special["Dig Game"]] = this.#patchMap.get(982421);
 
-        if (showDrops === true) {
+        if (showDrops) {
             log.Special.Drops = this.#readDrops();
         }
 
@@ -288,18 +287,22 @@ export default class Seed {
         log.meta.hash = this.#hash;
         log.meta.permalink = this.permalink;
 
-        return Buffer.from(JSON.stringify(log, undefined, 4), "utf8");
+        return Buffer.from(JSON.stringify(log, undefined, 4));
     }
 
     /**
      * Patches a base ALTTP ROM with this Seed's JSON data and bps patch and
      * returns the result as a buffer.
      *
+     * **Notes:**
+     * * The value for `options.sprite` can be passed as a string, Sprite object,
+     * or buffer
+     *
      * @param base The path to the base ROM.
      * @param options The post-generation options.
      * @returns The patched ROM as a buffer.
      */
-    async patchRom(base: string, options: PostGenOptions = {
+    async patchROM(base: string, options: PostGenOptions = {
         heartSpeed: "normal",
         heartColor: "red",
         menuSpeed: "normal",
@@ -309,49 +312,55 @@ export default class Seed {
         sprite: "Link",
         reduceFlash: false
     }): Promise<Buffer> {
-        // Set defaults
+        // Correct the value provided for sprite (if necessary)
         if (!options.sprite) {
-            options.sprite = await (await ALTTPR.fetchSprite("Link")).fetch();
+            options.sprite = await this.#sprites.get("Link").fetch();
         } else if (typeof options.sprite === "string") {
-            options.sprite = await (await ALTTPR.fetchSprite(options.sprite)).fetch();
+            if (!this.#sprites.has(options.sprite)) {
+                throw new ReferenceError("Sprite does not exist in local cache.");
+            }
+            options.sprite = await this.#sprites.get(options.sprite).fetch();
         } else if (options.sprite instanceof Sprite) {
             options.sprite = await options.sprite.fetch();
         } else if (!(options.sprite instanceof Buffer)) {
             throw new TypeError("Invalid argument for sprite.");
         }
 
-        const romBuffer: Buffer = await fs.readFile(base);
+        const romBuffer = await fs.readFile(base);
 
         // Base patch is applied first.
-        const basePatch: Buffer = await this.fetchBasePatch();
-        const bpsPatch: BpsPatch = new BpsPatch(basePatch);
-        const patched: Buffer = bpsPatch.applyTo(romBuffer);
+        const basePatch = this.#basePatch ?? await this.fetchBasePatch();
+        const bpsPatch = new BpsPatch(basePatch);
+        const patched = bpsPatch.applyTo(romBuffer);
 
         // Then the seed-specific stuff is applied.
-        const patcher: Patcher = new Patcher(patched);
-        patcher.seedPatches = this.#patchMap;
-        patcher.backgroundMusic = options.backgroundMusic ?? true;
-        patcher.heartColor = options.heartColor ?? "red";
-        patcher.heartSpeed = options.heartSpeed ?? "normal";
-        patcher.menuSpeed = options.menuSpeed ?? "normal";
-        patcher.msu1Resume = options.msu1Resume ?? true;
-        patcher.quickswap = options.quickswap ?? true;
-        patcher.reduceFlashing = options.reduceFlash ?? true;
-        patcher.sprite = options.sprite;
-
-        // Finally, correct the buffer's checksum.
-        patcher.fixChecksum();
-
-        return patcher.buffer;
+        return new Patcher(patched)
+            .setSeedPatches(this.#patchMap)
+            .setBackgroundMusic(options.backgroundMusic ?? true)
+            .setHeartColor(options.heartColor ?? "red")
+            .setHeartSpeed(options.heartSpeed ?? "normal")
+            .setMenuSpeed(options.menuSpeed ?? "normal")
+            .setMsu1Resume(options.msu1Resume ?? true)
+            .setQuickswap(options.quickswap ?? true)
+            .setReduceFlashing(options.reduceFlash ?? false)
+            .setSprite(options.sprite)
+            .fixChecksum() // Checksum fix must be done last
+            .buffer;
     }
 
     async fetchBasePatch(): Promise<Buffer> {
-        if (typeof this.#current_rom_hash === "undefined") {
-            await this.#setRomHash();
-        }
+        if (!this.#basePatch) {
+            if (typeof this.#current_rom_hash === "undefined") {
+                await this.#setRomHash();
+            }
 
-        const response: ArrayBuffer = await new Request(`/bps/${this.#current_rom_hash}.bps`).get("buffer");
-        return Buffer.from(response);
+            const response: ArrayBuffer =
+                await new Request(`/bps/${this.#current_rom_hash}.bps`)
+                .get("buffer");
+            const buffer = Buffer.from(response);
+            this.#basePatch = buffer;
+        }
+        return this.#basePatch;
     }
 
     // Thanks clearmouse
@@ -364,7 +373,7 @@ export default class Seed {
             fish: 950988,
             prizePacks: 227960,
         };
-        const vanillaPacks: { [x in types.EnemyPacks]: Array<number> } = {
+        const vanillaPacks: Record<types.EnemyPacks, number[]> = {
             Heart: [216, 216, 216, 216, 217, 216, 216, 217],
             Rupee: [218, 217, 218, 219, 218, 217, 218, 218],
             Magic: [224, 223, 223, 218, 224, 223, 216, 223],
@@ -383,9 +392,11 @@ export default class Seed {
         };
 
         // Tree Pulls
-        this.#patchMap.get(offsets.treePull).forEach((byte, index) => {
-            drops.Tree[(index + 1) as keyof PullTiers] = getDropSprite(byte);
-        });
+        const treePulls = this.#patchMap.get(offsets.treePull);
+        for (let i = 1; i <= treePulls.length; ++i) {
+            const byte = treePulls[i - 1];
+            drops.Tree[i as keyof PullTiers] = getDropSprite(byte);
+        }
 
         // Stun
         drops.Stun = getDropSprite(this.#patchMap.get(offsets.stun)[0]);
@@ -398,18 +409,18 @@ export default class Seed {
         drops.Crab.Last = getDropSprite(this.#patchMap.get(offsets.crabLast)[0]);
 
         // Enemy Packs
-        const packs: Array<Array<number>> = [[], [], [], [], [], [], []];
-        let pIndex: number = 0;
+        const packs: number[][] = [[], [], [], [], [], [], []];
+        const rowLimit = 8;
 
-        this.#patchMap.get(offsets.prizePacks).forEach(byte => {
-            packs[pIndex].push(byte);
-            if (packs[pIndex].length >= 8) ++pIndex;
-        });
+        const prizePackDrops = this.#patchMap.get(offsets.prizePacks);
+        for (let i = 0; i < prizePackDrops.length; ++i) {
+            packs[Math.floor(i / rowLimit)].push(prizePackDrops[i]);
+        }
 
-        packs.forEach((pack, i) => {
-            const key: string = Object.keys(vanillaPacks)[i];
-            drops.Packs[key as types.EnemyPacks] = getPrizePackName(pack);
-        });
+        for (let i = 0; i < packs.length; ++i) {
+            const key = Object.keys(vanillaPacks)[i] as types.EnemyPacks;
+            drops.Packs[key] = getPrizePackName(packs[i]);
+        }
 
         return drops;
 
@@ -433,7 +444,7 @@ export default class Seed {
             }
         }
 
-        function getPrizePackName(pack: Array<number>): types.EnemyPacks | string {
+        function getPrizePackName(pack: number[]): types.EnemyPacks | string {
             // If the array contains one of these two bytes, we can safely assume
             // that the pack is not vanilla.
             if (pack.some(b => b === 121 || b === 178)) {
@@ -454,19 +465,49 @@ export default class Seed {
         const response: structs.PatchAPIData = await new Request(`/api/h/${this.#hash}`).get("json");
         ({ md5: this.#current_rom_hash } = response);
     }
+
+    #seekInPatch(offset: number, byteCount: number): number[] {
+        if (this.#patchMap.has(offset)) {
+            return this.#patchMap.get(offset).slice(0, byteCount);
+        }
+        const offsets: number[] = [];
+        for (const [key] of this.#patchMap)
+            offsets.push(key);
+        offsets.sort();
+
+        let closest: number;
+        if (offset < offsets[0]) {
+            closest = offsets[0];
+        } else if (offset > offsets[offsets.length - 1]) {
+            closest = offsets[offsets.length - 1];
+        } else {
+            let left = 0;
+            let right = offsets.length - 1;
+            while (left <= right) {
+                const cen = Math.floor((left + right) / 2);
+                if (offsets[cen] > offset)
+                    right = cen - 1;
+                else
+                    left = cen + 1;
+            }
+            closest = offsets[left] - offset < offset - offsets[right]
+                ? offsets[left] : offsets[right];
+        }
+        return this.#patchMap.get(closest).slice(0, byteCount);
+    }
 }
 
 type SeedData = structs.SeedAPIData | structs.GenerateSeedAPIData;
-type PostGenOptions = {
-    heartSpeed?: types.HeartSpeed
-    heartColor?: types.HeartColor
-    menuSpeed?: types.MenuSpeed
-    quickswap?: boolean
-    backgroundMusic?: boolean
-    msu1Resume?: boolean
-    sprite?: string | Sprite | Buffer
-    reduceFlash?: boolean
-};
+type PostGenOptions = Partial<{
+    heartSpeed: types.HeartSpeed
+    heartColor: types.HeartColor
+    menuSpeed: types.MenuSpeed
+    quickswap: boolean
+    backgroundMusic: boolean
+    msu1Resume: boolean
+    sprite: string | Sprite | Buffer
+    reduceFlash: boolean
+}>;
 type DropsSpoilerData = {
     Tree?: PullTiers
     Crab?: {

@@ -12,8 +12,35 @@ import SeedBuilder from "../builders/SeedBuilder";
 import Sprite from "./Sprite";
 import Request from "./Request";
 
+/**
+ * The ALTTPR class is the main class for interacting with alttpr.com's API.
+ * All methods in the class are static and the class cannot be instantiated.
+ *
+ * The ALTTPR class permits local caching of seeds and sprites through the
+ * `ALTTPR.seeds` and `ALTTPR.sprites` map objects. You can retrieve a cached
+ * seed or sprite by passing the seed's hash or the sprite's name to each map's
+ * respective `get()` method.
+ *
+ * All data in the caches will be lost upon program termination. If you want the
+ * data to persist between executions of nottpr, you should store the data
+ * locally and manually repopulate the cache maps upon executing nottpr.
+ */
 export default class ALTTPR {
     static #seeds: Map<string, Seed> = new Map<string, Seed>();
+    static #sprites: Map<string, Sprite> = new Map<string, Sprite>();
+
+    constructor() {
+        throw new Error("You cannot instantiate this class.");
+    }
+
+    // Properly initialize the sprite cache.
+    // static {
+    //     (new Request("/sprites").get("json") as Promise<SpriteAPIData[]>)
+    //         .then(res => res.forEach(element => {
+    //             const sprite = new Sprite(element);
+    //             this.#sprites.set(sprite.name, sprite);
+    //         }));
+    // }
 
     /**
      * Returns a Map of cached Seed objects. You can retrieve cached Seeds by
@@ -24,24 +51,58 @@ export default class ALTTPR {
     }
 
     /**
-     * Generates a randomized seed on alttpr.com.
-     *
-     * @param data The data to provide to the API.
-     * @returns The generated Seed.
+     * Returns a Map of cached Sprite objects. You can retrieve cached Sprites
+     * by specifying their names.
      */
-    static async randomizer(data: RandomizerAPIData): Promise<Seed> {
+    static get sprites(): Map<string, Sprite> {
+        return this.#sprites;
+    }
+
+    /**
+     * Generates a randomized seed on alttpr.com and adds it to the local cache.
+     *
+     * @param data The data to provide to the API. This argument can be passed
+     * as a JSON object, a SeedBuilder, or a callback function.
+     * @returns The generated Seed.
+     * @example
+     * ```js
+     * // Crosskeys using SeedBuilder:
+     * const preset = new SeedBuilder()
+     *     .setAccessibility(Accessibility.Locations)
+     *     .setDungeonItems(Keysanity.Full)
+     *     .setGoal(Goals.FastGanon)
+     *     .setEntrances(Entrances.Crossed);
+     * const seed = await ALTTPR.randomizer(preset);
+     * console.log(seed.permalink);
+     *
+     * // Crosskeys using a callback:
+     * const seed = await ALTTPR.randomizer(builder => builder
+     *     .setAccessibility(Accessibility.Locations)
+     *     .setDungeonItems(Keysanity.Full)
+     *     .setGoal(Goals.FastGanon)
+     *     .setEntrances(Entrances.Crossed));
+     * console.log(seed.permalink);
+     * ```
+     */
+    static async randomizer(data: SeedBuilder): Promise<Seed>
+    static async randomizer(data: RandomizerPayload): Promise<Seed>
+    static async randomizer(data: (builder: SeedBuilder) => SeedBuilder): Promise<Seed>
+    static async randomizer(data: RandomizerAPIData | ((builder: SeedBuilder) => SeedBuilder)): Promise<Seed> {
+        if (typeof data === "function") {
+            data = data(new SeedBuilder());
+        }
         const response: GenerateSeedAPIData = await new Request("/api/randomizer")
             .post(JSON.stringify(data), "json", {
                 "Accept": "application/json, text/plain, */*",
                 "Content-Type": "application/json"
             });
-        const seed: Seed = new Seed(response);
+        const seed = new Seed(response, this.#sprites);
         this.#seeds.set(seed.hash, seed);
-        return new Seed(response);
+        return seed;
     }
 
     /**
-     * Generates a customizer seed on alttpr.com.
+     * Generates a customizer seed on alttpr.com and adds it to the local cache.
      *
      * @param data The data to provide to the API.
      * @returns The generated Seed.
@@ -52,9 +113,9 @@ export default class ALTTPR {
                 "Accept": "application/json, text/plain, */*",
                 "Content-Type": "application/json"
             });
-        const seed: Seed = new Seed(response);
+        const seed = new Seed(response, this.#sprites);
         this.#seeds.set(seed.hash, seed);
-        return new Seed(response);
+        return seed;
     }
 
     /**
@@ -63,23 +124,19 @@ export default class ALTTPR {
      * @returns The daily hash.
      */
     static async fetchDaily(): Promise<string> {
-        const response: DailyAPIData = await new Request("/api/daily").get("json");
-        return response.hash;
+        const { hash }: DailyAPIData = await new Request("/api/daily").get("json");
+        return hash;
     }
 
     /**
      * Fetches the seed with the given hash and returns it as a Seed object.
      *
      * @param hash The seed hash.
-     * @param force Whether to skip the cache check and request the API.
      * @returns The requested Seed.
      */
-    static async fetchSeed(hash: string, force: boolean = false): Promise<Seed> {
-        if (!force) {
-            const cached: Seed | undefined = this.#seeds.get(hash);
-            if (typeof cached !== "undefined") {
-                return cached;
-            }
+    static async fetchSeed(hash: string): Promise<Seed> {
+        if (this.#seeds.has(hash)) {
+            return this.#seeds.get(hash);
         }
 
         const response: string = await new Request(`/hash/${hash}`).get("text");
@@ -87,30 +144,40 @@ export default class ALTTPR {
 
         try {
             parsed = JSON.parse(response);
-        } catch (_) {
+        } catch (e) {
             throw new Error("No seed found.");
         }
 
-        const seed: Seed = new Seed(parsed);
+        const seed = new Seed(parsed, this.#sprites);
         this.#seeds.set(hash, seed);
         return seed;
     }
 
     /**
-     * Fetches the sprite with the given name.
+     * Updates the local sprite cache and returns it. You can retrieve sprites
+     * by name by using `ALTTPR.sprites.get()`.
      *
-     * @param name The name of the sprite.
-     * @returns The requested Sprite.
+     * This method should only be used in the event of an update to alttpr.com's
+     * sprite catalog.
+     *
+     * @returns `this.sprites`
+     * @example
+     * ```js
+     * await ALTTPR.fetchSprites();
+     * const sprite = ALTTPR.sprites.get("Angel");
+     * const file = await sprite.fetch();
+     * // or
+     * const sprite = (await ALTTPR.fetchSprites()).get("Angel");
+     * const file = await sprite.fetch();
+     * ```
      */
-    static async fetchSprite(name: string): Promise<Sprite> {
-        const response: Array<SpriteAPIData> = await new Request("/sprites").get("json");
-        const sprite: SpriteAPIData | undefined = response.find(({ name: sName }) => name === sName);
-
-        if (typeof sprite === "undefined") {
-            throw new Error(`No results for ${name} were found.`);
+    static async fetchSprites(): Promise<Map<string, Sprite>> {
+        const response: SpriteAPIData[] = await new Request("/sprites").get("json");
+        for (const element of response) {
+            const sprite = new Sprite(element);
+            this.#sprites.set(sprite.name, sprite);
         }
-
-        return new Sprite(sprite);
+        return this.#sprites;
     }
 }
 

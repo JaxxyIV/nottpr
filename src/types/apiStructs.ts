@@ -1,4 +1,5 @@
 import * as types from "./types";
+import { Hash } from "./enums";
 
 export type SpriteAPIData = {
     name: string
@@ -39,68 +40,6 @@ export type GenerateSeedAPIData = SeedAPIData & {
     current_rom_hash: string
 };
 
-export type SpoilerAPIData = {
-    ["Agahnims Tower"]?: WorldRegion
-    Bosses?: BossLocations
-    ["Castle Tower"]?: WorldRegion
-    Caves?: WorldRegion
-    ["Dark Palace"]?: WorldRegion
-    ["Dark World"]?: WorldRegion
-    ["Death Mountain"]?: WorldRegion
-    ["Desert Palace"]?: WorldRegion
-    ["Eastern Palace"]?: WorldRegion
-    Entrances?: Array<Entrance>
-    ["Ganons Tower"]?: WorldRegion
-    ["Hyrule Castle"]?: WorldRegion
-    ["Ice Palace"]?: WorldRegion
-    ["Light World"]?: WorldRegion
-    ["Misery Mire"]?: WorldRegion
-    ["Palace of Darkness"]?: WorldRegion
-    Shops?: Array<ShopData>
-    ["Skull Woods"]?: WorldRegion
-    Special?: SpoilerSpecialData
-    ["Swamp Palace"]?: WorldRegion
-    ["Thieves Town"]?: WorldRegion
-    ["Tower of Hera"]?: WorldRegion
-    ["Tower Of Hera"]?: WorldRegion
-    ["Turtle Rock"]?: WorldRegion
-    meta: SeedMeta
-    paths?: EntrancePaths
-    playthrough?: Playthrough
-};
-
-export type SeedMeta = {
-    accessibility: types.ItemAccessibility
-    allow_quickswap: boolean
-    build: string
-    dungeon_items: types.DungeonItems
-    ["enemizer.boss_shuffle"]: types.BossShuffle
-    ["enemizer.enemy_damage"]: types.EnemyDamage
-    ["enemizer.enemy_health"]: types.EnemyHealth
-    ["enemizer.enemy_shuffle"]: types.EnemyShuffle
-    ["enemizer.pot_shuffle"]: types.OptionToggle
-    entry_crystals_ganon: types.CrystalRequirement
-    entry_crystals_tower: types.CrystalRequirement
-    goal: types.Goal
-    hints: types.OptionToggle
-    item_functionality: types.ItemFunctionality
-    item_placement: types.ItemPlacement
-    item_pool: types.ItemPool
-    keysanity?: boolean
-    logic: types.RomMode
-    mode: types.WorldState
-    pseudoboots: boolean
-    rom_mode: types.RomMode
-    shuffle?: types.EntranceShuffle
-    size: number
-    spoilers: types.SpoilerSetting
-    tournament: boolean
-    version?: string
-    weapons: types.Weapons
-    world_id: number
-    worlds: number
-};
-
 export type BasePayload = {
     accessibility: types.ItemAccessibility
     allow_quickswap?: boolean
@@ -129,10 +68,14 @@ export type RandomizerPayload = BasePayload & {
 
 export type CustomizerPayload = BasePayload & {
     custom: CustomOptions
-    drops: any
+    drops: PrizePackGroups
     eq: Array<types.Item>
-    l: any
-    texts?: any
+    l: {
+        [x: string]: string
+    }
+    texts?: {
+        [x: string]: string
+    }
 };
 
 export type CrystalPayloadData = {
@@ -252,7 +195,7 @@ export type SpoilerSpecialData = {
     ["Turtle Rock"]: types.Medalion
 };
 
-export type StartHashOverride = [number, number, number, number, number];
+export type StartHashOverride = [Hash, Hash, Hash, Hash, Hash];
 
 export type CustomizerPrizeOptions = {
     crossWorld: boolean
@@ -504,4 +447,97 @@ export type CustomizerJSONCustomSettings = {
     "rom.timerMode": types.ClockMode
     "rom.timerStart": string
     "spoil.BootsLocation": boolean
+};
+
+export type SpoilerAPIData = {
+    ["Agahnims Tower"]?: WorldRegion
+    Bosses?: BossLocations
+    ["Castle Tower"]?: WorldRegion
+    Caves?: WorldRegion
+    ["Dark Palace"]?: WorldRegion
+    ["Dark World"]?: WorldRegion
+    ["Death Mountain"]?: WorldRegion
+    ["Desert Palace"]?: WorldRegion
+    ["Eastern Palace"]?: WorldRegion
+    Entrances?: Array<Entrance>
+    ["Ganons Tower"]?: WorldRegion
+    ["Hyrule Castle"]?: WorldRegion
+    ["Ice Palace"]?: WorldRegion
+    ["Light World"]?: WorldRegion
+    ["Misery Mire"]?: WorldRegion
+    ["Palace of Darkness"]?: WorldRegion
+    Shops?: Array<ShopData>
+    ["Skull Woods"]?: WorldRegion
+    Special?: SpoilerSpecialData
+    ["Swamp Palace"]?: WorldRegion
+    ["Thieves Town"]?: WorldRegion
+    ["Tower of Hera"]?: WorldRegion
+    ["Tower Of Hera"]?: WorldRegion
+    ["Turtle Rock"]?: WorldRegion
+    meta: SeedMeta
+    paths?: EntrancePaths
+    playthrough?: Playthrough
+};
+
+export interface SeedMeta {
+    accessibility: types.ItemAccessibility
+    allow_quickswap: boolean
+    build: string
+    dungeon_items: types.DungeonItems
+    ["enemizer.boss_shuffle"]: types.BossShuffle
+    ["enemizer.enemy_damage"]: types.EnemyDamage
+    ["enemizer.enemy_health"]: types.EnemyHealth
+    ["enemizer.enemy_shuffle"]: types.EnemyShuffle
+    ["enemizer.pot_shuffle"]: types.OptionToggle
+    entry_crystals_ganon: types.CrystalRequirement
+    entry_crystals_tower: types.CrystalRequirement
+    goal: types.Goal
+    hints: types.OptionToggle
+    item_functionality: types.ItemFunctionality
+    item_placement: types.ItemPlacement
+    item_pool: types.ItemPool
+    logic: types.RomMode
+    mode: types.WorldState
+    pseudoboots: boolean
+    rom_mode: types.RomMode
+    size: number
+    spoilers: types.SpoilerSetting
+    tournament: boolean
+    weapons: types.Weapons
+    world_id: number
+    worlds: number
+};
+
+export interface EntranceSeedMeta extends SeedMeta {
+    keysanity: boolean
+    shuffle: types.EntranceShuffle
+    version: string
+};
+
+export interface CustomizerSeedMeta extends SeedMeta {
+    difficulty: string
+};
+
+export interface BaseSeedSpoiler {
+
+};
+
+export interface EntranceSpoiler extends BaseSeedSpoiler {
+    Entrances?: Array<Entrance>
+    "Light World"?: {
+        [x in types.EntranceLightWorldLocation]: string
+    }
+    "Dark World"?: {
+        [x in types.EntranceDarkWorldLocation]: string
+    }
+    Caves?: {
+        [x in types.EntranceUnderworldLocation]: string
+    }
+    "Hyrule Castle"?: {
+        [x in types.AggregateLocation<"Hyrule Castle", "Boomerang Chest" | "Map Chest" | "Zelda's Chest">]: string
+    } & {
+        [x in types.AggregateLocation<"Sewers", "Dark Cross" | types.AggregateLocation<"Secret Room", "Left" | "Middle" | "Right">>]: string
+    } & {
+        Sanctuary: string
+    }
 };

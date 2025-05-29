@@ -7,16 +7,18 @@ import {
     CustomizerSettings,
     Item,
     RupeeAmount,
-    StartingEquipment
+    StartingEquipment,
+    LocationMap,
+    TextMap
 } from "../../types/types";
-import { CustomizerSeedOptions } from "../../types/optionObjs";
+import { BaseSeedOptions, CustomizerSeedOptions } from "../../types/optionObjs";
 import BaseSeedBuilder from "./BaseSeedBuilder";
 import CustomSettingsBuilder from "./CustomSettingsBuilder";
 import * as flat from "flat";
 const { unflatten } = flat;
 
 export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSettings> {
-    static #websiteJSONMap: Array<[keyof CustomizerJSON, string]> = [
+    static #websiteJSONMap: [keyof CustomizerJSON, string][] = [
         ["randomizer.accessibility", "accessibility"],
         ["randomizer.boss_shuffle", "enemizer.boss_shuffle"],
         ["randomizer.dungeon_items", "dungeon_items"],
@@ -43,20 +45,46 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
     ];
 
     constructor(data?: CustomizerSeedOptions) {
-        if (typeof data !== "object" || data === null) {
-            super();
-        } else {
-            const unparsed: Array<keyof CustomizerSeedOptions> = ["custom", "drops", "eq", "l", "texts"];
-            const hold: { [x: string]: unknown } = {};
-            const copy: CustomizerSeedOptions = JSON.parse(JSON.stringify(data));
-            for (const key of unparsed) {
-                if (typeof copy[key] !== "undefined") {
-                    hold[key] = copy[key];
-                    delete copy[key];
-                }
-            }
-            super(copy);
+        function isCustomizer(obj: object): obj is CustomizerSeedOptions {
+            return "custom" in obj || "drops" in obj || "eq" in obj ||
+                "l" in obj || "texts" in obj;
         }
+
+        super();
+        // if (typeof data === "undefined") {
+        //     //super();
+        //     return;
+        // }
+
+        // const hold: { [x: string]: unknown } = {};
+        // const copy: CustomizerSeedOptions | BaseSeedOptions = JSON.parse(JSON.stringify(data ?? BaseSeedBuilder._default()));
+
+        // if (isCustomizer(copy)) {
+        //     const unparsed: (keyof CustomizerSeedOptions)[] = ["custom", "drops", "eq", "l", "texts"];
+        //     for (const key of unparsed) {
+        //         if (typeof copy[key] !== "undefined") {
+        //             hold[key] = copy[key];
+        //             delete copy[key];
+        //         }
+        //     }
+        // }
+
+        // super(copy as BaseSeedOptions);
+
+        // if (typeof data !== "object" || data === null) {
+        //     super();
+        // } else {
+        //     const unparsed: (keyof CustomizerSeedOptions)[] = ["custom", "drops", "eq", "l", "texts"];
+        //     const hold: { [x: string]: unknown } = {};
+        //     const copy: CustomizerSeedOptions = JSON.parse(JSON.stringify(data));
+        //     for (const key of unparsed) {
+        //         if (typeof copy[key] !== "undefined") {
+        //             hold[key] = copy[key];
+        //             delete copy[key];
+        //         }
+        //     }
+        //     super(copy);
+        // }
     }
 
     /**
@@ -70,14 +98,11 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
      * @returns The settings converted to a builder.
      */
     static fromCustomizerJSON(data: CustomizerJSON): CustomizerBuilder {
-        const nest = (obj: any, keys: Array<string>, value: unknown): void => {
+        const nest = (obj: any, keys: string[], value: unknown): void => {
             let temp = obj;
             for (let i = 0; i < keys.length; ++i) {
-                if (i === keys.length - 1) {
-                    temp[keys[i]] = value;
-                } else if (!(keys[i] in temp)) {
-                    temp[keys[i]] = {};
-                }
+                if (i === keys.length - 1) temp[keys[i]] = value;
+                else if (!(keys[i] in temp)) temp[keys[i]] = {};
                 temp = temp[keys[i]];
             }
         };
@@ -86,10 +111,10 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
 
         for (const [jsonKey, payloadKey] of this.#websiteJSONMap) {
             if (copy[jsonKey] !== null) {
-                const props: Array<string> = payloadKey.split(".");
+                const props = payloadKey.split(".");
                 if (props.length > 1) {
                     nest(converted, props, copy[jsonKey]);
-                } else { // Sigh...
+                } else {
                     converted[payloadKey as keyof CustomizerSeedOptions] = copy[jsonKey] as never;
                 }
             }
@@ -99,67 +124,41 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
             converted.custom[k as keyof AllowedGlitches] = v;
         }
 
-        const eq: Array<StartingEquipment> = [];
+        const eq: StartingEquipment[] = [];
         for (const [k, v] of Object.entries(copy["vt.custom.equipment"])) {
             if (k === "empty") {
                 continue;
-            } else if (typeof v === "boolean") {
-                if (v) {
-                    eq.push(k as StartingEquipment);
-                }
+            } else if (typeof v === "boolean" && v) {
+                eq.push(k as StartingEquipment);
             } else if (typeof v === "number") {
-                if (v <= 0) {
-                    continue;
-                }
-                switch (k as keyof CustomizerJSONEquipment) {
-                    case "ProgressiveArmor":
-                    case "ProgressiveSword":
-                    case "ProgressiveShield":
-                    case "ProgressiveGlove":
-                    case "BossHeartContainer":
-                        for (let i = 0; i < v; ++i) {
-                            eq.push(k as StartingEquipment);
-                        }
-                        break;
-                    case "ProgressiveBow":
-                        if (v === 1) {
-                            eq.push("SilverArrowUpgrade");
-                        } else for (let i = 0; i < v - 1; ++i) {
-                            eq.push(k as StartingEquipment);
-                        }
-                        break;
-                    case "Ocarina":
-                        if (v === 1) {
-                            eq.push("OcarinaInactive");
-                        } else {
-                            eq.push("OcarinaActive");
-                        }
-                        break;
-                    case "Boomerang":
-                        if (v !== 2) { // if 1 or 3
-                            eq.push("Boomerang");
-                        }
-                        if (v !== 1) { // if 2 or 3
-                            eq.push("RedBoomerang");
-                        }
-                        break;
-                    case "Bottle1":
-                    case "Bottle2":
-                    case "Bottle3":
-                    case "Bottle4":
-                        const bottleMap: Record<number, StartingEquipment> = {
-                            1: "Bottle",
-                            2: "BottleWithRedPotion",
-                            3: "BottleWithGreenPotion",
-                            4: "BottleWithBluePotion",
-                            5: "BottleWithBee",
-                            6: "BottleWithGoldBee",
-                            7: "BottleWithFairy",
-                        };
-                        if (v in bottleMap) {
-                            eq.push(bottleMap[v]);
-                        }
-                        break;
+                if (v <= 0) continue;
+
+                const eqK = k as keyof CustomizerJSONEquipment;
+                const isClonable = (s: string) => s.startsWith("Progressive") || s === "BossHeartContainer";
+
+                if (eqK === "ProgressiveBow") {
+                    if (v === 1) eq.push("SilverArrowUpgrade");
+                    else for (let i = 0; i < v - 1; ++i)
+                        eq.push(k as StartingEquipment);
+                } else if (isClonable(eqK)) {
+                    for (let i = 0; i < v; ++i)
+                        eq.push(k as StartingEquipment);
+                } else if (eqK === "Ocarina") {
+                    eq.push(v === 1 ? "OcarinaInactive" : "OcarinaActive");
+                } else if (eqK === "Boomerang") {
+                    if (v !== 2) eq.push("Boomerang"); // 1 or 3
+                    if (v !== 1) eq.push("RedBoomerang"); // 2 or 3
+                } else if (eqK.startsWith("Bottle")) {
+                    const bottleMap: Record<number, StartingEquipment> = {
+                        1: "Bottle",
+                        2: "BottleWithRedPotion",
+                        3: "BottleWithGreenPotion",
+                        4: "BottleWithBluePotion",
+                        5: "BottleWithBee",
+                        6: "BottleWithGoldBee",
+                        7: "BottleWithFairy",
+                    };
+                    if (v in bottleMap) eq.push(bottleMap[v]);
                 }
             } else if (typeof v === "string") { // k is "Rupees"
                 const rupeeMap: Record<number, RupeeAmount> = {
@@ -171,14 +170,13 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
                     1: "OneRupee",
                 };
 
-                let rupees: number = parseInt(v);
+                let rupees = parseInt(v);
                 for (const key of Object.keys(rupeeMap)) {
-                    const parsed: number = parseInt(key);
-                    const toAdd: number = Math.floor(rupees / parsed);
+                    const parsed = parseInt(key);
+                    const toAdd = Math.floor(rupees / parsed);
 
-                    for (let i = 0; i < toAdd; ++i) {
+                    for (let i = 0; i < toAdd; ++i)
                         eq.push(rupeeMap[parsed]);
-                    }
 
                     rupees %= parsed;
                 }
@@ -189,15 +187,15 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
         return new this(converted);
     }
 
-    get eq(): Array<Item> {
+    get eq(): Item[] {
         return Array.from<Item>(super._getProp("eq"));
     }
 
-    get locations(): { [x: string]: Item | undefined } {
+    get locations(): LocationMap {
         return super._getProp("l")
     }
 
-    get texts(): { [x: string]: string | undefined } {
+    get texts(): TextMap {
         return super._getProp("texts");
     }
 
@@ -209,29 +207,31 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
         return super._getProp("drops");
     }
 
-    setEq(eq: Array<Item>): this {
+    setEq(eq: Item[]): this {
         if (!Array.isArray(eq)) {
             throw new TypeError("eq must be an array.");
         }
         return super._setProp("eq", eq);
     }
 
-    addEq(eq: Array<Item>): this {
+    addEq(eq: Item[]): this {
         if (!Array.isArray(eq)) {
             throw new TypeError("eq must be an array.");
         }
-        (super._getProp("eq") as Array<Item>).push(...eq);
+        (super._getProp("eq") as Item[]).push(...eq);
         return this;
     }
 
-    setLocations(l: any): this {
+    setLocations(l: LocationMap): this {
         return super._setProp("l", l);
     }
 
-    setTexts(texts: object): this {
+    setTexts(texts: TextMap): this {
         return super._setProp("texts", texts);
     }
 
+    setCustom(custom: CustomSettingsBuilder): this;
+    setCustom(custom: ((builder: CustomSettingsBuilder) => CustomSettingsBuilder)): this;
     setCustom(custom: CustomSettingsBuilder | ((builder: CustomSettingsBuilder) => CustomSettingsBuilder)): this {
         let obj: { [x: string]: any };
         if (typeof custom === "function") {

@@ -149,3 +149,12 @@ export type CustomizerCustomOptions = {
     "rom.timerStart"?: string
     "spoil.BootsLocation"?: boolean
 };
+
+export type OverflowOptions = {
+    count: Partial<Record<types.Restrictable, number>>
+    replacement: Partial<Record<types.Restrictable, types.Item>>
+}
+
+export type ItemValueOptions = {
+
+}

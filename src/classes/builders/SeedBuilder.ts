@@ -1,5 +1,6 @@
-import BaseSeedBuilder, { BaseSeedOptions } from "./BaseSeedBuilder";
+import BaseSeedBuilder from "./BaseSeedBuilder";
 import { EntranceShuffle } from "../../types/types";
+import { BaseSeedOptions } from "../../types/optionObjs";
 
 export default class SeedBuilder extends BaseSeedBuilder<"entrances"> {
     constructor(data?: SeedOptions) {

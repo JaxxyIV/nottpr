@@ -1,4 +1,4 @@
-import fetch, { Response } from "node-fetch";
+import fetch from "node-fetch";
 import { SpriteAPIData } from "../../types/apiStructs";
 
 export default class Sprite {
@@ -6,8 +6,9 @@ export default class Sprite {
     #author: string;
     #version: number;
     #file: string;
-    #tags: Array<string>;
-    #usage: Array<string>;
+    #tags: string[];
+    #usage: string[];
+    #buffer?: Buffer;
 
     constructor(json: SpriteAPIData) {
         ({
@@ -36,11 +37,11 @@ export default class Sprite {
         return this.#file;
     }
 
-    get tags(): Array<string> {
+    get tags(): string[] {
         return Array.from(this.#tags);
     }
 
-    get usage(): Array<string> {
+    get usage(): string[] {
         return Array.from(this.#usage);
     }
 
@@ -54,8 +55,11 @@ export default class Sprite {
      * @returns The buffered data.
      */
     async fetch(): Promise<Buffer> {
-        const response: Response = await fetch(this.#file);
-        const arrayBuffer: ArrayBuffer = await response.arrayBuffer();
-        return Buffer.from(arrayBuffer);
+        if (!this.#buffer) {
+            this.#buffer = await fetch(this.#file)
+                .then(res => res.arrayBuffer())
+                .then(buffer => Buffer.from(buffer));
+        }
+        return this.#buffer;
     }
 }

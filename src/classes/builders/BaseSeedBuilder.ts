@@ -254,7 +254,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
 
     setName(name?: string): this {
         if (typeof name === "undefined") {
-            delete super._body.name;
+            delete this._body.name;
             return this;
         }
 
@@ -263,7 +263,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
 
     setNotes(notes?: string): this {
         if (typeof notes === "undefined") {
-            delete super._body.notes;
+            delete this._body.notes;
             return this;
         }
 
