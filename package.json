@@ -10,10 +10,14 @@
   },
   "keywords": [
     "alttpr",
+    "z3r",
+    "lttp",
+    "alttp",
     "zelda",
     "rando",
     "randomizer",
-    "snes"
+    "snes",
+    "nintendo"
   ],
   "author": {
     "name": "Jaxxy",
@@ -24,8 +28,9 @@
     "type": "git",
     "url": "https://github.com/JaxxyIV/nottpr"
   },
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
+    "@maseya/z3pr": "^1.0.1",
     "center-align": "^1.0.1",
     "flat": "^5.0.2",
     "node-fetch": "^3.3.2",
@@ -38,6 +43,6 @@
     "@types/node": "^20.5.9"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.16.0"
   }
 }

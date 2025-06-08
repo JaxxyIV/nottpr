@@ -40,6 +40,26 @@ export type GenerateSeedAPIData = SeedAPIData & {
     current_rom_hash: string
 };
 
+export type APIPreset = {
+    glitches_required: types.GlitchesRequired
+    item_placement: types.ItemPlacement
+    dungeon_items: types.DungeonItems
+    accessibility: types.ItemAccessibility
+    goal: types.Goal
+    tower_open: types.CrystalRequirement
+    ganon_open: types.CrystalRequirement
+    world_state: types.WorldState
+    entrance_shuffle: types.EntranceShuffle
+    boss_shuffle: types.BossShuffle
+    enemy_shuffle: types.EnemyShuffle
+    hints: types.OptionToggle
+    weapons: types.Weapons
+    item_pool: types.ItemPool
+    item_functionality: types.ItemFunctionality
+    enemy_damage: types.EnemyDamage
+    enemy_health: types.EnemyHealth
+};
+
 export type BasePayload = {
     accessibility: types.ItemAccessibility
     allow_quickswap?: boolean

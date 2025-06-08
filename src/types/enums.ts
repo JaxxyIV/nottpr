@@ -1013,3 +1013,30 @@ export enum TextDialogs {
     GanonSilvers = "ganon_phase_3_silvers",
     Murahdahla = "murahdahla",
 };
+
+export enum SpecialChars {
+    Cursor = "≥",
+    Self = "@",
+    Link = ">",
+    Bird = "%",
+    Ankh = "^",
+    Squigly = "=",
+    Heart1 = "¼",
+    Heart2 = "½",
+    Heart3 = "¾",
+    Heart4 = "♥",
+    Var1 = "ᚋ",
+    Var2 = "ᚌ",
+    Var3 = "ᚍ",
+    Var4 = "ᚎ",
+};
+
+export enum PaletteAlgorithm {
+    Maseya = "maseya",
+    Grayscale = "grayscale",
+    Blackout = "blackout",
+    Classic = "classic",
+    Dizzy = "dizzy",
+    Sick = "sick",
+    Puke = "puke",
+};

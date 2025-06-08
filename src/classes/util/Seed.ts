@@ -1,14 +1,26 @@
 import * as fs from "node:fs/promises";
 import { BpsPatch } from "rommage/BpsPatch";
-import * as structs from "../../types/apiStructs";
+import {
+    PaletteMode,
+    PaletteRandomizerOptions
+} from "@maseya/z3pr";
+import {
+    SpoilerAPIData,
+    PatchAPIData,
+    SeedAPIData,
+    GenerateSeedAPIData
+} from "../../types/apiStructs";
 import * as types from "../../types/types";
 import Patcher from "./Patcher";
 import Request from "./Request";
 import Sprite from "./Sprite";
 
+/**
+ * An instance of this class represents a seed generated on alttpr.com.
+ */
 export default class Seed {
     #logic: string;
-    #spoiler: structs.SpoilerAPIData;
+    #spoiler: SpoilerAPIData;
     #hash: string;
     #generated: string;
     #size: number;
@@ -30,7 +42,6 @@ export default class Seed {
 
     constructor(json: SeedData, sprites: Map<string, Sprite>) {
         this.#sprites = sprites;
-
         ({
             logic: this.#logic,
             spoiler: this.#spoiler,
@@ -99,29 +110,8 @@ export default class Seed {
      * Returns the start screen hash of this Seed as a string array.
      */
     get hashCode(): string[] {
-        const search = (a: number[], l: number, r: number, t: number): number => {
-            if (l >= r) return l;
-            const m = Math.floor((l + r) / 2);
-            return a[m] === t ? m
-                : a[m] > t ? search(a, l, m - 1, t)
-                    : search(a, m + 1, r, t);
-        };
-        let target = 1573397;
-        let hash = this.#patchMap.get(target);
-
-        if (!hash) { // Entrance rando
-            const offsets: number[] = [];
-            for (const [offset] of this.#patchMap)
-                offsets.push(offset);
-            offsets.sort();
-            let offInd = 0;
-            //const index = search(offsets, 0, offsets.length, target);
-            while (offsets[offInd] < target) ++offInd;
-            target = offsets[offInd - 1];
-            [, , ...hash] = this.#patchMap.get(target);
-        }
-
-        return hash.map(b => Seed.#hashStrings[b]);
+        return this.#seekInPatch(1573397, 5)
+            .map(b => Seed.#hashStrings[b]);
     }
 
     /**
@@ -142,7 +132,15 @@ export default class Seed {
      * be included?
      * @returns The formatted spoiler log as a buffer.
      */
-    writeSpoiler(showDrops = false): Buffer {
+    formatSpoiler(showDrops = false): Buffer {
+        // if "off" or "mystery", nothing special happens. Just return the
+        // spoiler as-is.
+        if (this.#spoiler.meta.spoilers === "off" ||
+            this.#spoiler.meta.spoilers === "mystery") {
+            return Buffer.from(JSON.stringify(this.#spoiler, undefined, 4),
+                "utf8");
+        }
+
         const dungeons = {
             "A1": "CastleTower",
             "A2": "GanonsTower",
@@ -157,19 +155,11 @@ export default class Seed {
             "D5": "IcePalace",
             "D6": "MiseryMire",
             "D7": "TurtleRock",
-        }
-
-        const spoiler: structs.SpoilerAPIData = JSON.parse(JSON.stringify(this.#spoiler));
-
-        // if "off" or "mystery", nothing special happens. Just return the
-        // spoiler as-is.
-        if (spoiler.meta.spoilers === "off" || spoiler.meta.spoilers === "mystery") {
-            return Buffer.from(JSON.stringify(spoiler, undefined, 4), "utf8");
-        }
+        };
 
         const log: { [x: string]: any } = {};
 
-        if ("shuffle" in spoiler.meta) {
+        if ("shuffle" in this.#spoiler.meta) { // Entrance rando
             log.Prizes = {
                 "Eastern Palace": undefined,
                 "Desert Palace": undefined,
@@ -182,29 +172,31 @@ export default class Seed {
                 "Misery Mire": undefined,
                 "Turtle Rock": undefined,
             };
-            log.Special = spoiler.Special;
-            log.Bosses = spoiler.Bosses;
-            log["Light World"] = spoiler["Light World"];
-            log["Dark World"] = spoiler["Dark World"];
-            log.Caves = spoiler.Caves;
-            log["Hyrule Castle"] = spoiler["Hyrule Castle"];
-            log["Eastern Palace"] = spoiler["Eastern Palace"];
-            log["Desert Palace"] = spoiler["Desert Palace"];
-            log["Tower of Hera"] = spoiler["Tower of Hera"];
-            log["Agahnims Tower"] = spoiler["Agahnims Tower"];
-            log["Palace of Darkness"] = spoiler["Palace of Darkness"];
-            log["Swamp Palace"] = spoiler["Swamp Palace"];
-            log["Skull Woods"] = spoiler["Skull Woods"];
-            log["Thieves Town"] = spoiler["Thieves Town"];
-            log["Ice Palace"] = spoiler["Ice Palace"];
-            log["Misery Mire"] = spoiler["Misery Mire"];
-            log["Turtle Rock"] = spoiler["Turtle Rock"];
-            log["Ganons Tower"] = spoiler["Ganons Tower"];
-            log.Entrances = spoiler.Entrances;
+            log.Special = this.#spoiler.Special;
+            log.Bosses = this.#spoiler.Bosses;
+            log["Light World"] = this.#spoiler["Light World"];
+            log["Dark World"] = this.#spoiler["Dark World"];
+            log.Caves = this.#spoiler.Caves;
+            log["Hyrule Castle"] = this.#spoiler["Hyrule Castle"];
+            log["Eastern Palace"] = this.#spoiler["Eastern Palace"];
+            log["Desert Palace"] = this.#spoiler["Desert Palace"];
+            log["Tower of Hera"] = this.#spoiler["Tower of Hera"];
+            log["Agahnims Tower"] = this.#spoiler["Agahnims Tower"];
+            log["Palace of Darkness"] = this.#spoiler["Palace of Darkness"];
+            log["Swamp Palace"] = this.#spoiler["Swamp Palace"];
+            log["Skull Woods"] = this.#spoiler["Skull Woods"];
+            log["Thieves Town"] = this.#spoiler["Thieves Town"];
+            log["Ice Palace"] = this.#spoiler["Ice Palace"];
+            log["Misery Mire"] = this.#spoiler["Misery Mire"];
+            log["Turtle Rock"] = this.#spoiler["Turtle Rock"];
+            log["Ganons Tower"] = this.#spoiler["Ganons Tower"];
+            log.Entrances = this.#spoiler.Entrances;
 
             for (const key in log.Prizes) {
-                const values = Object.values(spoiler[key as keyof structs.SpoilerAPIData]) as string[];
-                log.Prizes[key] = values.find(v => v.startsWith("Crystal") || v.endsWith("Pendant"));
+                const values: string[] =
+                    Object.values(this.#spoiler[key as keyof SpoilerAPIData]);
+                log.Prizes[key] = values.find(v => v.startsWith("Crystal") ||
+                    v.endsWith("Pendant"));
             }
         } else {
             log.Prizes = {
@@ -239,9 +231,12 @@ export default class Seed {
             log["Ganons Tower"] = {};
 
             for (const key of Object.keys(log)) {
-                if (!(key in spoiler)) continue;
+                if (!(key in this.#spoiler)) {
+                    continue;
+                }
 
-                const entries: [string, string][] = Object.entries(spoiler[key as keyof typeof spoiler]);
+                const entries: [string, string][] =
+                    Object.entries(this.#spoiler[key as keyof SpoilerAPIData]);
                 for (const [rawLoc, rawItem] of entries) {
                     const loc = rawLoc.replace(":1", "");
                     let item = rawItem.replace(":1", "");
@@ -256,34 +251,24 @@ export default class Seed {
             }
 
             for (const key of Object.keys(log.Prizes)) {
-                let actualKey: string;
-                // Have to deal with inconsistencies in how things are referred to in the log.
-                switch (key) {
-                    case "Dark Palace":
-                        actualKey = "Palace of Darkness";
-                        break;
-                    case "Thieves Town":
-                        actualKey = "Thieves' Town";
-                        break;
-                    case "Tower Of Hera":
-                        actualKey = "Tower of Hera";
-                        break;
-                    default:
-                        actualKey = key;
-                        break;
-                }
+                // Have to deal with inconsistencies in how things are referred
+                // to in the log.
+                const actualKey = key === "Dark Palace" ? "Palace of Darkness"
+                    : key === "Thieves Town" ? "Thieves' Town"
+                    : key === "Tower Of Hera" ? "Tower of Hera"
+                    : key;
 
                 log.Prizes[key] = log[key][`${actualKey} - Prize`];
             }
         }
 
-        [log.Special["Dig Game"]] = this.#patchMap.get(982421);
+        [log.Special["Dig Game"]] = this.#seekInPatch(982421);
 
         if (showDrops) {
             log.Special.Drops = this.#readDrops();
         }
 
-        log.meta = spoiler.meta;
+        log.meta = this.#spoiler.meta;
         log.meta.hash = this.#hash;
         log.meta.permalink = this.permalink;
 
@@ -296,7 +281,9 @@ export default class Seed {
      *
      * **Notes:**
      * * The value for `options.sprite` can be passed as a string, Sprite object,
-     * or buffer
+     * or Buffer object.
+     * * `options.menuSpeed` will be forced to `"normal"` if the seed is a race
+     * seed.
      *
      * @param base The path to the base ROM.
      * @param options The post-generation options.
@@ -307,6 +294,7 @@ export default class Seed {
         heartColor: "red",
         menuSpeed: "normal",
         quickswap: true,
+        paletteShuffle: false,
         backgroundMusic: true,
         msu1Resume: true,
         sprite: "Link",
@@ -333,13 +321,22 @@ export default class Seed {
         const bpsPatch = new BpsPatch(basePatch);
         const patched = bpsPatch.applyTo(romBuffer);
 
+        // Apparently, trying to write a different menu speed for a tournament
+        // seed doesn't modify the menu speed (which is the intended behavior).
+        // However, it DOES (for some reason) modify the menu's sound effect.
+        // This would obviously not be 1:1 with alttpr.com, so we have to add a
+        // proper sanity check here for race seeds.
+        const actSpeed = this.#spoiler.meta.tournament ? "normal"
+            : (options.menuSpeed ?? "normal");
+
         // Then the seed-specific stuff is applied.
         return new Patcher(patched)
             .setSeedPatches(this.#patchMap)
+            .setPaletteShuffle(options.paletteShuffle ?? false)
             .setBackgroundMusic(options.backgroundMusic ?? true)
             .setHeartColor(options.heartColor ?? "red")
             .setHeartSpeed(options.heartSpeed ?? "normal")
-            .setMenuSpeed(options.menuSpeed ?? "normal")
+            .setMenuSpeed(actSpeed)
             .setMsu1Resume(options.msu1Resume ?? true)
             .setQuickswap(options.quickswap ?? true)
             .setReduceFlashing(options.reduceFlash ?? false)
@@ -356,7 +353,7 @@ export default class Seed {
 
             const response: ArrayBuffer =
                 await new Request(`/bps/${this.#current_rom_hash}.bps`)
-                .get("buffer");
+                    .get("buffer");
             const buffer = Buffer.from(response);
             this.#basePatch = buffer;
         }
@@ -392,27 +389,27 @@ export default class Seed {
         };
 
         // Tree Pulls
-        const treePulls = this.#patchMap.get(offsets.treePull);
+        const treePulls = this.#seekInPatch(offsets.treePull, 3);
         for (let i = 1; i <= treePulls.length; ++i) {
             const byte = treePulls[i - 1];
             drops.Tree[i as keyof PullTiers] = getDropSprite(byte);
         }
 
         // Stun
-        drops.Stun = getDropSprite(this.#patchMap.get(offsets.stun)[0]);
+        drops.Stun = getDropSprite(this.#seekInPatch(offsets.stun, 1)[0]);
 
         // Fish
-        drops.Fish = getDropSprite(this.#patchMap.get(offsets.fish)[0]);
+        drops.Fish = getDropSprite(this.#seekInPatch(offsets.fish, 1)[0]);
 
         // Crab
-        drops.Crab.Main = getDropSprite(this.#patchMap.get(offsets.crabMain)[0]);
-        drops.Crab.Last = getDropSprite(this.#patchMap.get(offsets.crabLast)[0]);
+        drops.Crab.Main = getDropSprite(this.#seekInPatch(offsets.crabMain, 1)[0]);
+        drops.Crab.Last = getDropSprite(this.#seekInPatch(offsets.crabLast, 1)[0]);
 
         // Enemy Packs
-        const packs: number[][] = [[], [], [], [], [], [], []];
+        const packs: number[][] = [[], [], [], [], [], [], [],];
         const rowLimit = 8;
 
-        const prizePackDrops = this.#patchMap.get(offsets.prizePacks);
+        const prizePackDrops = this.#seekInPatch(offsets.prizePacks);
         for (let i = 0; i < prizePackDrops.length; ++i) {
             packs[Math.floor(i / rowLimit)].push(prizePackDrops[i]);
         }
@@ -462,51 +459,84 @@ export default class Seed {
     }
 
     async #setRomHash(): Promise<void> {
-        const response: structs.PatchAPIData = await new Request(`/api/h/${this.#hash}`).get("json");
+        const response: PatchAPIData =
+            await new Request(`/api/h/${this.#hash}`).get("json");
         ({ md5: this.#current_rom_hash } = response);
     }
 
-    #seekInPatch(offset: number, byteCount: number): number[] {
+    /**
+     * Searches the patch data for the given byte offset. If the offset does
+     * not exist in the map, the requested data at the next closest offset is
+     * returned.
+     *
+     * @param offset The byte offset to search for.
+     * @param byteCount The number of bytes to retrieve at the offset.
+     * @returns The byte data at the given offset.
+     */
+    #seekInPatch(offset: number, byteCount?: number): number[] {
         if (this.#patchMap.has(offset)) {
-            return this.#patchMap.get(offset).slice(0, byteCount);
+            return typeof byteCount === "number"
+                ? this.#patchMap.get(offset).slice(0, byteCount)
+                : this.#patchMap.get(offset);
         }
-        const offsets: number[] = [];
-        for (const [key] of this.#patchMap)
-            offsets.push(key);
-        offsets.sort();
 
-        let closest: number;
-        if (offset < offsets[0]) {
-            closest = offsets[0];
-        } else if (offset > offsets[offsets.length - 1]) {
-            closest = offsets[offsets.length - 1];
-        } else {
-            let left = 0;
-            let right = offsets.length - 1;
-            while (left <= right) {
-                const cen = Math.floor((left + right) / 2);
-                if (offsets[cen] > offset)
-                    right = cen - 1;
-                else
-                    left = cen + 1;
-            }
-            closest = offsets[left] - offset < offset - offsets[right]
-                ? offsets[left] : offsets[right];
+        // If the offset does not exist here, then we know we are dealing with
+        // an entrance seed. (The patch data is minified.)
+
+        const offsets: number[] = [];
+        for (const [key] of this.#patchMap) {
+            offsets.push(key);
         }
-        return this.#patchMap.get(closest).slice(0, byteCount);
+        offsets.sort((a, b) => a - b);
+
+        // If the requested byte is (somehow) out of range of even the highest
+        // or lowest offset, we're just not going to even bother continuing the
+        // search at this point.
+        if (offset < offsets[0] || offset > offsets[offsets.length - 1]) {
+            throw new RangeError(`Offset ${offset} is out of range.`);
+        }
+
+        // Binary search for the closest result. The element with the least
+        // difference compared to the target is the one we're going with.
+        const closest = Seed.#binarySearch(offsets, offset);
+        const data = this.#patchMap.get(offsets[closest]);
+        const i = offset - offsets[closest];
+
+        return typeof byteCount === "number"
+            ? data.slice(i, i + byteCount)
+            : data.slice(i);
+    }
+
+    static #binarySearch(array: number[], target: number, low: number = 0,
+        high: number = array.length - 1): number {
+        if (low > high) {
+            // Return whichever result is closest to the target.
+            return array[low] - target < target - array[high] ? low : high;
+        }
+
+        const middle = Math.floor((low + high) / 2);
+
+        if (array[middle] === target) {
+            return middle;
+        } else if (array[middle] > target) {
+            return this.#binarySearch(array, target, low, middle - 1);
+        } else { // array[middle] < target
+            return this.#binarySearch(array, target, middle + 1, high);
+        }
     }
 }
 
-type SeedData = structs.SeedAPIData | structs.GenerateSeedAPIData;
+type SeedData = SeedAPIData | GenerateSeedAPIData;
 type PostGenOptions = Partial<{
-    heartSpeed: types.HeartSpeed
-    heartColor: types.HeartColor
-    menuSpeed: types.MenuSpeed
-    quickswap: boolean
-    backgroundMusic: boolean
-    msu1Resume: boolean
-    sprite: string | Sprite | Buffer
-    reduceFlash: boolean
+    heartSpeed: types.HeartSpeed,
+    heartColor: types.HeartColor,
+    menuSpeed: types.MenuSpeed,
+    quickswap: boolean,
+    paletteShuffle: PaletteRandomizerOptions<number> | boolean | PaletteMode,
+    backgroundMusic: boolean,
+    msu1Resume: boolean,
+    sprite: string | Sprite | Buffer,
+    reduceFlash: boolean,
 }>;
 type DropsSpoilerData = {
     Tree?: PullTiers
@@ -524,7 +554,4 @@ type PullTiers = {
     1?: types.Droppable
     2?: types.Droppable
     3?: types.Droppable
-};
-interface SpoilerWithDrops extends structs.SpoilerAPIData {
-    Drops: DropsSpoilerData
 };

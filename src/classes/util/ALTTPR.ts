@@ -33,15 +33,6 @@ export default class ALTTPR {
         throw new Error("You cannot instantiate this class.");
     }
 
-    // Properly initialize the sprite cache.
-    // static {
-    //     (new Request("/sprites").get("json") as Promise<SpriteAPIData[]>)
-    //         .then(res => res.forEach(element => {
-    //             const sprite = new Sprite(element);
-    //             this.#sprites.set(sprite.name, sprite);
-    //         }));
-    // }
-
     /**
      * Returns a Map of cached Seed objects. You can retrieve cached Seeds by
      * specifying their hash.

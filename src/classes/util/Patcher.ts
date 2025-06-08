@@ -1,5 +1,10 @@
 import center from "center-align";
-import { HeartColor, HeartSpeed, MenuSpeed } from "../../types/types";
+import * as z3pr from "@maseya/z3pr";
+import {
+    HeartColor,
+    HeartSpeed,
+    MenuSpeed
+} from "../../types/types";
 
 export default class Patcher {
     // Symbolic Records
@@ -125,6 +130,28 @@ export default class Patcher {
         return this;
     }
 
+    setPaletteShuffle(mode: z3pr.PaletteRandomizerOptions<number> | boolean | z3pr.PaletteMode): this {
+        if (typeof mode === "boolean" && mode) {
+            z3pr.randomize(this.#buffer, {
+                mode: "maseya",
+                randomize_overworld: true,
+                randomize_dungeon: true,
+                seed: Math.round(Math.random() * 4294967295),
+            });
+        } else if (typeof mode === "string" && mode !== "none") {
+            z3pr.randomize(this.#buffer, {
+                mode: mode,
+                randomize_overworld: true,
+                randomize_dungeon: true,
+                seed: Math.round(Math.random() * 4294967295),
+            });
+        } else if (typeof mode === "object") {
+            z3pr.randomize(this.#buffer, mode);
+        }
+
+        return this;
+    }
+
     resize(size: number): void {
         const newSize = size * (1024 ** 2);
         const resizeSize = Math.min(newSize, this.#buffer.buffer.byteLength);
@@ -174,7 +201,9 @@ export default class Patcher {
         let junk = 2;
 
         while (metaIndex < gfxOffset && junk > 0) {
-            if (!data[metaIndex + 1] && !data[metaIndex]) --junk;
+            if (!data[metaIndex + 1] && !data[metaIndex]) {
+                --junk;
+            }
             metaIndex += 2;
         }
 

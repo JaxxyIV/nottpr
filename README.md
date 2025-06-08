@@ -13,8 +13,8 @@ This module is based on v31 of the randomizer. If a major change to the
 randomizer causes something in this module to break, please open a new GitHub
 issue.
 
-Note: nottpr is **not** approved for use in official races at this time. This
-may be subject to change in the future.
+Note: nottpr's ROM patching is **not** approved for use in official races at
+this time. This may be subject to change in the future.
 
 ## Special Thanks
 
@@ -22,20 +22,20 @@ may be subject to change in the future.
   for ALTTPR written in Python. You should check it out at
   https://github.com/tcprescott/pyz3r.
 - Veetorp: Much of the code in nottpr for patching randomizer ROMs was
-  originally done by him, in addition to also being the main driving force
-  behind ALTTPR and its development today.
+  originally done by him in addition to also being the main driving force behind
+  ALTTPR and its development today.
 - clearmouse: Credit for prize packs/drops code in spoiler log.
 
 ## Installation
 
-nottpr is compatible with Node.js v16.0.0 and newer. nottpr has not been tested
+nottpr is compatible with Node.js v22.0.0 and newer. nottpr has not been tested
 in Deno or Bun.
 
 After setting up your Node environment, you can install this module with the
 command `npm install nottpr`.
 
-nottpr is an ES module and can only be imported via ES import syntax. Using
-CommonJS require is not allowed.
+nottpr is an ES module and can only be imported via ES import syntax. You cannot
+import nottpr with require.
 
 ```js
 /* OK! */
@@ -218,6 +218,7 @@ const patched = await seed.patchROM(pathToJp10Rom, {
     heartColor: HeartColor.Green,
     menuSpeed: MenuSpeed.Normal,
     quickswap: true,
+    paletteShuffle: true,
     backgroundMusic: true,
     msu1resume: true,
     sprite: darkBoy,
