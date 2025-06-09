@@ -1,10 +1,10 @@
-import { StartHashOverride } from "./types/apiStructs";
+import { StartHashOverride } from "./types/structures";
 import { Hash } from "./types/enums";
 
 /**
- * Utility function that generates a pseudorandom start screen hash.
+ * Utility function that generates a pseudorandom start screen hash. Useful for
+ * applying the same start screen hash to multiple seeds.
  *
- * Useful for applying the same start screen hash to multiple seeds.
  * @returns The generated hash.
  */
 export function randomStartHash(): StartHashOverride {

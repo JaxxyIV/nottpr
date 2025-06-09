@@ -1,4 +1,4 @@
-import { ItemLocations, PrizeLocations, MedallionLocations, BottleLocations, TextDialogs } from "./enums";
+import { ItemLocation, PrizeLocation, MedallionLocation, BottleLocation, TextDialog } from "./enums";
 
 export type GlitchesRequired = "none" | "overworld_glitches" | "hybrid_major_glitches" | "major_glitches" | "no_logic";
 export type ItemPlacement = "basic" | "advanced";
@@ -41,12 +41,12 @@ export type PrizePackName = NumberString<0 | 1 | 2 | 3 | 4 | 5 | 6> | "pull" | "
 export type Boss = "Armos Knights" | "Lanmolas" | "Moldorm" | "Aganihm" | "Helmasaur King" | "Arrghus" | "Mothula" | "Blind" | "Kholdstare" | "Vitreous" | "Trinexx" | "Agahnim 2" | "Ganon";
 export type RomMode = "NoGlitches" | "OverworldGlitches" | "MajorGlitches" | "NoLogic";
 export type EntranceDirection = "entrance" | "exit" | "both";
-export type Medalion = "Bombos" | "Ether" | "Quake";
+export type Medallion = "Bombos" | "Ether" | "Quake";
 export type DungeonSuffix = "A1" | "A2" | "D1" | "D2" | "D3" | "D4" | "D5" | "D6" | "D7" | "H2" | "P1" | "P2" | "P3";
 
 export type Bottle = "Bottle" | "BottleWithBee" | "BottleWithBluePotion" | "BottleWithFairy" | "BottleWithGoldBee" | "BottleWithGreenPotion" | "BottleWithRandom" | "BottleWithRedPotion";
 export type CapacityUpgrade = "ArrowUpgrade10" | "ArrowUpgrade5" | "BombUpgrade10" | "BombUpgrade5";
-export type Subweapon = Medalion | "BookOfMudora" | "Boomerang" | "Bow" | "BowAndArrows" | "BowAndSilverArrows" | "BugCatchingNet" | "CaneOfByrna" | "CaneOfSomaria" | "Cape" | "FireRod" | "Hammer" | "Hookshot" | "IceRod" | "Lamp" | "MagicMirror" | "Mushroom" | "OcarinaActive" | "OcarinaInactive" | "Powder" | "RedBoomerang" | "Shovel";
+export type Subweapon = Medallion | "BookOfMudora" | "Boomerang" | "Bow" | "BowAndArrows" | "BowAndSilverArrows" | "BugCatchingNet" | "CaneOfByrna" | "CaneOfSomaria" | "Cape" | "FireRod" | "Hammer" | "Hookshot" | "IceRod" | "Lamp" | "MagicMirror" | "Mushroom" | "OcarinaActive" | "OcarinaInactive" | "Powder" | "RedBoomerang" | "Shovel";
 export type Equipment = "BlueMail" | "BlueShield" | "BossHeartContainer" | "Flippers" | "HalfMagic" | "HeartContainer" | "L1Sword" | "L1SwordAndShield" | "L3Sword" | "L4Sword" | "MasterSword" | "MirrorShield" | "MoonPearl" | "PegasusBoots" | "PieceOfHeart" | "PowerGlove" | "ProgressiveArmor" | "ProgressiveBow" | "ProgressiveGlove" | "ProgressiveShield" | "ProgressiveSword" | "QuarterMagic" | "RedMail" | "RedShield" | "SilverArrowUpgrade" | "TitansMitt";
 export type Clock = "BlueClock" | "GreenClock" | "RedClock";
 
@@ -91,18 +91,11 @@ type NumberString<N extends number> = `${N}`;
 
 export type CustomizerDrop = Droppable | "auto_fill";
 
-export type Locations = ItemLocations | PrizeLocations | MedallionLocations | BottleLocations;
-export type ValidItemOptions<T extends ItemLocations | PrizeLocations | MedallionLocations | BottleLocations> = T extends ItemLocations ? Item
-    : T extends PrizeLocations ? DungeonPrize
-    : T extends MedallionLocations ? Medalion
+export type Locations = ItemLocation | PrizeLocation | MedallionLocation | BottleLocation;
+export type ValidItemOptions<T extends ItemLocation | PrizeLocation | MedallionLocation | BottleLocation> = T extends ItemLocation ? Item
+    : T extends PrizeLocation ? DungeonPrize
+    : T extends MedallionLocation ? Medallion
     : Bottle;
-
-export type LocationMap = Partial<Record<ItemLocations, Item> &
-    Record<PrizeLocations, DungeonPrize> &
-    Record<MedallionLocations, Medalion> &
-    Record<BottleLocations, Bottle>>;
-
-export type TextMap = Partial<Record<TextDialogs, string>>;
 
 export type TextSpeed = 0 | 1 | 2 | 6;
 export type TextPause = 1 | 3 | 5 | 7 | 9;

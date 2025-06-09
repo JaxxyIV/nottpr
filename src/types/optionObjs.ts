@@ -1,92 +1,92 @@
-import * as types from "./types";
-import * as structs from "./apiStructs";
+import * as strings from "./strings";
+import * as structs from "./structures";
 
 export type BaseSeedOptions = {
-    accessibility?: types.ItemAccessibility
+    accessibility?: strings.ItemAccessibility
     allow_quickswap?: boolean
     crystals?: CrystalOptions
-    dungeon_items?: types.DungeonItems
+    dungeon_items?: strings.DungeonItems
     enemizer?: EnemizerOptions
-    glitches?: types.GlitchesRequired
-    goal?: types.Goal
-    hints?: types.OptionToggle
+    glitches?: strings.GlitchesRequired
+    goal?: strings.Goal
+    hints?: strings.OptionToggle
     item?: ItemOptions
-    item_placement?: types.ItemPlacement
-    lang?: types.Lang
-    mode?: types.WorldState
+    item_placement?: strings.ItemPlacement
+    lang?: strings.Lang
+    mode?: strings.WorldState
     name?: string
     notes?: string
     override_start_screen?: structs.StartHashOverride
     pseudoboots?: boolean
-    spoilers?: types.SpoilerSetting
+    spoilers?: strings.SpoilerSetting
     tournament?: boolean
-    weapons?: types.Weapons
+    weapons?: strings.Weapons
 };
 
 export type CrystalOptions = {
-    ganon?: types.CrystalRequirement
-    tower?: types.CrystalRequirement
+    ganon?: strings.CrystalRequirement
+    tower?: strings.CrystalRequirement
 };
 
 export type EnemizerOptions = {
-    boss_shuffle?: types.BossShuffle
-    enemy_damage?: types.EnemyDamage
-    enemy_health?: types.EnemyHealth
-    enemy_shuffle?: types.EnemyShuffle
-    pot_shuffle?: types.OptionToggle
+    boss_shuffle?: strings.BossShuffle
+    enemy_damage?: strings.EnemyDamage
+    enemy_health?: strings.EnemyHealth
+    enemy_shuffle?: strings.EnemyShuffle
+    pot_shuffle?: strings.OptionToggle
 };
 
 export type ItemOptions = {
-    functionality?: types.ItemFunctionality
-    pool?: types.ItemPool
+    functionality?: strings.ItemFunctionality
+    pool?: strings.ItemPool
 };
 
 export type CustomizerSeedOptions = BaseSeedOptions & {
     custom?: CustomizerCustomOptions
     drops?: {
         0?: [
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop
         ]
         1?: [
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop
         ]
         2?: [
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop
         ]
         3?: [
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop
         ]
         4?: [
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop
         ]
         5?: [
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop
         ]
         6?: [
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-            types.CustomizerDrop, types.CustomizerDrop
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop,
+            strings.CustomizerDrop, strings.CustomizerDrop
         ]
-        pull?: [types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop]
-        crab?: [types.CustomizerDrop, types.CustomizerDrop]
-        stun?: [types.CustomizerDrop]
-        fish?: [types.CustomizerDrop]
+        pull?: [strings.CustomizerDrop, strings.CustomizerDrop, strings.CustomizerDrop]
+        crab?: [strings.CustomizerDrop, strings.CustomizerDrop]
+        stun?: [strings.CustomizerDrop]
+        fish?: [strings.CustomizerDrop]
     }
-    eq?: Array<types.StartingEquipment>
+    eq?: Array<strings.StartingEquipment>
     l?: {
-        [x: string]: types.SpoilerItemString<types.Item> | undefined
+        [x: string]: strings.SpoilerItemString<strings.Item> | undefined
     }
     texts?: {
         [x: string]: string | undefined
@@ -139,20 +139,20 @@ export type CustomizerCustomOptions = {
     "region.wildCompasses"?: boolean
     "region.wildKeys"?: boolean
     "region.wildMaps"?: boolean
-    "rom.dungeonCount"?: types.CompassMode
+    "rom.dungeonCount"?: strings.CompassMode
     "rom.freeItemText"?: boolean
     "rom.genericKeys"?: boolean
-    "rom.logicMode"?: types.RomMode
+    "rom.logicMode"?: strings.RomMode
     "rom.mapOnPickup"?: boolean
     "rom.rupeeBow"?: boolean
-    "rom.timerMode"?: types.ClockMode
+    "rom.timerMode"?: strings.ClockMode
     "rom.timerStart"?: string
     "spoil.BootsLocation"?: boolean
 };
 
 export type OverflowOptions = {
-    count: Partial<Record<types.Restrictable, number>>
-    replacement: Partial<Record<types.Restrictable, types.Item>>
+    count: Partial<Record<strings.Restrictable, number>>
+    replacement: Partial<Record<strings.Restrictable, strings.Item>>
 }
 
 export type ItemValueOptions = {

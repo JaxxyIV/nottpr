@@ -1,7 +1,7 @@
 import * as flat from "flat";
-import { CustomSettings } from "../../types/types";
+import { CustomSettings } from "../../types/strings";
 import BaseBuilder from "./BaseBuilder";
-import { AllowedGlitches, CustomDropCounts, CustomOptions } from "../../types/apiStructs";
+import { AllowedGlitches, CustomDropCounts, CustomOptions } from "../../types/structures";
 import RegionSettingsBuilder from "./RegionSettingsBuilder";
 const { unflatten } = flat;
 

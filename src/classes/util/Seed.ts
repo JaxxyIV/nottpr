@@ -9,8 +9,8 @@ import {
     PatchAPIData,
     SeedAPIData,
     GenerateSeedAPIData
-} from "../../types/apiStructs";
-import * as types from "../../types/types";
+} from "../../types/structures";
+import * as strings from "../../types/strings";
 import Patcher from "./Patcher";
 import Request from "./Request";
 import Sprite from "./Sprite";
@@ -370,7 +370,7 @@ export default class Seed {
             fish: 950988,
             prizePacks: 227960,
         };
-        const vanillaPacks: Record<types.EnemyPacks, number[]> = {
+        const vanillaPacks: Record<strings.EnemyPacks, number[]> = {
             Heart: [216, 216, 216, 216, 217, 216, 216, 217],
             Rupee: [218, 217, 218, 219, 218, 217, 218, 218],
             Magic: [224, 223, 223, 218, 224, 223, 216, 223],
@@ -415,13 +415,13 @@ export default class Seed {
         }
 
         for (let i = 0; i < packs.length; ++i) {
-            const key = Object.keys(vanillaPacks)[i] as types.EnemyPacks;
+            const key = Object.keys(vanillaPacks)[i] as strings.EnemyPacks;
             drops.Packs[key] = getPrizePackName(packs[i]);
         }
 
         return drops;
 
-        function getDropSprite(byte: number): types.Droppable {
+        function getDropSprite(byte: number): strings.Droppable {
             switch (byte) {
                 case 121: return "Bee";
                 case 178: return "BeeGood";
@@ -441,7 +441,7 @@ export default class Seed {
             }
         }
 
-        function getPrizePackName(pack: number[]): types.EnemyPacks | string {
+        function getPrizePackName(pack: number[]): strings.EnemyPacks | string {
             // If the array contains one of these two bytes, we can safely assume
             // that the pack is not vanilla.
             if (pack.some(b => b === 121 || b === 178)) {
@@ -528,9 +528,9 @@ export default class Seed {
 
 type SeedData = SeedAPIData | GenerateSeedAPIData;
 type PostGenOptions = Partial<{
-    heartSpeed: types.HeartSpeed,
-    heartColor: types.HeartColor,
-    menuSpeed: types.MenuSpeed,
+    heartSpeed: strings.HeartSpeed,
+    heartColor: strings.HeartColor,
+    menuSpeed: strings.MenuSpeed,
     quickswap: boolean,
     paletteShuffle: PaletteRandomizerOptions<number> | boolean | PaletteMode,
     backgroundMusic: boolean,
@@ -541,17 +541,17 @@ type PostGenOptions = Partial<{
 type DropsSpoilerData = {
     Tree?: PullTiers
     Crab?: {
-        Main?: types.Droppable
-        Last?: types.Droppable
+        Main?: strings.Droppable
+        Last?: strings.Droppable
     }
-    Stun?: types.Droppable
-    Fish?: types.Droppable
+    Stun?: strings.Droppable
+    Fish?: strings.Droppable
     Packs?: {
-        [x in types.EnemyPacks]?: types.EnemyPacks | string
+        [x in strings.EnemyPacks]?: strings.EnemyPacks | string
     }
 };
 type PullTiers = {
-    1?: types.Droppable
-    2?: types.Droppable
-    3?: types.Droppable
+    1?: strings.Droppable
+    2?: strings.Droppable
+    3?: strings.Droppable
 };

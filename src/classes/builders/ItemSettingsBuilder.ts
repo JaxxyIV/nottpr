@@ -1,4 +1,4 @@
-import { CustomizerItemOptions } from "../../types/apiStructs";
+import { CustomizerItemOptions } from "../../types/structures";
 import BaseBuilder from "./BaseBuilder";
 import { OverflowOptions } from "../../types/optionObjs";
 

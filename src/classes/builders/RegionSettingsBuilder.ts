@@ -1,5 +1,5 @@
-import { CustomizerRegionOptions } from "../../types/apiStructs";
-import { RegionSettings } from "../../types/types";
+import { CustomizerRegionOptions } from "../../types/structures";
+import { RegionSettings } from "../../types/strings";
 import BaseBuilder from "./BaseBuilder";
 
 export default class RegionSettingsBuilder extends BaseBuilder<keyof CustomizerRegionOptions, boolean> {

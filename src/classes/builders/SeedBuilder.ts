@@ -1,8 +1,8 @@
 import BaseSeedBuilder from "./BaseSeedBuilder";
-import { EntranceShuffle } from "../../types/types";
+import { EntranceShuffle } from "../../types/strings";
 import { BaseSeedOptions } from "../../types/optionObjs";
 import Request from "../util/Request";
-import { APIPreset } from "../../types/apiStructs";
+import { APIPreset } from "../../types/structures";
 
 /**
  * An instance of this class represents a payload object to be supplied to

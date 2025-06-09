@@ -2,15 +2,15 @@ import {
     AllowedGlitches,
     CustomizerJSON,
     CustomizerJSONEquipment,
-} from "../../types/apiStructs";
+    LocationMap,
+    TextMap,
+} from "../../types/structures";
 import {
     CustomizerSettings,
     Item,
     RupeeAmount,
     StartingEquipment,
-    LocationMap,
-    TextMap
-} from "../../types/types";
+} from "../../types/strings";
 import { BaseSeedOptions, CustomizerSeedOptions } from "../../types/optionObjs";
 import BaseSeedBuilder from "./BaseSeedBuilder";
 import CustomSettingsBuilder from "./CustomSettingsBuilder";
@@ -207,18 +207,29 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
         return super._getProp("drops");
     }
 
-    setEq(eq: Item[]): this {
-        if (!Array.isArray(eq)) {
+    /**
+     * Overwrites the current starting equipment with the provided array.
+     *
+     * **NOTE:** Using this method will also overwrite the starting heart
+     * containers unless they are also specified in the array being passed.
+     * If you do not intend to overwrite these items, use the `addEquipment`
+     * method instead.
+     *
+     * @param equipment
+     * @returns
+     */
+    setEquipment(equipment: Item[]): this {
+        if (!Array.isArray(equipment)) {
             throw new TypeError("eq must be an array.");
         }
-        return super._setProp("eq", eq);
+        return super._setProp("eq", equipment);
     }
 
-    addEq(eq: Item[]): this {
-        if (!Array.isArray(eq)) {
+    addEquipment(equipment: Item[]): this {
+        if (!Array.isArray(equipment)) {
             throw new TypeError("eq must be an array.");
         }
-        (super._getProp("eq") as Item[]).push(...eq);
+        (super._getProp("eq") as Item[]).push(...equipment);
         return this;
     }
 

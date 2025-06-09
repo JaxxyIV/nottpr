@@ -4,7 +4,7 @@ import {
     HeartColor,
     HeartSpeed,
     MenuSpeed
-} from "../../types/types";
+} from "../../types/strings";
 
 export default class Patcher {
     // Symbolic Records

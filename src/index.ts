@@ -12,5 +12,5 @@ export {
     EnemyHealth, EnemyShuffle, Entrances, Glitches,
     Goals, Hash, HeartColor, HeartSpeed, ItemFunctionality,
     ItemPlacement, ItemPool, Keysanity, Language, MenuSpeed,
-    Spoilers, Toggle, Weapons, WorldState, TextDialogs as Texts
+    Spoilers, Toggle, Weapons, WorldState, TextDialog, PaletteAlgorithm
 } from "./types/enums";

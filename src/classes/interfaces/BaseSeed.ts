@@ -3,7 +3,7 @@ import {
     EnemizerPayloadData,
     ItemPayloadData,
     StartHashOverride
-} from "../../types/apiStructs";
+} from "../../types/structures";
 import {
     DungeonItems,
     GlitchesRequired,
@@ -15,7 +15,7 @@ import {
     SpoilerSetting,
     Weapons,
     WorldState
-} from "../../types/types";
+} from "../../types/strings";
 
 export default interface BaseSeed {
     get accessibility(): ItemAccessibility;

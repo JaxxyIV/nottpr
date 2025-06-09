@@ -1,7 +1,7 @@
 import {
     TextPause,
     TextSpeed
-} from "../../types/types";
+} from "../../types/strings";
 
 /**
  * An instance of this class represents a formatted text string designed to be

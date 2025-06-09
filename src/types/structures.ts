@@ -1,5 +1,18 @@
-import * as types from "./types";
-import { Hash } from "./enums";
+import * as strings from "./strings";
+import {
+    BottleLocation,
+    Hash,
+    ItemLocation,
+    MedallionLocation,
+    PrizeLocation,
+    TextDialog
+} from "./enums";
+import {
+    Bottle,
+    DungeonPrize,
+    Item,
+    Medallion
+} from "./strings";
 
 export type SpriteAPIData = {
     name: string
@@ -41,55 +54,55 @@ export type GenerateSeedAPIData = SeedAPIData & {
 };
 
 export type APIPreset = {
-    glitches_required: types.GlitchesRequired
-    item_placement: types.ItemPlacement
-    dungeon_items: types.DungeonItems
-    accessibility: types.ItemAccessibility
-    goal: types.Goal
-    tower_open: types.CrystalRequirement
-    ganon_open: types.CrystalRequirement
-    world_state: types.WorldState
-    entrance_shuffle: types.EntranceShuffle
-    boss_shuffle: types.BossShuffle
-    enemy_shuffle: types.EnemyShuffle
-    hints: types.OptionToggle
-    weapons: types.Weapons
-    item_pool: types.ItemPool
-    item_functionality: types.ItemFunctionality
-    enemy_damage: types.EnemyDamage
-    enemy_health: types.EnemyHealth
+    glitches_required: strings.GlitchesRequired
+    item_placement: strings.ItemPlacement
+    dungeon_items: strings.DungeonItems
+    accessibility: strings.ItemAccessibility
+    goal: strings.Goal
+    tower_open: strings.CrystalRequirement
+    ganon_open: strings.CrystalRequirement
+    world_state: strings.WorldState
+    entrance_shuffle: strings.EntranceShuffle
+    boss_shuffle: strings.BossShuffle
+    enemy_shuffle: strings.EnemyShuffle
+    hints: strings.OptionToggle
+    weapons: strings.Weapons
+    item_pool: strings.ItemPool
+    item_functionality: strings.ItemFunctionality
+    enemy_damage: strings.EnemyDamage
+    enemy_health: strings.EnemyHealth
 };
 
 export type BasePayload = {
-    accessibility: types.ItemAccessibility
+    accessibility: strings.ItemAccessibility
     allow_quickswap?: boolean
     crystals: CrystalPayloadData
-    dungeon_items: types.DungeonItems
+    dungeon_items: strings.DungeonItems
     enemizer: EnemizerPayloadData
-    glitches: types.GlitchesRequired
-    goal: types.Goal
-    hints: types.OptionToggle
+    glitches: strings.GlitchesRequired
+    goal: strings.Goal
+    hints: strings.OptionToggle
     item: ItemPayloadData
-    item_placement: types.ItemPlacement
-    lang: types.Lang
-    mode: types.WorldState
+    item_placement: strings.ItemPlacement
+    lang: strings.Lang
+    mode: strings.WorldState
     name?: string
     notes?: string
     override_start_screen?: StartHashOverride
     pseudoboots?: boolean
-    spoilers: types.SpoilerSetting
+    spoilers: strings.SpoilerSetting
     tournament: boolean
-    weapons: types.Weapons
+    weapons: strings.Weapons
 };
 
 export type RandomizerPayload = BasePayload & {
-    entrances: types.EntranceShuffle
+    entrances: strings.EntranceShuffle
 };
 
 export type CustomizerPayload = BasePayload & {
     custom: CustomOptions
     drops: PrizePackGroups
-    eq: Array<types.Item>
+    eq: Array<strings.Item>
     l: {
         [x: string]: string
     }
@@ -99,21 +112,21 @@ export type CustomizerPayload = BasePayload & {
 };
 
 export type CrystalPayloadData = {
-    ganon: types.CrystalRequirement
-    tower: types.CrystalRequirement
+    ganon: strings.CrystalRequirement
+    tower: strings.CrystalRequirement
 };
 
 export type EnemizerPayloadData = {
-    boss_shuffle: types.BossShuffle
-    enemy_damage: types.EnemyDamage
-    enemy_health: types.EnemyHealth
-    enemy_shuffle: types.EnemyShuffle
-    pot_shuffle?: types.OptionToggle
+    boss_shuffle: strings.BossShuffle
+    enemy_damage: strings.EnemyDamage
+    enemy_health: strings.EnemyHealth
+    enemy_shuffle: strings.EnemyShuffle
+    pot_shuffle?: strings.OptionToggle
 };
 
 export type ItemPayloadData = {
-    functionality: types.ItemFunctionality
-    pool: types.ItemPool
+    functionality: strings.ItemFunctionality
+    pool: strings.ItemPool
 };
 
 export type CustomOptions = AllowedGlitches & {
@@ -149,7 +162,7 @@ export type AllowedGlitches = {
 };
 
 export type CustomDropCounts = {
-    [x in types.Droppable]: number
+    [x in strings.Droppable]: number
 };
 
 export type CustomizerItemOptions = {
@@ -184,7 +197,7 @@ export type Playthrough = {
 };
 
 export type Entrance = {
-    direction: types.EntranceDirection
+    direction: strings.EntranceDirection
     entrance: string
     exit: string
 };
@@ -194,7 +207,7 @@ export type WorldRegion = {
 };
 
 export type BossLocations = {
-    [x: string]: types.Boss | undefined
+    [x: string]: strings.Boss | undefined
 };
 
 export type ShopData = {
@@ -211,8 +224,8 @@ export type ShopItemData = {
 };
 
 export type SpoilerSpecialData = {
-    ["Misery Mire"]: types.Medalion
-    ["Turtle Rock"]: types.Medalion
+    ["Misery Mire"]: strings.Medallion
+    ["Turtle Rock"]: strings.Medallion
 };
 
 export type StartHashOverride = [Hash, Hash, Hash, Hash, Hash];
@@ -224,18 +237,18 @@ export type CustomizerPrizeOptions = {
 };
 
 export type CustomizerRegionOptions = {
-    [x in types.RequiredRegionSettings]: boolean
+    [x in strings.RequiredRegionSettings]: boolean
 } & {
-        [x in types.RegionSettings]?: boolean
+        [x in strings.RegionSettings]?: boolean
     };
 
 export type RequiredRomOptions = {
-    [x in types.RequiredRomBoolSettings]: boolean
+    [x in strings.RequiredRomBoolSettings]: boolean
 } & {
-    timerMode: types.ClockMode
+    timerMode: strings.ClockMode
     timerStart: "" | number
-    dungeonCount: types.CompassMode
-    logicMode: types.RomMode
+    dungeonCount: strings.CompassMode
+    logicMode: strings.RomMode
 };
 
 export type CustomizerRomOptions = RequiredRomOptions & {
@@ -243,7 +256,7 @@ export type CustomizerRomOptions = RequiredRomOptions & {
 };
 
 export type ItemCountOptions = {
-    [x in types.RequiredItemCountOptions]: number
+    [x in strings.RequiredItemCountOptions]: number
 };
 
 export type ExtendedItemCountOptions = ItemCountOptions & {
@@ -252,10 +265,10 @@ export type ExtendedItemCountOptions = ItemCountOptions & {
 
 export type ItemOverflowOptions = {
     count: {
-        [x in types.Restrictable]?: number
+        [x in strings.Restrictable]?: number
     }
     replacement: {
-        [x in types.Restrictable]?: types.Item
+        [x in strings.Restrictable]?: strings.Item
     }
 };
 
@@ -280,12 +293,12 @@ export interface CustomizerCustomOptions extends AllowedGlitches {
     "item.overflow.count.PieceOfHeart"?: string | number
     "item.overflow.count.Shield"?: string | number
     "item.overflow.count.Sword"?: string | number
-    "item.overflow.replacement.Armor"?: types.Item
-    "item.overflow.replacement.BossHeartContainer"?: types.Item
-    "item.overflow.replacement.Bow"?: types.Item
-    "item.overflow.replacement.PieceOfHeart"?: types.Item
-    "item.overflow.replacement.Shield"?: types.Item
-    "item.overflow.replacement.Sword"?: types.Item
+    "item.overflow.replacement.Armor"?: strings.Item
+    "item.overflow.replacement.BossHeartContainer"?: strings.Item
+    "item.overflow.replacement.Bow"?: strings.Item
+    "item.overflow.replacement.PieceOfHeart"?: strings.Item
+    "item.overflow.replacement.Shield"?: strings.Item
+    "item.overflow.replacement.Sword"?: strings.Item
     "item.require.Lamp": boolean
     "item.value.BlueClock": string | number
     "item.value.GreenClock": string | number
@@ -299,13 +312,13 @@ export interface CustomizerCustomOptions extends AllowedGlitches {
     "region.wildCompasses": boolean
     "region.wildKeys": boolean
     "region.wildMaps": boolean
-    "rom.dungeonCount": types.CompassMode
+    "rom.dungeonCount": strings.CompassMode
     "rom.freeItemText": boolean
     "rom.genericKeys": boolean
-    "rom.logicMode": types.RomMode
+    "rom.logicMode": strings.RomMode
     "rom.mapOnPickup": boolean
     "rom.rupeeBow": boolean
-    "rom.timerMode": types.ClockMode
+    "rom.timerMode": strings.ClockMode
     "rom.timerStart": string | number
     "spoil.BootsLocation": boolean
 };
@@ -317,7 +330,7 @@ export type CustomizerJSON = {
     "vt.custom.name": string | null
     "vt.custom.notes": string | null
     "vt.custom.locations": {
-        [x: string]: types.SpoilerItemString<types.RequiredItemCountOptions>
+        [x: string]: strings.SpoilerItemString<strings.RequiredItemCountOptions>
     } | null
     "vt.custom.prizepacks": PrizePackGroups | null
     "vt.custom.settings": CustomizerJSONCustomSettings
@@ -337,22 +350,22 @@ export type CustomizerJSON = {
         canSuperSpeed: boolean
         canWaterWalk: boolean
     }
-    "randomizer.glitches_required": types.GlitchesRequired | null
-    "randomizer.item_placement": types.ItemPlacement | null
-    "randomizer.dungeon_items": types.DungeonItems | null
-    "randomizer.accessibility": types.ItemAccessibility | null
-    "randomizer.goal": types.Goal | null
-    "randomizer.tower_open": types.CrystalRequirement | null
-    "randomizer.ganon_open": types.CrystalRequirement | null
-    "randomizer.world_state": types.WorldState | null
-    "randomizer.hints": types.OptionToggle | null
-    "randomizer.boss_shuffle": types.BossShuffle | null
-    "randomizer.enemy_shuffle": types.EnemyShuffle | null
-    "randomizer.weapons": types.Weapons | null
-    "randomizer.item_pool": types.ItemPool | null
-    "randomizer.item_functionality": types.ItemFunctionality | null
-    "randomizer.enemy_damage": types.EnemyDamage | null
-    "randomizer.enemy_health": types.EnemyHealth | null
+    "randomizer.glitches_required": strings.GlitchesRequired | null
+    "randomizer.item_placement": strings.ItemPlacement | null
+    "randomizer.dungeon_items": strings.DungeonItems | null
+    "randomizer.accessibility": strings.ItemAccessibility | null
+    "randomizer.goal": strings.Goal | null
+    "randomizer.tower_open": strings.CrystalRequirement | null
+    "randomizer.ganon_open": strings.CrystalRequirement | null
+    "randomizer.world_state": strings.WorldState | null
+    "randomizer.hints": strings.OptionToggle | null
+    "randomizer.boss_shuffle": strings.BossShuffle | null
+    "randomizer.enemy_shuffle": strings.EnemyShuffle | null
+    "randomizer.weapons": strings.Weapons | null
+    "randomizer.item_pool": strings.ItemPool | null
+    "randomizer.item_functionality": strings.ItemFunctionality | null
+    "randomizer.enemy_damage": strings.EnemyDamage | null
+    "randomizer.enemy_health": strings.EnemyHealth | null
 };
 
 export type CustomizerJSONEquipment = {
@@ -404,38 +417,64 @@ export type CustomizerJSONEquipment = {
 
 export type PrizePackGroups = {
     0: [
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
-    ]
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop
+    ],
     1: [
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
-    ]
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+    ],
     2: [
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
-    ]
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+    ],
     3: [
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
-    ]
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+    ],
     4: [
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
-    ]
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+    ],
     5: [
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
-    ]
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+    ],
     6: [
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop,
-        types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop
-    ]
-    pull: [types.CustomizerDrop, types.CustomizerDrop, types.CustomizerDrop]
-    crab: [types.CustomizerDrop, types.CustomizerDrop]
-    stun: [types.CustomizerDrop]
-    fish: [types.CustomizerDrop]
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop, strings.CustomizerDrop,
+    ],
+    pull: [
+        strings.CustomizerDrop, strings.CustomizerDrop,
+        strings.CustomizerDrop,
+    ],
+    crab: [
+        strings.CustomizerDrop, strings.CustomizerDrop,
+    ],
+    stun: [strings.CustomizerDrop]
+    fish: [strings.CustomizerDrop]
 };
+
+export type LocationMap = Partial<Record<ItemLocation, strings.Item> &
+    Record<PrizeLocation, strings.DungeonPrize> &
+    Record<MedallionLocation, strings.Medallion> &
+    Record<BottleLocation, strings.Bottle>>;
+
+export type TextMap = Partial<Record<TextDialog, string>>;
 
 export type CustomizerJSONCustomSettings = {
     "item.Goal.Required": string
@@ -458,13 +497,13 @@ export type CustomizerJSONCustomSettings = {
     "region.wildCompasses": boolean
     "region.wildKeys": boolean
     "region.wildMaps": boolean
-    "rom.dungeonCount": types.CompassMode
+    "rom.dungeonCount": strings.CompassMode
     "rom.freeItemText": boolean
     "rom.genericKeys": boolean
-    "rom.logicMode": types.RomMode
+    "rom.logicMode": strings.RomMode
     "rom.mapOnPickup": boolean
     "rom.rupeeBow": boolean
-    "rom.timerMode": types.ClockMode
+    "rom.timerMode": strings.ClockMode
     "rom.timerStart": string
     "spoil.BootsLocation": boolean
 };
@@ -500,37 +539,37 @@ export type SpoilerAPIData = {
 };
 
 export interface SeedMeta {
-    accessibility: types.ItemAccessibility
+    accessibility: strings.ItemAccessibility
     allow_quickswap: boolean
     build: string
-    dungeon_items: types.DungeonItems
-    ["enemizer.boss_shuffle"]: types.BossShuffle
-    ["enemizer.enemy_damage"]: types.EnemyDamage
-    ["enemizer.enemy_health"]: types.EnemyHealth
-    ["enemizer.enemy_shuffle"]: types.EnemyShuffle
-    ["enemizer.pot_shuffle"]: types.OptionToggle
-    entry_crystals_ganon: types.CrystalRequirement
-    entry_crystals_tower: types.CrystalRequirement
-    goal: types.Goal
-    hints: types.OptionToggle
-    item_functionality: types.ItemFunctionality
-    item_placement: types.ItemPlacement
-    item_pool: types.ItemPool
-    logic: types.RomMode
-    mode: types.WorldState
+    dungeon_items: strings.DungeonItems
+    ["enemizer.boss_shuffle"]: strings.BossShuffle
+    ["enemizer.enemy_damage"]: strings.EnemyDamage
+    ["enemizer.enemy_health"]: strings.EnemyHealth
+    ["enemizer.enemy_shuffle"]: strings.EnemyShuffle
+    ["enemizer.pot_shuffle"]: strings.OptionToggle
+    entry_crystals_ganon: strings.CrystalRequirement
+    entry_crystals_tower: strings.CrystalRequirement
+    goal: strings.Goal
+    hints: strings.OptionToggle
+    item_functionality: strings.ItemFunctionality
+    item_placement: strings.ItemPlacement
+    item_pool: strings.ItemPool
+    logic: strings.RomMode
+    mode: strings.WorldState
     pseudoboots: boolean
-    rom_mode: types.RomMode
+    rom_mode: strings.RomMode
     size: number
-    spoilers: types.SpoilerSetting
+    spoilers: strings.SpoilerSetting
     tournament: boolean
-    weapons: types.Weapons
+    weapons: strings.Weapons
     world_id: number
     worlds: number
 };
 
 export interface EntranceSeedMeta extends SeedMeta {
     keysanity: boolean
-    shuffle: types.EntranceShuffle
+    shuffle: strings.EntranceShuffle
     version: string
 };
 
@@ -545,18 +584,18 @@ export interface BaseSeedSpoiler {
 export interface EntranceSpoiler extends BaseSeedSpoiler {
     Entrances?: Array<Entrance>
     "Light World"?: {
-        [x in types.EntranceLightWorldLocation]: string
+        [x in strings.EntranceLightWorldLocation]: string
     }
     "Dark World"?: {
-        [x in types.EntranceDarkWorldLocation]: string
+        [x in strings.EntranceDarkWorldLocation]: string
     }
     Caves?: {
-        [x in types.EntranceUnderworldLocation]: string
+        [x in strings.EntranceUnderworldLocation]: string
     }
     "Hyrule Castle"?: {
-        [x in types.AggregateLocation<"Hyrule Castle", "Boomerang Chest" | "Map Chest" | "Zelda's Chest">]: string
+        [x in strings.AggregateLocation<"Hyrule Castle", "Boomerang Chest" | "Map Chest" | "Zelda's Chest">]: string
     } & {
-        [x in types.AggregateLocation<"Sewers", "Dark Cross" | types.AggregateLocation<"Secret Room", "Left" | "Middle" | "Right">>]: string
+        [x in strings.AggregateLocation<"Sewers", "Dark Cross" | strings.AggregateLocation<"Secret Room", "Left" | "Middle" | "Right">>]: string
     } & {
         Sanctuary: string
     }

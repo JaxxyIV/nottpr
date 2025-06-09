@@ -97,8 +97,8 @@ While this works, it is substantially more work to type out. A builder solves
 this problem by prefilling settings by default as an open 7/7. In essence, if
 you're fine with a default setting as it is, you don't have to specify it later.
 
-Builders come equipped with a number of setter methods whose return value is the
-current object. As such, they can be chained.
+Builders come equipped with setter methods whose return value is the current
+object. As such, they can be chained.
 
 ```js
 import ALTTPR, {
@@ -133,12 +133,20 @@ Creating customizer seeds with nottpr is slightly more complex, but still simple
 enough to understand.
 
 ```js
-import ALTTPR, { CustomizerBuilder } from "nottpr";
+import ALTTPR, { CustomizerBuilder, Weapons, WorldState } from "nottpr";
+
+// Casual Boots
+const builder = new CustomizerBuilder()
+    .setMode(WorldState.Standard)
+    .setWeapons(Weapons.Assured)
+    .addEquipment(["PegasusBoots"]);
+
+const seed = await ALTTPR.customizer(builder);
+console.log(seed.permalink);
 ```
 
-For customizer seeds, you can use the `CustomizerBuilder` class. However, a
-manual payload may be preferred due to the large amount of settings in the
-customizer.
+Depending on the settings used, a manual payload may be preferred over a builder
+due to the large amount of settings in the customizer.
 
 ### Fetching Previously Generated Seeds
 

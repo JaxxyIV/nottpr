@@ -1,6 +1,6 @@
 import BaseBuilder from "./BaseBuilder";
-import * as types from "../../types/types";
-import * as structs from "../../types/apiStructs";
+import * as strings from "../../types/strings";
+import * as structs from "../../types/structures";
 import {
     BaseSeedOptions,
     CrystalOptions,
@@ -8,7 +8,7 @@ import {
     ItemOptions
 } from "../../types/optionObjs";
 
-export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | types.BaseSettings, any> {
+export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | strings.BaseSettings, any> {
     static readonly #default: BaseSeedOptions = {
         accessibility: "items",
         crystals: {
@@ -61,8 +61,8 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return this.#default;
     }
 
-    get accessibility(): types.ItemAccessibility {
-        return super._getProp("accessibility") as types.ItemAccessibility;
+    get accessibility(): strings.ItemAccessibility {
+        return super._getProp("accessibility") as strings.ItemAccessibility;
     }
 
     get allowQuickswap(): boolean | undefined {
@@ -73,40 +73,40 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._deepCopy(super._getProp("crystals")) as structs.CrystalPayloadData;
     }
 
-    get dungeonItems(): types.DungeonItems {
-        return super._getProp("dungeon_items") as types.DungeonItems;
+    get dungeonItems(): strings.DungeonItems {
+        return super._getProp("dungeon_items") as strings.DungeonItems;
     }
 
     get enemizer(): structs.EnemizerPayloadData {
         return super._deepCopy(super._getProp("enemizer")) as structs.EnemizerPayloadData;
     }
 
-    get glitches(): types.GlitchesRequired {
-        return super._getProp("glitches") as types.GlitchesRequired;
+    get glitches(): strings.GlitchesRequired {
+        return super._getProp("glitches") as strings.GlitchesRequired;
     }
 
-    get goal(): types.Goal {
-        return super._getProp("goal") as types.Goal;
+    get goal(): strings.Goal {
+        return super._getProp("goal") as strings.Goal;
     }
 
-    get hints(): types.OptionToggle {
-        return super._getProp("hints") as types.OptionToggle;
+    get hints(): strings.OptionToggle {
+        return super._getProp("hints") as strings.OptionToggle;
     }
 
     get item(): structs.ItemPayloadData {
         return super._deepCopy(super._getProp("item")) as structs.ItemPayloadData;
     }
 
-    get itemPlacement(): types.ItemPlacement {
-        return super._getProp("item_placement") as types.ItemPlacement;
+    get itemPlacement(): strings.ItemPlacement {
+        return super._getProp("item_placement") as strings.ItemPlacement;
     }
 
-    get lang(): types.Lang {
-        return super._getProp("lang") as types.Lang;
+    get lang(): strings.Lang {
+        return super._getProp("lang") as strings.Lang;
     }
 
-    get mode(): types.WorldState {
-        return super._getProp("mode") as types.WorldState;
+    get mode(): strings.WorldState {
+        return super._getProp("mode") as strings.WorldState;
     }
 
     get name(): string | undefined {
@@ -128,19 +128,19 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._getProp("pseudoboots");
     }
 
-    get spoilers(): types.SpoilerSetting {
-        return super._getProp("spoilers") as types.SpoilerSetting;
+    get spoilers(): strings.SpoilerSetting {
+        return super._getProp("spoilers") as strings.SpoilerSetting;
     }
 
     get tournament(): boolean {
         return super._getProp("tournament");
     }
 
-    get weapons(): types.Weapons {
-        return super._getProp("weapons") as types.Weapons;
+    get weapons(): strings.Weapons {
+        return super._getProp("weapons") as strings.Weapons;
     }
 
-    setAccessibility(access: types.ItemAccessibility): this {
+    setAccessibility(access: strings.ItemAccessibility): this {
         return super._setProp("accessibility", access);
     }
 
@@ -180,7 +180,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("crystals", settings);
     }
 
-    setDungeonItems(shufle: types.DungeonItems): this {
+    setDungeonItems(shufle: strings.DungeonItems): this {
         return super._setProp("dungeon_items", shufle);
     }
 
@@ -205,15 +205,15 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("enemizer", settings);
     }
 
-    setGlitches(glitches: types.GlitchesRequired): this {
+    setGlitches(glitches: strings.GlitchesRequired): this {
         return super._setProp("glitches", glitches);
     }
 
-    setGoal(goal: types.Goal): this {
+    setGoal(goal: strings.Goal): this {
         return super._setProp("goal", goal);
     }
 
-    setHints(toggle: types.OptionToggle): this {
+    setHints(toggle: strings.OptionToggle): this {
         return super._setProp("hints", toggle);
     }
 
@@ -240,15 +240,15 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("item", settings);
     }
 
-    setItemPlacement(placement: types.ItemPlacement): this {
+    setItemPlacement(placement: strings.ItemPlacement): this {
         return super._setProp("item_placement", placement);
     }
 
-    setLanguage(lang: types.Lang): this {
+    setLanguage(lang: strings.Lang): this {
         return super._setProp("lang", lang);
     }
 
-    setMode(mode: types.WorldState): this {
+    setMode(mode: strings.WorldState): this {
         return super._setProp("mode", mode);
     }
 
@@ -304,7 +304,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("pseudoboots", enable);
     }
 
-    setSpoilers(spoilers: types.SpoilerSetting): this {
+    setSpoilers(spoilers: strings.SpoilerSetting): this {
         return super._setProp("spoilers", spoilers);
     }
 
@@ -312,7 +312,7 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | t
         return super._setProp("tournament", tournament);
     }
 
-    setWeapons(weapons: types.Weapons): this {
+    setWeapons(weapons: strings.Weapons): this {
         return super._setProp("weapons", weapons);
     }
 }

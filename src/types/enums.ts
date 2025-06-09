@@ -184,7 +184,7 @@ export enum MenuSpeed {
     Instant = "instant",
 };
 
-export enum Items {
+export enum Item {
     Nothing = "Nothing",
     FighterSword = "L1Sword",
     FighterSwordShield = "L1SwordAndShield",
@@ -326,7 +326,7 @@ export enum Items {
     SmallKeyH2 = "KeyH2",
 };
 
-export enum Prizes {
+export enum Prize {
     GreenPendant = "PendantOfCourage",
     RedPendant = "PendantOfWisdom",
     BluePendant = "PendantOfPower",
@@ -339,13 +339,13 @@ export enum Prizes {
     Crystal7 = "Crystal7",
 };
 
-export enum Medallions {
+export enum Medallion {
     Bombos = "Bombos",
     Ether = "Ether",
     Quake = "Quake",
 };
 
-export enum Bottles {
+export enum Bottle {
     BottleEmpty = "Bottle",
     BottleRedPotion = "BottleWithRedPotion",
     BottleGreenPotion = "BottleWithGreenPotion",
@@ -355,7 +355,7 @@ export enum Bottles {
     BottleGoldBee = "BottleWithGoldBee",
 };
 
-export enum Drops {
+export enum Drop {
     Random = "auto_fill",
     BeeSwarm = "Bee",
     GoodBee = "BeeGood",
@@ -373,7 +373,7 @@ export enum Drops {
     Fairy = "Fairy",
 };
 
-export enum ItemLocations {
+export enum ItemLocation {
     SahaHutLeft = "U2FoYXNyYWhsYSdzIEh1dCAtIExlZnQ6MQ==",
     SahaHutMiddle = "U2FoYXNyYWhsYSdzIEh1dCAtIE1pZGRsZTox",
     SahaHutRight = "U2FoYXNyYWhsYSdzIEh1dCAtIFJpZ2h0OjE=",
@@ -592,7 +592,7 @@ export enum ItemLocations {
     GanonMoldormChest = "R2Fub24ncyBUb3dlciAtIE1vbGRvcm0gQ2hlc3Q6MQ==",
 };
 
-export enum PrizeLocations {
+export enum PrizeLocation {
     EasternPalace = "RWFzdGVybiBQYWxhY2UgLSBQcml6ZTox",
     DesertPalace = "RGVzZXJ0IFBhbGFjZSAtIFByaXplOjE=",
     TowerOfHera = "VG93ZXIgb2YgSGVyYSAtIFByaXplOjE=",
@@ -605,17 +605,17 @@ export enum PrizeLocations {
     TurtleRock = "VHVydGxlIFJvY2sgLSBQcml6ZTox",
 };
 
-export enum MedallionLocations {
+export enum MedallionLocation {
     TurtleRock = "VHVydGxlIFJvY2sgTWVkYWxsaW9uOjE=",
     MiseryMire = "TWlzZXJ5IE1pcmUgTWVkYWxsaW9uOjE=",
 };
 
-export enum BottleLocations {
+export enum BottleLocation {
     WaterfallFairy = "V2F0ZXJmYWxsIEJvdHRsZTox",
     PyramidFairy = "UHlyYW1pZCBCb3R0bGU6MQ==",
 };
 
-export enum TextDialogs {
+export enum TextDialog {
     UncleLeaving = "uncle_leaving_text",
     UncleDying = "uncle_dying_sewer",
     TutorialGuard1 = "tutorial_guard_1",
@@ -1014,7 +1014,7 @@ export enum TextDialogs {
     Murahdahla = "murahdahla",
 };
 
-export enum SpecialChars {
+export enum SpecialChar {
     Cursor = "≥",
     Self = "@",
     Link = ">",

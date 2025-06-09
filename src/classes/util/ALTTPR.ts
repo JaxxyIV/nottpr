@@ -5,7 +5,7 @@ import {
     RandomizerPayload,
     SeedAPIData,
     SpriteAPIData
-} from "../../types/apiStructs";
+} from "../../types/structures";
 import CustomizerBuilder from "../builders/CustomizerBuilder";
 import Seed from "./Seed";
 import SeedBuilder from "../builders/SeedBuilder";
