@@ -1,14 +1,11 @@
 import * as fs from "node:fs/promises";
 import { BpsPatch } from "rommage/BpsPatch";
-import {
-    PaletteMode,
-    PaletteRandomizerOptions
-} from "@maseya/z3pr";
+import { PaletteMode, PaletteRandomizerOptions } from "@maseya/z3pr";
 import {
     SpoilerAPIData,
     PatchAPIData,
     SeedAPIData,
-    GenerateSeedAPIData
+    GenerateSeedAPIData,
 } from "../../types/structures";
 import * as strings from "../../types/strings";
 import Patcher from "./Patcher";
@@ -30,7 +27,7 @@ export default class Seed {
 
     readonly #sprites: Map<string, Sprite>;
 
-    static readonly #hashStrings = [
+    static readonly #HASH_STRINGS = [
         "Bow", "Boomerang", "Hookshot", "Bomb", "Mushroom",
         "Powder", "Ice Rod", "Pendant", "Bombos", "Ether",
         "Quake", "Lantern", "Hammer", "Shovel", "Ocarina",
@@ -111,7 +108,7 @@ export default class Seed {
      */
     get hashCode(): string[] {
         return this.#seekInPatch(1573397, 5)
-            .map(b => Seed.#hashStrings[b]);
+            .map(b => Seed.#HASH_STRINGS[b]);
     }
 
     /**
@@ -123,156 +120,6 @@ export default class Seed {
 
     get [Symbol.toStringTag](): string {
         return this.#hash;
-    }
-
-    /**
-     * Formats the spoiler log for this Seed and outputs the data as a buffer.
-     *
-     * @param showDrops Should additional data about prize packs and tree pulls
-     * be included?
-     * @returns The formatted spoiler log as a buffer.
-     */
-    formatSpoiler(showDrops = false): Buffer {
-        // if "off" or "mystery", nothing special happens. Just return the
-        // spoiler as-is.
-        if (this.#spoiler.meta.spoilers === "off" ||
-            this.#spoiler.meta.spoilers === "mystery") {
-            return Buffer.from(JSON.stringify(this.#spoiler, undefined, 4),
-                "utf8");
-        }
-
-        const dungeons = {
-            "A1": "CastleTower",
-            "A2": "GanonsTower",
-            "H2": "HyruleCastle",
-            "P1": "EasternPalace",
-            "P2": "DesertPalace",
-            "P3": "TowerOfHera",
-            "D1": "DarkPalace",
-            "D2": "SwampPalace",
-            "D3": "SkullWoods",
-            "D4": "ThievesTown",
-            "D5": "IcePalace",
-            "D6": "MiseryMire",
-            "D7": "TurtleRock",
-        };
-
-        const log: { [x: string]: any } = {};
-
-        if ("shuffle" in this.#spoiler.meta) { // Entrance rando
-            log.Prizes = {
-                "Eastern Palace": undefined,
-                "Desert Palace": undefined,
-                "Tower of Hera": undefined,
-                "Palace of Darkness": undefined,
-                "Swamp Palace": undefined,
-                "Skull Woods": undefined,
-                "Thieves Town": undefined,
-                "Ice Palace": undefined,
-                "Misery Mire": undefined,
-                "Turtle Rock": undefined,
-            };
-            log.Special = this.#spoiler.Special;
-            log.Bosses = this.#spoiler.Bosses;
-            log["Light World"] = this.#spoiler["Light World"];
-            log["Dark World"] = this.#spoiler["Dark World"];
-            log.Caves = this.#spoiler.Caves;
-            log["Hyrule Castle"] = this.#spoiler["Hyrule Castle"];
-            log["Eastern Palace"] = this.#spoiler["Eastern Palace"];
-            log["Desert Palace"] = this.#spoiler["Desert Palace"];
-            log["Tower of Hera"] = this.#spoiler["Tower of Hera"];
-            log["Agahnims Tower"] = this.#spoiler["Agahnims Tower"];
-            log["Palace of Darkness"] = this.#spoiler["Palace of Darkness"];
-            log["Swamp Palace"] = this.#spoiler["Swamp Palace"];
-            log["Skull Woods"] = this.#spoiler["Skull Woods"];
-            log["Thieves Town"] = this.#spoiler["Thieves Town"];
-            log["Ice Palace"] = this.#spoiler["Ice Palace"];
-            log["Misery Mire"] = this.#spoiler["Misery Mire"];
-            log["Turtle Rock"] = this.#spoiler["Turtle Rock"];
-            log["Ganons Tower"] = this.#spoiler["Ganons Tower"];
-            log.Entrances = this.#spoiler.Entrances;
-
-            for (const key in log.Prizes) {
-                const values: string[] =
-                    Object.values(this.#spoiler[key as keyof SpoilerAPIData]);
-                log.Prizes[key] = values.find(v => v.startsWith("Crystal") ||
-                    v.endsWith("Pendant"));
-            }
-        } else {
-            log.Prizes = {
-                "Eastern Palace": undefined,
-                "Desert Palace": undefined,
-                "Tower Of Hera": undefined,
-                "Dark Palace": undefined,
-                "Swamp Palace": undefined,
-                "Skull Woods": undefined,
-                "Thieves Town": undefined,
-                "Ice Palace": undefined,
-                "Misery Mire": undefined,
-                "Turtle Rock": undefined,
-            };
-            log.Special = {};
-            log.Bosses = {};
-            log["Light World"] = {};
-            log["Death Mountain"] = {};
-            log["Dark World"] = {};
-            log["Hyrule Castle"] = {};
-            log["Eastern Palace"] = {};
-            log["Desert Palace"] = {};
-            log["Tower Of Hera"] = {};
-            log["Castle Tower"] = {};
-            log["Dark Palace"] = {};
-            log["Swamp Palace"] = {};
-            log["Skull Woods"] = {};
-            log["Thieves Town"] = {};
-            log["Ice Palace"] = {};
-            log["Misery Mire"] = {};
-            log["Turtle Rock"] = {};
-            log["Ganons Tower"] = {};
-
-            for (const key of Object.keys(log)) {
-                if (!(key in this.#spoiler)) {
-                    continue;
-                }
-
-                const entries: [string, string][] =
-                    Object.entries(this.#spoiler[key as keyof SpoilerAPIData]);
-                for (const [rawLoc, rawItem] of entries) {
-                    const loc = rawLoc.replace(":1", "");
-                    let item = rawItem.replace(":1", "");
-                    const dKey = Object.keys(dungeons).find(k => item.endsWith(k));
-
-                    if (typeof dKey !== "undefined") {
-                        item += `-${dungeons[dKey as keyof typeof dungeons]}`;
-                    }
-
-                    log[key][loc] = item;
-                }
-            }
-
-            for (const key of Object.keys(log.Prizes)) {
-                // Have to deal with inconsistencies in how things are referred
-                // to in the log.
-                const actualKey = key === "Dark Palace" ? "Palace of Darkness"
-                    : key === "Thieves Town" ? "Thieves' Town"
-                    : key === "Tower Of Hera" ? "Tower of Hera"
-                    : key;
-
-                log.Prizes[key] = log[key][`${actualKey} - Prize`];
-            }
-        }
-
-        [log.Special["Dig Game"]] = this.#seekInPatch(982421);
-
-        if (showDrops) {
-            log.Special.Drops = this.#readDrops();
-        }
-
-        log.meta = this.#spoiler.meta;
-        log.meta.hash = this.#hash;
-        log.meta.permalink = this.permalink;
-
-        return Buffer.from(JSON.stringify(log, undefined, 4));
     }
 
     /**
@@ -332,6 +179,7 @@ export default class Seed {
         // Then the seed-specific stuff is applied.
         return new Patcher(patched)
             .setSeedPatches(this.#patchMap)
+            .setSprite(options.sprite)
             .setPaletteShuffle(options.paletteShuffle ?? false)
             .setBackgroundMusic(options.backgroundMusic ?? true)
             .setHeartColor(options.heartColor ?? "red")
@@ -340,7 +188,6 @@ export default class Seed {
             .setMsu1Resume(options.msu1Resume ?? true)
             .setQuickswap(options.quickswap ?? true)
             .setReduceFlashing(options.reduceFlash ?? false)
-            .setSprite(options.sprite)
             .fixChecksum() // Checksum fix must be done last
             .buffer;
     }
@@ -360,15 +207,186 @@ export default class Seed {
         return this.#basePatch;
     }
 
+    /**
+     * Formats the spoiler log for this Seed and outputs the data as a buffer.
+     *
+     * @param showDrops Should additional data about prize packs and tree pulls
+     * be included?
+     * @returns The formatted spoiler log as a buffer.
+     */
+    formatSpoiler(showDrops = false): Buffer {
+        // if "off" or "mystery", nothing special happens. Just return the
+        // spoiler as-is.
+        if (this.#spoiler.meta.spoilers === "off" ||
+            this.#spoiler.meta.spoilers === "mystery") {
+            const log = JSON.parse(JSON.stringify(this.#spoiler));
+            log.meta.hash = this.#hash;
+            log.meta.permalink = this.permalink;
+            log.meta.code = this.hashCode.join(", ");
+            return Buffer.from(JSON.stringify(this.#spoiler, undefined, 4));
+        }
+
+        const log: Record<string, any> = {};
+
+        const dungeons = {
+            "A1": "CastleTower",
+            "A2": "GanonsTower",
+            "H2": "HyruleCastle",
+            "P1": "EasternPalace",
+            "P2": "DesertPalace",
+            "P3": "TowerOfHera",
+            "D1": "DarkPalace",
+            "D2": "SwampPalace",
+            "D3": "SkullWoods",
+            "D4": "ThievesTown",
+            "D5": "IcePalace",
+            "D6": "MiseryMire",
+            "D7": "TurtleRock",
+        };
+
+
+        if ("shuffle" in this.#spoiler.meta) { // Entrance rando
+            log.Prizes = {
+                "Eastern Palace": undefined,
+                "Desert Palace": undefined,
+                "Tower of Hera": undefined,
+                "Palace of Darkness": undefined,
+                "Swamp Palace": undefined,
+                "Skull Woods": undefined,
+                "Thieves Town": undefined,
+                "Ice Palace": undefined,
+                "Misery Mire": undefined,
+                "Turtle Rock": undefined,
+            };
+            log.Special = this.#spoiler.Special;
+            log.Bosses = this.#spoiler.Bosses;
+            log["Light World"] = this.#spoiler["Light World"];
+            log["Dark World"] = this.#spoiler["Dark World"];
+            log.Caves = this.#spoiler.Caves;
+            log["Hyrule Castle"] = this.#spoiler["Hyrule Castle"];
+            log["Eastern Palace"] = this.#spoiler["Eastern Palace"];
+            log["Desert Palace"] = this.#spoiler["Desert Palace"];
+            log["Tower of Hera"] = this.#spoiler["Tower of Hera"];
+            log["Agahnims Tower"] = this.#spoiler["Agahnims Tower"];
+            log["Palace of Darkness"] = this.#spoiler["Palace of Darkness"];
+            log["Swamp Palace"] = this.#spoiler["Swamp Palace"];
+            log["Skull Woods"] = this.#spoiler["Skull Woods"];
+            log["Thieves Town"] = this.#spoiler["Thieves Town"];
+            log["Ice Palace"] = this.#spoiler["Ice Palace"];
+            log["Misery Mire"] = this.#spoiler["Misery Mire"];
+            log["Turtle Rock"] = this.#spoiler["Turtle Rock"];
+            log["Ganons Tower"] = this.#spoiler["Ganons Tower"];
+            log.Entrances = this.#spoiler.Entrances;
+
+            for (const key in log.Prizes) {
+                const values: string[] =
+                    Object.values(this.#spoiler[key as keyof SpoilerAPIData]);
+                log.Prizes[key] = values.find(v =>
+                    v.startsWith("Crystal") || v.endsWith("Pendant"));
+            }
+        } else {
+            log.Prizes = {
+                "Eastern Palace": undefined,
+                "Desert Palace": undefined,
+                "Tower Of Hera": undefined,
+                "Dark Palace": undefined,
+                "Swamp Palace": undefined,
+                "Skull Woods": undefined,
+                "Thieves Town": undefined,
+                "Ice Palace": undefined,
+                "Misery Mire": undefined,
+                "Turtle Rock": undefined,
+            };
+            log.Special = {};
+            log.Bosses = {};
+            log["Light World"] = {};
+            log["Death Mountain"] = {};
+            log["Dark World"] = {};
+            log["Hyrule Castle"] = {};
+            log["Eastern Palace"] = {};
+            log["Desert Palace"] = {};
+            log["Tower Of Hera"] = {};
+            log["Castle Tower"] = {};
+            log["Dark Palace"] = {};
+            log["Swamp Palace"] = {};
+            log["Skull Woods"] = {};
+            log["Thieves Town"] = {};
+            log["Ice Palace"] = {};
+            log["Misery Mire"] = {};
+            log["Turtle Rock"] = {};
+            log["Ganons Tower"] = {};
+
+            for (const key of Object.keys(log)) {
+                if (!(key in this.#spoiler)) {
+                    continue;
+                }
+
+                const entries: [string, string][] =
+                    Object.entries(this.#spoiler[key as keyof SpoilerAPIData]);
+                for (const [rawLoc, rawItem] of entries) {
+                    const loc = rawLoc.replace(":1", "");
+                    let item = rawItem.replace(":1", "");
+                    const dKey = Object.keys(dungeons).find(k =>
+                        item.endsWith(k));
+
+                    if (typeof dKey !== "undefined") {
+                        item += `-${dungeons[dKey as keyof typeof dungeons]}`;
+                    }
+
+                    log[key][loc] = item;
+                }
+            }
+
+            for (const key of Object.keys(log.Prizes)) {
+                // Have to deal with inconsistencies in how things are referred
+                // to in the log.
+                const actualKey = key === "Dark Palace" ? "Palace of Darkness"
+                    : key === "Thieves Town" ? "Thieves' Town"
+                    : key === "Tower Of Hera" ? "Tower of Hera"
+                    : key;
+
+                log.Prizes[key] = log[key][`${actualKey} - Prize`];
+            }
+        }
+
+        [log.Special["Dig Game"]] = this.#seekInPatch(982421);
+
+        if (showDrops) {
+            log.Special.Drops = this.#readDrops();
+        }
+
+        log.meta = this.#spoiler.meta;
+        log.meta.hash = this.#hash;
+        log.meta.permalink = this.permalink;
+        log.meta.code = this.hashCode.join(", ");
+
+        return Buffer.from(JSON.stringify(log, undefined, 4));
+    }
+
     // Thanks clearmouse
     #readDrops(): DropsSpoilerData {
         const offsets = {
             stun: 227731,
-            treePull: 981972,
-            crabMain: 207304,
-            crabLast: 207300,
+            tree: 981972,
+            crab: [207304, 207300], // main, last
             fish: 950988,
-            prizePacks: 227960,
+            enemy: 227960,
+        };
+        const itemSprites: Record<number, strings.Droppable> = {
+            121: "Bee",
+            178: "BeeGood",
+            216: "Heart",
+            217: "RupeeGreen",
+            218: "RupeeBlue",
+            219: "RupeeRed",
+            220: "BombRefill1",
+            221: "BombRefill4",
+            222: "BombRefill8",
+            223: "MagicRefillSmall",
+            224: "MagicRefillFull",
+            225: "ArrowRefill5",
+            226: "ArrowRefill10",
+            227: "Fairy",
         };
         const vanillaPacks: Record<strings.EnemyPacks, number[]> = {
             Heart: [216, 216, 216, 216, 217, 216, 216, 217],
@@ -389,7 +407,7 @@ export default class Seed {
         };
 
         // Tree Pulls
-        const treePulls = this.#seekInPatch(offsets.treePull, 3);
+        const treePulls = this.#seekInPatch(offsets.tree, 3);
         for (let i = 1; i <= treePulls.length; ++i) {
             const byte = treePulls[i - 1];
             drops.Tree[i as keyof PullTiers] = getDropSprite(byte);
@@ -402,14 +420,14 @@ export default class Seed {
         drops.Fish = getDropSprite(this.#seekInPatch(offsets.fish, 1)[0]);
 
         // Crab
-        drops.Crab.Main = getDropSprite(this.#seekInPatch(offsets.crabMain, 1)[0]);
-        drops.Crab.Last = getDropSprite(this.#seekInPatch(offsets.crabLast, 1)[0]);
+        drops.Crab.Main = getDropSprite(this.#seekInPatch(offsets.crab[0], 1)[0]);
+        drops.Crab.Last = getDropSprite(this.#seekInPatch(offsets.crab[1], 1)[0]);
 
         // Enemy Packs
         const packs: number[][] = [[], [], [], [], [], [], [],];
         const rowLimit = 8;
 
-        const prizePackDrops = this.#seekInPatch(offsets.prizePacks);
+        const prizePackDrops = this.#seekInPatch(offsets.enemy);
         for (let i = 0; i < prizePackDrops.length; ++i) {
             packs[Math.floor(i / rowLimit)].push(prizePackDrops[i]);
         }
@@ -422,22 +440,10 @@ export default class Seed {
         return drops;
 
         function getDropSprite(byte: number): strings.Droppable {
-            switch (byte) {
-                case 121: return "Bee";
-                case 178: return "BeeGood";
-                case 216: return "Heart";
-                case 217: return "RupeeGreen";
-                case 218: return "RupeeBlue";
-                case 219: return "RupeeRed";
-                case 220: return "BombRefill1";
-                case 221: return "BombRefill4";
-                case 222: return "BombRefill8";
-                case 223: return "MagicRefillSmall";
-                case 224: return "MagicRefillFull";
-                case 225: return "ArrowRefill5";
-                case 226: return "ArrowRefill10";
-                case 227: return "Fairy";
-                default: throw new Error(`No matching droppable found for ${byte}`);
+            if (byte in itemSprites) {
+                return itemSprites[byte];
+            } else {
+                throw new Error(`No matching droppable found for ${byte}`);
             }
         }
 
@@ -507,6 +513,17 @@ export default class Seed {
             : data.slice(i);
     }
 
+    /**
+     * Returns the index of the closest value to the given target.
+     *
+     * Precondition: `array` is sorted in ascending order.
+     *
+     * @param array The array to search.
+     * @param target The value to find.
+     * @param low The lower bound.
+     * @param high The upper bound.
+     * @returns The index of the closest value to the target.
+     */
     static #binarySearch(array: number[], target: number, low: number = 0,
         high: number = array.length - 1): number {
         if (low > high) {
@@ -554,4 +571,8 @@ type PullTiers = {
     1?: strings.Droppable
     2?: strings.Droppable
     3?: strings.Droppable
+};
+type SpoilerOptions = {
+    race?: boolean,
+    extras?: boolean,
 };

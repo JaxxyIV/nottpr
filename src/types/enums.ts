@@ -1034,6 +1034,7 @@ export enum SpecialChar {
 export enum PaletteAlgorithm {
     Maseya = "maseya",
     Grayscale = "grayscale",
+    Negative = "negative",
     Blackout = "blackout",
     Classic = "classic",
     Dizzy = "dizzy",

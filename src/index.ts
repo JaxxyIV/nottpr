@@ -8,9 +8,28 @@ export { default } from "./classes/util/ALTTPR";
 export { default as Formatter } from "./classes/util/Formatter";
 export { randomStartHash } from "./functions";
 export {
-    Accessibility, BossShuffle, Crystals, EnemyDamage,
-    EnemyHealth, EnemyShuffle, Entrances, Glitches,
-    Goals, Hash, HeartColor, HeartSpeed, ItemFunctionality,
-    ItemPlacement, ItemPool, Keysanity, Language, MenuSpeed,
-    Spoilers, Toggle, Weapons, WorldState, TextDialog, PaletteAlgorithm
+    Accessibility,
+    BossShuffle,
+    Crystals,
+    EnemyDamage,
+    EnemyHealth,
+    EnemyShuffle,
+    Entrances,
+    Glitches,
+    Goals,
+    Hash,
+    HeartColor,
+    HeartSpeed,
+    ItemFunctionality,
+    ItemPlacement,
+    ItemPool,
+    Keysanity,
+    Language,
+    MenuSpeed,
+    PaletteAlgorithm,
+    Spoilers,
+    TextDialog,
+    Toggle,
+    Weapons,
+    WorldState,
 } from "./types/enums";

@@ -1,11 +1,16 @@
 import * as flat from "flat";
 import { CustomSettings } from "../../types/strings";
 import BaseBuilder from "./BaseBuilder";
-import { AllowedGlitches, CustomDropCounts, CustomOptions } from "../../types/structures";
+import {
+    AllowedGlitches,
+    CustomDropCounts,
+    CustomOptions,
+} from "../../types/structures";
 import RegionSettingsBuilder from "./RegionSettingsBuilder";
 const { unflatten } = flat;
 
-export default class CustomSettingsBuilder extends BaseBuilder<keyof CustomOptions, any> {
+export default class CustomSettingsBuilder
+    extends BaseBuilder<keyof CustomOptions, any> {
     constructor() {
         super();
     }
@@ -62,8 +67,10 @@ export default class CustomSettingsBuilder extends BaseBuilder<keyof CustomOptio
     }
 
     setRegion(region: RegionSettingsBuilder): this
-    setRegion(region: (builder: RegionSettingsBuilder) => RegionSettingsBuilder): this
-    setRegion(region: RegionSettingsBuilder | ((builder: RegionSettingsBuilder) => RegionSettingsBuilder)): this {
+    setRegion(region: (builder: RegionSettingsBuilder) =>
+        RegionSettingsBuilder): this
+    setRegion(region: RegionSettingsBuilder |
+        ((builder: RegionSettingsBuilder) => RegionSettingsBuilder)): this {
         if (typeof region === "function") {
             return super._setProp("region", region(new RegionSettingsBuilder()));
         } else if (region instanceof RegionSettingsBuilder) {
@@ -285,6 +292,4 @@ const defaultOpts: CustomOptions = {
     },
 };
 
-type AllowGlitchOptions = {
-    [x in keyof AllowedGlitches]?: boolean
-};
+type AllowGlitchOptions = Record<keyof AllowedGlitches, boolean>;

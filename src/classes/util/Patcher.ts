@@ -1,30 +1,29 @@
 import center from "center-align";
 import * as z3pr from "@maseya/z3pr";
-import {
-    HeartColor,
-    HeartSpeed,
-    MenuSpeed
-} from "../../types/strings";
+import { HeartColor, HeartSpeed, MenuSpeed } from "../../types/strings";
 
 export default class Patcher {
     // Symbolic Records
     /** Sprite author char bytes */
-    static readonly #charRec: Record<string, [number, number]> = {
-        " ": [0x9F, 0x9F], "0": [0x53, 0x79], "1": [0x54, 0x7A], "2": [0x55, 0x7B],
-        "3": [0x56, 0x7C], "4": [0x57, 0x7D], "5": [0x58, 0x7E], "6": [0x59, 0x7F],
-        "7": [0x5A, 0x80], "8": [0x5B, 0x81], "9": [0x5C, 0x82], "A": [0x5D, 0x83],
-        "B": [0x5E, 0x84], "C": [0x5F, 0x85], "D": [0x60, 0x86], "E": [0x61, 0x87],
-        "F": [0x62, 0x88], "G": [0x63, 0x89], "H": [0x64, 0x8A], "I": [0x65, 0x8B],
-        "J": [0x66, 0x8C], "K": [0x67, 0x8D], "L": [0x68, 0x8E], "M": [0x69, 0x8F],
-        "N": [0x6A, 0x90], "O": [0x6B, 0x91], "P": [0x6C, 0x92], "Q": [0x6D, 0x93],
-        "R": [0x6E, 0x94], "S": [0x6F, 0x95], "T": [0x70, 0x96], "U": [0x71, 0x97],
-        "V": [0x72, 0x98], "W": [0x73, 0x99], "X": [0x74, 0x9A], "Y": [0x75, 0x9B],
-        "Z": [0x76, 0x9C], "'": [0xD9, 0xEC], ".": [0xDC, 0xEF], "/": [0xDB, 0xEE],
-        ":": [0xDD, 0xF0], "_": [0xDE, 0xF1],
+    static readonly #CHAR_REC: Record<string, [number, number]> = {
+        " ": [0x9F, 0x9F], "0": [0x53, 0x79], "1": [0x54, 0x7A],
+        "2": [0x55, 0x7B], "3": [0x56, 0x7C], "4": [0x57, 0x7D],
+        "5": [0x58, 0x7E], "6": [0x59, 0x7F], "7": [0x5A, 0x80],
+        "8": [0x5B, 0x81], "9": [0x5C, 0x82], "A": [0x5D, 0x83],
+        "B": [0x5E, 0x84], "C": [0x5F, 0x85], "D": [0x60, 0x86],
+        "E": [0x61, 0x87], "F": [0x62, 0x88], "G": [0x63, 0x89],
+        "H": [0x64, 0x8A], "I": [0x65, 0x8B], "J": [0x66, 0x8C],
+        "K": [0x67, 0x8D], "L": [0x68, 0x8E], "M": [0x69, 0x8F],
+        "N": [0x6A, 0x90], "O": [0x6B, 0x91], "P": [0x6C, 0x92],
+        "Q": [0x6D, 0x93], "R": [0x6E, 0x94], "S": [0x6F, 0x95],
+        "T": [0x70, 0x96], "U": [0x71, 0x97], "V": [0x72, 0x98],
+        "W": [0x73, 0x99], "X": [0x74, 0x9A], "Y": [0x75, 0x9B],
+        "Z": [0x76, 0x9C], "'": [0xD9, 0xEC], ".": [0xDC, 0xEF],
+        "/": [0xDB, 0xEE], ":": [0xDD, 0xF0], "_": [0xDE, 0xF1],
     };
 
     /** Heart Color bytes */
-    static readonly #hColorRec: Record<HeartColor, number> = {
+    static readonly #HCOL_REC: Record<HeartColor, number> = {
         red: 0x00,
         blue: 0x01,
         green: 0x02,
@@ -32,7 +31,7 @@ export default class Patcher {
     };
 
     /** Heart beep speed bytes */
-    static readonly #hSpeedRec: Record<HeartSpeed, number> = {
+    static readonly #HSPD_REC: Record<HeartSpeed, number> = {
         off: 0,
         double: 16,
         normal: 32,
@@ -41,7 +40,7 @@ export default class Patcher {
     };
 
     /** Menu speed bytes */
-    static readonly #mSpeedRec: Record<MenuSpeed, number> = {
+    static readonly #MSPD_REC: Record<MenuSpeed, number> = {
         slow: 0x04,
         normal: 0x08,
         fast: 0x10,
@@ -66,20 +65,20 @@ export default class Patcher {
     }
 
     setHeartColor(color: HeartColor): this {
-        const byte = Patcher.#hColorRec[color] ?? Patcher.#hColorRec.red;
+        const byte = Patcher.#HCOL_REC[color] ?? Patcher.#HCOL_REC.red;
         this.#write(0x187020, byte);
         return this;
     }
 
     setHeartSpeed(speed: HeartSpeed): this {
-        const byte = Patcher.#hSpeedRec[speed] ?? Patcher.#hSpeedRec.normal;
+        const byte = Patcher.#HSPD_REC[speed] ?? Patcher.#HSPD_REC.normal;
         this.#write(0x180033, byte);
         return this;
     }
 
     setMenuSpeed(speed: MenuSpeed): this {
-        const byte = Patcher.#mSpeedRec[speed] ?? Patcher.#mSpeedRec.normal;
-        const isInstant = byte === Patcher.#mSpeedRec.instant;
+        const byte = Patcher.#MSPD_REC[speed] ?? Patcher.#MSPD_REC.normal;
+        const isInstant = byte === Patcher.#MSPD_REC.instant;
         this.#write(0x180048, byte);
         this.#write(0x6dd9a, isInstant ? 0x20 : 0x11);
         this.#write(0x6df2a, isInstant ? 0x20 : 0x12);
@@ -130,7 +129,8 @@ export default class Patcher {
         return this;
     }
 
-    setPaletteShuffle(mode: z3pr.PaletteRandomizerOptions<number> | boolean | z3pr.PaletteMode): this {
+    setPaletteShuffle(mode: z3pr.PaletteRandomizerOptions<number> | boolean |
+        z3pr.PaletteMode): this {
         if (typeof mode === "boolean" && mode) {
             z3pr.randomize(this.#buffer, {
                 mode: "maseya",
@@ -185,18 +185,22 @@ export default class Patcher {
     }
 
     #canWriteSpriteAuthor(): boolean {
-        return this.#buffer[0x118000] === 0x02 && this.#buffer[0x118001] === 0x37 &&
-               this.#buffer[0x11801E] === 0x02 && this.#buffer[0x11801F] === 0x37;
+        return this.#buffer[0x118000] === 0x02 &&
+               this.#buffer[0x118001] === 0x37 &&
+               this.#buffer[0x11801E] === 0x02 &&
+               this.#buffer[0x11801F] === 0x37;
     }
 
     #isZsprFormat(data: Buffer): boolean {
-        return data.subarray(0, 4).reduce(
-            (pr, cu) => pr + String.fromCharCode(cu), "") === "ZSPR";
+        return data.subarray(0, 4).reduce((pr, cu) =>
+            pr + String.fromCharCode(cu), "") === "ZSPR";
     }
 
     #parseZspr(data: Buffer): void {
-        const gfxOffset = data[12] << 24 | data[11] << 16 | data[10] << 8 | data[9];
-        const palOffset = data[18] << 24 | data[17] << 16 | data[16] << 8 | data[15];
+        const gfxOffset = data[12] << 24 | data[11] << 16 |
+                          data[10] << 8  | data[9];
+        const palOffset = data[18] << 24 | data[17] << 16 |
+                          data[16] << 8  | data[15];
         let metaIndex = 0x1D;
         let junk = 2;
 
@@ -207,22 +211,23 @@ export default class Patcher {
             metaIndex += 2;
         }
 
-        let shortAuthor = "";
+        let shortAuth = "";
         while (metaIndex < gfxOffset && data[metaIndex] !== 0x00) {
-            shortAuthor += String.fromCharCode(data[metaIndex]);
+            shortAuth += String.fromCharCode(data[metaIndex]);
             ++metaIndex;
         }
 
         // Write sprite author (if we're not dealing with a legacy seed)
         if (this.#canWriteSpriteAuthor()) {
-            shortAuthor = center(shortAuthor.substring(0, 28), 28).toUpperCase();
-            if (shortAuthor.length === 27) {
-                shortAuthor.padEnd(28);
+            shortAuth = center(shortAuth.substring(0, 28), 28).toUpperCase();
+            if (shortAuth.length === 27) {
+                shortAuth.padEnd(28);
             }
 
-            for (let i = 0; i < shortAuthor.length; ++i) {
-                const char = shortAuthor.charAt(i);
-                const [up, low] = Patcher.#charRec[char in Patcher.#charRec ? char : " "];
+            for (let i = 0; i < shortAuth.length; ++i) {
+                const char = shortAuth.charAt(i);
+                const [up, low] =
+                    Patcher.#CHAR_REC[char in Patcher.#CHAR_REC ? char : " "];
                 this.#write(0x118002 + i, up);
                 this.#write(0x118020 + i, low);
             }
