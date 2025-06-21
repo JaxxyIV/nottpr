@@ -1,132 +1,152 @@
 import * as strings from "./strings";
+import * as enums from "./enums";
 import {
+    Accessibility,
+    BossShuffle,
     BottleLocation,
+    Crystals,
+    EnemyDamage,
+    EnemyShuffle,
+    EnemyHealth,
+    Entrances,
+    Glitches,
+    Goals,
     Hash,
+    ItemFunctionality,
     ItemLocation,
+    ItemPlacement,
+    ItemPool,
+    Keysanity,
+    Language,
     MedallionLocation,
     PrizeLocation,
-    TextDialog
+    Spoilers,
+    TextDialog,
+    Toggle,
+    Weapons,
+    WorldState,
 } from "./enums";
 import {
     Bottle,
     DungeonPrize,
     Item,
-    Medallion
+    Medallion,
 } from "./strings";
 
 export type SpriteAPIData = {
-    name: string
-    author: string
-    version: number
-    file: string
-    preview: string
-    tags: Array<string>
-    usage: Array<string>
+    name: string,
+    author: string,
+    version: number,
+    file: string,
+    preview: string,
+    tags: Array<string>,
+    usage: Array<string>,
 };
 
 export type DailyAPIData = {
-    hash: string
-    daily: string
+    hash: string,
+    daily: string,
 };
 
 export type PatchAPIData = {
-    hash: string
-    md5: string
-    bpsLocation: string
+    hash: string,
+    md5: string,
+    bpsLocation: string,
 };
 
 export type BaseRomAPIData = {
-    rom_hash: string
-    base_file: string
+    rom_hash: string,
+    base_file: string,
 };
 
 export type SeedAPIData = {
-    generated: string
-    hash: string
-    logic: string
-    patch: Array<PatchElement>
-    size: number
-    spoiler: SpoilerAPIData
+    generated: string,
+    hash: string,
+    logic: string,
+    patch: Array<PatchElement>,
+    size: number,
+    spoiler: SpoilerAPIData,
 };
 
 export type GenerateSeedAPIData = SeedAPIData & {
-    current_rom_hash: string
+    current_rom_hash: string,
 };
 
 export type APIPreset = {
-    glitches_required: strings.GlitchesRequired
-    item_placement: strings.ItemPlacement
-    dungeon_items: strings.DungeonItems
-    accessibility: strings.ItemAccessibility
-    goal: strings.Goal
-    tower_open: strings.CrystalRequirement
-    ganon_open: strings.CrystalRequirement
-    world_state: strings.WorldState
-    entrance_shuffle: strings.EntranceShuffle
-    boss_shuffle: strings.BossShuffle
-    enemy_shuffle: strings.EnemyShuffle
-    hints: strings.OptionToggle
-    weapons: strings.Weapons
-    item_pool: strings.ItemPool
-    item_functionality: strings.ItemFunctionality
-    enemy_damage: strings.EnemyDamage
-    enemy_health: strings.EnemyHealth
+    glitches_required: enums.Glitches,
+    item_placement: enums.ItemPlacement,
+    dungeon_items: enums.Keysanity,
+    accessibility: enums.Accessibility,
+    goal: enums.Goals,
+    tower_open: enums.Crystals,
+    ganon_open: enums.Crystals,
+    world_state: enums.WorldState,
+    entrance_shuffle: enums.Entrances,
+    boss_shuffle: enums.BossShuffle,
+    enemy_shuffle: enums.EnemyShuffle,
+    hints: enums.Toggle,
+    weapons: enums.Weapons,
+    item_pool: enums.ItemPool,
+    item_functionality: enums.ItemFunctionality,
+    enemy_damage: enums.EnemyDamage,
+    enemy_health: enums.EnemyHealth,
 };
 
-export type BasePayload = {
-    accessibility: strings.ItemAccessibility
-    allow_quickswap?: boolean
-    crystals: CrystalPayloadData
-    dungeon_items: strings.DungeonItems
-    enemizer: EnemizerPayloadData
-    glitches: strings.GlitchesRequired
-    goal: strings.Goal
-    hints: strings.OptionToggle
-    item: ItemPayloadData
-    item_placement: strings.ItemPlacement
-    lang: strings.Lang
-    mode: strings.WorldState
-    name?: string
-    notes?: string
-    override_start_screen?: StartHashOverride
-    pseudoboots?: boolean
-    spoilers: strings.SpoilerSetting
-    tournament: boolean
-    weapons: strings.Weapons
+export interface BasePayload {
+    accessibility: enums.Accessibility,
+    allow_quickswap?: boolean,
+    crystals: CrystalPayloadData,
+    dungeon_items: enums.Keysanity,
+    enemizer: EnemizerPayloadData,
+    glitches: enums.Glitches,
+    goal: enums.Goals,
+    hints: enums.Toggle,
+    item: ItemPayloadData,
+    item_placement: enums.ItemPlacement,
+    lang: enums.Language,
+    mode: enums.WorldState,
+    name?: string,
+    notes?: string,
+    override_start_screen?: StartHashOverride,
+    pseudoboots?: boolean,
+    spoilers: enums.Spoilers,
+    tournament: boolean,
+    weapons: enums.Weapons,
 };
 
-export type RandomizerPayload = BasePayload & {
-    entrances: strings.EntranceShuffle
+export interface RandomizerPayload extends BasePayload {
+    entrances: enums.Entrances,
 };
 
-export type CustomizerPayload = BasePayload & {
-    custom: CustomOptions
-    drops: PrizePackGroups
-    eq: Array<strings.Item>
-    l: {
-        [x: string]: string
-    }
-    texts?: {
-        [x: string]: string
-    }
+export interface CustomizerPayload extends BasePayload {
+    custom: CustomOptions,
+    drops: PrizePackGroups,
+    eq: Array<enums.Item>,
+    l: Partial<
+        Record<enums.ItemLocation, enums.Item> &
+        Record<enums.BottleLocation, enums.Bottle> &
+        Record<enums.MedallionLocation, enums.Medallion> &
+        Record<enums.PrizeLocation, enums.Prize>
+    >,
+    texts?: Partial<Record<enums.TextDialog, string>>,
 };
 
-export type CrystalPayloadData = {
-    ganon: strings.CrystalRequirement
-    tower: strings.CrystalRequirement
+export interface CrystalPayloadData {
+    ganon: enums.Crystals,
+    tower: enums.Crystals,
 };
 
-export type EnemizerPayloadData = {
-    boss_shuffle: strings.BossShuffle
-    enemy_damage: strings.EnemyDamage
-    enemy_health: strings.EnemyHealth
-    enemy_shuffle: strings.EnemyShuffle
-    pot_shuffle?: strings.OptionToggle
+export interface EnemizerPayloadData {
+    boss_shuffle: enums.BossShuffle,
+    enemy_damage: enums.EnemyDamage,
+    enemy_health: enums.EnemyHealth,
+    enemy_shuffle: enums.EnemyShuffle,
+    pot_shuffle?: enums.Toggle,
 };
 
-export type ItemPayloadData = {
-    functionality: strings.ItemFunctionality
-    pool: strings.ItemPool
+export interface ItemPayloadData {
+    functionality: enums.ItemFunctionality,
+    pool: enums.ItemPool,
 };
 
 export type CustomOptions = AllowedGlitches & {
@@ -161,9 +181,7 @@ export type AllowedGlitches = {
     canWaterWalk: boolean
 };
 
-export type CustomDropCounts = {
-    [x in strings.Droppable]: number
-};
+export type CustomDropCounts = Record<Exclude<enums.Drop, "auto_fill">, number>;
 
 export type CustomizerItemOptions = {
     count: ExtendedItemCountOptions
@@ -182,9 +200,7 @@ export type CustomizerItemOptions = {
     }
 };
 
-export type PatchElement = {
-    [x: number]: Array<number> | undefined
-};
+export type PatchElement = Record<number, Array<number>>;
 
 export type EntrancePaths = {
     [x: string]: Array<Array<string | null>> | undefined

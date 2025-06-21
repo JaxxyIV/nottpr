@@ -139,7 +139,7 @@ import ALTTPR, { CustomizerBuilder, Weapons, WorldState } from "nottpr";
 const builder = new CustomizerBuilder()
     .setMode(WorldState.Standard)
     .setWeapons(Weapons.Assured)
-    .addEquipment(["PegasusBoots"]);
+    .setEquipment((equipment) => equipment.setStartingBoots(true));
 
 const seed = await ALTTPR.customizer(builder);
 console.log(seed.permalink);

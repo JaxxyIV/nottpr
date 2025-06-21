@@ -7,7 +7,8 @@ import {
     SeedAPIData,
     GenerateSeedAPIData,
 } from "../../types/structures";
-import * as strings from "../../types/strings";
+import { Droppable, EnemyPacks } from "../../types/strings";
+import { HeartColor, HeartSpeed, MenuSpeed } from "../../types/enums";
 import Patcher from "./Patcher";
 import Request from "./Request";
 import Sprite from "./Sprite";
@@ -73,10 +74,6 @@ export default class Seed {
         return this.#patchMap;
     }
 
-    // get spoiler(): structs.SpoilerAPIData {
-    //     return this.#spoiler;
-    // }
-
     get hash(): string {
         return this.#hash;
     }
@@ -137,9 +134,9 @@ export default class Seed {
      * @returns The patched ROM as a buffer.
      */
     async patchROM(base: string, options: PostGenOptions = {
-        heartSpeed: "normal",
-        heartColor: "red",
-        menuSpeed: "normal",
+        heartSpeed: HeartSpeed.Normal,
+        heartColor: HeartColor.Red,
+        menuSpeed: MenuSpeed.Normal,
         quickswap: true,
         paletteShuffle: false,
         backgroundMusic: true,
@@ -372,7 +369,7 @@ export default class Seed {
             fish: 950988,
             enemy: 227960,
         };
-        const itemSprites: Record<number, strings.Droppable> = {
+        const itemSprites: Record<number, Droppable> = {
             121: "Bee",
             178: "BeeGood",
             216: "Heart",
@@ -388,7 +385,7 @@ export default class Seed {
             226: "ArrowRefill10",
             227: "Fairy",
         };
-        const vanillaPacks: Record<strings.EnemyPacks, number[]> = {
+        const vanillaPacks: Record<EnemyPacks, number[]> = {
             Heart: [216, 216, 216, 216, 217, 216, 216, 217],
             Rupee: [218, 217, 218, 219, 218, 217, 218, 218],
             Magic: [224, 223, 223, 218, 224, 223, 216, 223],
@@ -433,13 +430,13 @@ export default class Seed {
         }
 
         for (let i = 0; i < packs.length; ++i) {
-            const key = Object.keys(vanillaPacks)[i] as strings.EnemyPacks;
+            const key = Object.keys(vanillaPacks)[i] as EnemyPacks;
             drops.Packs[key] = getPrizePackName(packs[i]);
         }
 
         return drops;
 
-        function getDropSprite(byte: number): strings.Droppable {
+        function getDropSprite(byte: number): Droppable {
             if (byte in itemSprites) {
                 return itemSprites[byte];
             } else {
@@ -447,7 +444,7 @@ export default class Seed {
             }
         }
 
-        function getPrizePackName(pack: number[]): strings.EnemyPacks | string {
+        function getPrizePackName(pack: number[]): string {
             // If the array contains one of these two bytes, we can safely assume
             // that the pack is not vanilla.
             if (pack.some(b => b === 121 || b === 178)) {
@@ -544,35 +541,26 @@ export default class Seed {
 }
 
 type SeedData = SeedAPIData | GenerateSeedAPIData;
-type PostGenOptions = Partial<{
-    heartSpeed: strings.HeartSpeed,
-    heartColor: strings.HeartColor,
-    menuSpeed: strings.MenuSpeed,
-    quickswap: boolean,
-    paletteShuffle: PaletteRandomizerOptions<number> | boolean | PaletteMode,
-    backgroundMusic: boolean,
-    msu1Resume: boolean,
-    sprite: string | Sprite | Buffer,
-    reduceFlash: boolean,
-}>;
+type PostGenOptions = {
+    heartSpeed?: HeartSpeed,
+    heartColor?: HeartColor,
+    menuSpeed?: MenuSpeed,
+    quickswap?: boolean,
+    paletteShuffle?: PaletteRandomizerOptions<number> | boolean | PaletteMode,
+    backgroundMusic?: boolean,
+    msu1Resume?: boolean,
+    sprite?: string | Sprite | Buffer,
+    reduceFlash?: boolean,
+};
 type DropsSpoilerData = {
     Tree?: PullTiers
     Crab?: {
-        Main?: strings.Droppable
-        Last?: strings.Droppable
+        Main?: Droppable
+        Last?: Droppable
     }
-    Stun?: strings.Droppable
-    Fish?: strings.Droppable
-    Packs?: {
-        [x in strings.EnemyPacks]?: strings.EnemyPacks | string
-    }
+    Stun?: Droppable
+    Fish?: Droppable
+    Packs?: Partial<Record<EnemyPacks, string>>;
+
 };
-type PullTiers = {
-    1?: strings.Droppable
-    2?: strings.Droppable
-    3?: strings.Droppable
-};
-type SpoilerOptions = {
-    race?: boolean,
-    extras?: boolean,
-};
+type PullTiers = Partial<Record<1 | 2 | 3, Droppable>>;

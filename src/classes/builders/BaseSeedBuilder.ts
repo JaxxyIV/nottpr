@@ -1,14 +1,15 @@
 import BaseBuilder from "./BaseBuilder";
+import * as enums from "../../types/enums";
 import * as strings from "../../types/strings";
 import * as structs from "../../types/structures";
+import { baseDefault } from "../../types/payloads";
 import {
     BaseSeedOptions,
-    CrystalOptions,
     EnemizerOptions,
     ItemOptions
 } from "../../types/optionObjs";
 
-export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | strings.BaseSettings, any> {
+export default class BaseSeedBuilder extends BaseBuilder<strings.BaseSettings> {
     static readonly #default: BaseSeedOptions = {
         accessibility: "items",
         crystals: {
@@ -37,13 +38,8 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | s
         weapons: "randomized",
     };
 
-    constructor(data?: BaseSeedOptions) {
+    constructor() {
         super();
-        if (typeof data === "undefined") {
-            this._body = BaseSeedBuilder.#default;
-        } else {
-            this._body = BaseSeedBuilder.#fill(data, BaseSeedBuilder.#default);
-        }
     }
 
     static #fill(passed: any, def: any): any {
@@ -61,87 +57,87 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | s
         return this.#default;
     }
 
-    get accessibility(): strings.ItemAccessibility {
-        return super._getProp("accessibility") as strings.ItemAccessibility;
+    get accessibility(): enums.Accessibility {
+        return this._body.accessibility as enums.Accessibility;
     }
 
-    get allowQuickswap(): boolean | undefined {
-        return super._getProp("allow_quickswap");
+    get allowQuickswap(): boolean {
+        return this._body.allow_quickswap as boolean;
     }
 
     get crystals(): structs.CrystalPayloadData {
-        return super._deepCopy(super._getProp("crystals")) as structs.CrystalPayloadData;
+        return super._deepCopy(this._body.crystals) as structs.CrystalPayloadData;
     }
 
-    get dungeonItems(): strings.DungeonItems {
-        return super._getProp("dungeon_items") as strings.DungeonItems;
+    get dungeonItems(): enums.Keysanity {
+        return this._body.dungeon_items as enums.Keysanity;
     }
 
     get enemizer(): structs.EnemizerPayloadData {
-        return super._deepCopy(super._getProp("enemizer")) as structs.EnemizerPayloadData;
+        return super._deepCopy(this._body.enemizer) as structs.EnemizerPayloadData;
     }
 
-    get glitches(): strings.GlitchesRequired {
-        return super._getProp("glitches") as strings.GlitchesRequired;
+    get glitches(): enums.Glitches {
+        return this._body.glitches as enums.Glitches;
     }
 
-    get goal(): strings.Goal {
-        return super._getProp("goal") as strings.Goal;
+    get goal(): enums.Goals {
+        return this._body.goal as enums.Goals;
     }
 
-    get hints(): strings.OptionToggle {
-        return super._getProp("hints") as strings.OptionToggle;
+    get hints(): enums.Toggle {
+        return this._body.hints as enums.Toggle;
     }
 
     get item(): structs.ItemPayloadData {
-        return super._deepCopy(super._getProp("item")) as structs.ItemPayloadData;
+        return super._deepCopy(this._body.item) as structs.ItemPayloadData;
     }
 
-    get itemPlacement(): strings.ItemPlacement {
-        return super._getProp("item_placement") as strings.ItemPlacement;
+    get itemPlacement(): enums.ItemPlacement {
+        return this._body.item_placement as enums.ItemPlacement;
     }
 
-    get lang(): strings.Lang {
-        return super._getProp("lang") as strings.Lang;
+    get lang(): enums.Language {
+        return this._body.lang as enums.Language;
     }
 
-    get mode(): strings.WorldState {
-        return super._getProp("mode") as strings.WorldState;
+    get mode(): enums.WorldState {
+        return this._body.mode as enums.WorldState;
     }
 
-    get name(): string | undefined {
-        return super._getProp("name");
+    get name(): string {
+        return this._body.name as string;
     }
 
     get notes(): string | undefined {
-        return super._getProp("notes");
+        return this._body.notes as string;
     }
 
     get overrideStartScreen(): structs.StartHashOverride | undefined {
-        const val: structs.StartHashOverride | undefined = super._getProp("override_start_screen");
-        return typeof val === "undefined"
-            ? undefined
-            : super._deepCopy(val);
+        return "override_start_screen" in this._body
+            ? super._deepCopy(this._body.override_start_screen) as structs.StartHashOverride
+            : undefined;
     }
 
     get pseudoboots(): boolean | undefined {
-        return super._getProp("pseudoboots");
+        return this._body.pseudoboots as boolean;
     }
 
-    get spoilers(): strings.SpoilerSetting {
-        return super._getProp("spoilers") as strings.SpoilerSetting;
+    get spoilers(): enums.Spoilers {
+        return this._body.spoilers as enums.Spoilers;
     }
 
     get tournament(): boolean {
-        return super._getProp("tournament");
+        return this._body.tournament as boolean;
     }
 
-    get weapons(): strings.Weapons {
-        return super._getProp("weapons") as strings.Weapons;
+    get weapons(): enums.Weapons {
+        return this._body.weapons as enums.Weapons;
     }
 
-    setAccessibility(access: strings.ItemAccessibility): this {
-        return super._setProp("accessibility", access);
+    setAccessibility(access: enums.Accessibility): this {
+        this._body.accessibility = access;
+        return this;
     }
 
     /**
@@ -154,34 +150,38 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | s
      * @returns The current object, for chaining.
      */
     setAllowQuickswap(allow: boolean): this {
-        return super._setProp("allow_quickswap", allow);
+        this._body.allow_quickswap = allow;
+        return this;
     }
 
     /**
      * Sets the crystal settings for the seed.
      *
-     * @param options The new crystal requirements.
-     * @param reset If true, reset any setting unspecified to its default value.
-     * Default value is false.
+     * @param crystals The crystal requirements. Up to two values can be passed.
+     * * One value: Sets both tower and Ganon to the given value.
+     * * Two values: Sets tower to the first value and Ganon to the second
+     * value.
      * @returns The current object, for chaining.
      */
-    setCrystals(options: CrystalOptions, reset: boolean = false): this {
-        const settings: CrystalOptions = reset === true
-            ? super._deepCopy(BaseSeedBuilder.#default.crystals) as CrystalOptions
-            : this.crystals;
-
-        if ("ganon" in options) {
-            ({ ganon: settings.ganon } = options);
+    setCrystals(...crystals: enums.Crystals[]): this {
+        const [arg0, arg1] = crystals;
+        if (arg0 && arg1) {
+            this._body.crystals = {
+                ganon: arg0,
+                tower: arg1,
+            } as structs.CrystalPayloadData;
+        } else {
+            this._body.crystals = {
+                ganon: arg0 ?? enums.Crystals.Seven,
+                tower: arg0 ?? enums.Crystals.Seven,
+            } as structs.CrystalPayloadData;
         }
-        if ("tower" in options) {
-            ({ tower: settings.tower } = options);
-        }
-
-        return super._setProp("crystals", settings);
+        return this;
     }
 
-    setDungeonItems(shufle: strings.DungeonItems): this {
-        return super._setProp("dungeon_items", shufle);
+    setDungeonItems(shuffle: enums.Keysanity): this {
+        this._body.dungeon_items = shuffle;
+        return this;
     }
 
     /**
@@ -205,16 +205,19 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | s
         return super._setProp("enemizer", settings);
     }
 
-    setGlitches(glitches: strings.GlitchesRequired): this {
-        return super._setProp("glitches", glitches);
+    setGlitches(glitches: enums.Glitches): this {
+        this._body.glitches = glitches;
+        return this;
     }
 
-    setGoal(goal: strings.Goal): this {
-        return super._setProp("goal", goal);
+    setGoal(goal: enums.Goals): this {
+        this._body.goal = goal;
+        return this;
     }
 
-    setHints(toggle: strings.OptionToggle): this {
-        return super._setProp("hints", toggle);
+    setHints(toggle: enums.Toggle): this {
+        this._body.hints = toggle;
+        return this;
     }
 
     /**
@@ -240,34 +243,28 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | s
         return super._setProp("item", settings);
     }
 
-    setItemPlacement(placement: strings.ItemPlacement): this {
-        return super._setProp("item_placement", placement);
+    setItemPlacement(placement: enums.ItemPlacement): this {
+        this._body.item_placement = placement;
+        return this;
     }
 
-    setLanguage(lang: strings.Lang): this {
-        return super._setProp("lang", lang);
+    setLanguage(lang: enums.Language): this {
+        this._body.lang = lang;
+        return this;
     }
 
     setMode(mode: strings.WorldState): this {
         return super._setProp("mode", mode);
     }
 
-    setName(name?: string): this {
-        if (typeof name === "undefined") {
-            delete this._body.name;
-            return this;
-        }
-
-        return super._setProp("name", name);
+    setName(name: string): this {
+        this._body.name = name;
+        return this;
     }
 
-    setNotes(notes?: string): this {
-        if (typeof notes === "undefined") {
-            delete this._body.notes;
-            return this;
-        }
-
-        return super._setProp("notes", notes);
+    setNotes(notes: string): this {
+        this._body.notes = notes;
+        return this;
     }
 
     /**
@@ -276,11 +273,8 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | s
      * @param hash A 5-element array of numbers between 0 and 31.
      * @returns The current object, for chaining.
      */
-    setOverrideStartScreen(hash?: structs.StartHashOverride): this {
-        if (typeof hash === "undefined") {
-            delete this._body.override_start_screen;
-            return this;
-        } else if (!Array.isArray(hash)) {
+    setOverrideStartScreen(hash: structs.StartHashOverride): this {
+        if (!Array.isArray(hash)) {
             throw new Error("Parameter hash must be an array.");
         } else if (hash.length < 5) {
             throw new Error("Array must contain 5 elements.");
@@ -289,7 +283,8 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | s
         const copy = Array.from(hash); // deep copy to not modify original arg
         copy.length = 5;
 
-        return super._setProp("override_start_screen", copy);
+        this._body.override_start_screen = copy;
+        return this;
     }
 
     /**
@@ -301,18 +296,39 @@ export default class BaseSeedBuilder<T extends string> extends BaseBuilder<T | s
      * @returns The current object, for chaining.
      */
     setPseudoboots(enable: boolean): this {
-        return super._setProp("pseudoboots", enable);
+        this._body.pseudoboots = enable;
+        return this;
     }
 
-    setSpoilers(spoilers: strings.SpoilerSetting): this {
-        return super._setProp("spoilers", spoilers);
+    setSpoilers(spoilers: enums.Spoilers): this {
+        this._body.spoilers = spoilers;
+        return this;
     }
 
     setTournament(tournament: boolean): this {
-        return super._setProp("tournament", tournament);
+        this._body.tournament = tournament;
+        return this;
     }
 
-    setWeapons(weapons: strings.Weapons): this {
-        return super._setProp("weapons", weapons);
+    setWeapons(weapons: enums.Weapons): this {
+        this._body.weapons = weapons;
+        return this;
+    }
+
+    toJSON(): structs.BasePayload {
+        function fill(ret: any, add: any): any {
+            for (const key in add) {
+                if (typeof ret[key] === "object" &&
+                    !Array.isArray(ret[key])) {
+                    ret[key] = fill(ret[key], add[key]);
+                } else {
+                    ret[key] = add[key];
+                }
+            }
+            return ret;
+        }
+        const payload = super._deepCopy(baseDefault) as structs.BasePayload;
+        fill(payload, this._body);
+        return payload;
     }
 }
