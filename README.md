@@ -13,8 +13,9 @@ This module is based on v31 of the randomizer. If a major change to the
 randomizer causes something in this module to break, please open a new GitHub
 issue.
 
-Note: nottpr's ROM patching is **not** approved for use in official races at
-this time. This may be subject to change in the future.
+Note: nottpr uses the [z3r-patch](https://github.com/JaxxyIV/z3r-patch) module
+for seed patching. Refer to z3r-patch's README for information on its legal
+status in official races.
 
 ## Special Thanks
 
@@ -62,14 +63,14 @@ const seed = await ALTTPR.randomizer({
     accessibility: "locations",
     crystals: {
         ganon: "7",
-        tower: "7",
+        tower: "7"
     },
     dungeon_items: "full",
     enemizer: {
         boss_shuffle: "none",
         enemy_damage: "default",
         enemy_health: "default",
-        enemy_shuffle: "none",
+        enemy_shuffle: "none"
     },
     entrances: "crossed",
     glitches: "none",
@@ -77,14 +78,14 @@ const seed = await ALTTPR.randomizer({
     hints: "off",
     item: {
         functionality: "normal",
-        pool: "normal",
+        pool: "normal"
     },
     item_placement: "advanced",
     lang: "en",
     mode: "open",
     spoilers: "on",
     tournament: false,
-    weapons: "randomized",
+    weapons: "randomized"
 });
 
 console.log(seed.permalink);
@@ -103,7 +104,7 @@ import ALTTPR, {
     Entrances,
     Goals,
     Keysanity,
-    SeedBuilder,
+    SeedBuilder
 } from "nottpr";
 
 // Crosskeys 2023 settings
@@ -130,16 +131,33 @@ Creating customizer seeds with nottpr is slightly more complex, but still simple
 enough to understand.
 
 ```js
-import ALTTPR, { CustomizerBuilder, Weapons, WorldState } from "nottpr";
+import ALTTPR, {
+    CustomizerBuilder,
+    Item,
+    Goals,
+    Keysanity,
+    Weapons,
+    WorldState
+} from "nottpr";
 
-// Casual Boots
+// Cabookey
 const builder = new CustomizerBuilder()
+    .setCustom(custom => custom
+        .setCustomPrizePacks(false)
+        .setItemSettings(item => item.setItemCounts({
+            [Item.PegasusBoots]: 0,
+            [Item.GreenTwenty]: 1
+        })))
+    .setDungeonItems(Keysanity.Full)
+    .setEquipment(eq => eq.setStartingBoots(true))
+    .setGoal(Goals.Dungeons)
     .setMode(WorldState.Standard)
-    .setWeapons(Weapons.Assured)
-    .setEquipment((equipment) => equipment.setStartingBoots(true));
+    .setWeapons(Weapons.Assured);
 
 const seed = await ALTTPR.customizer(builder);
+
 console.log(seed.permalink);
+console.log(seed.hashCode);
 ```
 
 Depending on the settings used, a manual payload may be preferred over a builder
@@ -181,7 +199,7 @@ your own .zspr files when patching a seed though.
 
 ### Patching
 
-nottpr allows you to patch randomizer seeds yourself with the `Seed.patchROM`
+nottpr allows you to patch randomizer seeds yourself with the `Seed.patch`
 method. Be advised that when patching a ROM, it is returned as a buffer. It will
 not create a new file on your system. How the buffered data is handled is up to
 the implementer.
@@ -204,30 +222,17 @@ const builder = new SeedBuilder()
     .setEnemizer({
         boss_shuffle: BossShuffle.Full
     })
-    .setPseudoboots(true)
-    .setOverrideStartScreen([
-        Hash.Bow,
-        Hash.BigKey,
-        Hash.Hookshot,
-        Hash.Mail,
-        Hash.Ocarina,
-    ]);
-
-await ALTTPR.fetchSprites();
-const sprite = ALTTPR.sprites.get("Dark Boy");
-const darkBoy = await sprite.fetch();
+    .setPseudoboots(true);
 
 const seed = await ALTTPR.randomizer(builder);
-const patched = await seed.patchROM(pathToJp10Rom, {
+const patched = await seed.patch(pathToJp10Rom, {
     heartSpeed: HeartSpeed.Half,
     heartColor: HeartColor.Green,
-    menuSpeed: MenuSpeed.Normal,
     quickswap: true,
-    paletteShuffle: true,
-    backgroundMusic: true,
     msu1resume: true,
-    sprite: darkBoy,
-    reduceFlash: true,
+    sprite: await ALTTPR.fetchSprites()
+        .then(sprites => sprites.get("Dark Boy")),
+    reduceFlash: true
 });
 
 await fs.writeFile(`./seeds/${seed.hash}.sfc`, patched);
