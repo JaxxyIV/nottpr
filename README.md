@@ -19,11 +19,8 @@ this time. This may be subject to change in the future.
 ## Special Thanks
 
 - Synack: Most of nottpr's functionality is inspired by pyz3r, an API library
-  for ALTTPR written in Python. You should check it out at
-  https://github.com/tcprescott/pyz3r.
-- Veetorp: Much of the code in nottpr for patching randomizer ROMs was
-  originally done by him in addition to also being the main driving force behind
-  ALTTPR and its development today.
+  for ALTTPR written in Python. You can check it out
+  [here](https://github.com/tcprescott/pyz3r).
 - clearmouse: Credit for prize packs/drops code in spoiler log.
 
 ## Installation

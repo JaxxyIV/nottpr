@@ -1,5 +1,5 @@
-import * as enums from "./enums";
-import { BasePayload } from "./structures";
+import * as enums from "./enums.js";
+import { BasePayload, CustomizerPayload } from "./structures.js";
 
 export const baseDefault: BasePayload = {
     accessibility: enums.Accessibility.Items,
@@ -29,7 +29,7 @@ export const baseDefault: BasePayload = {
     weapons: enums.Weapons.Randomized,
 };
 
-export const customizerDefault = {
+export const customizerDefault: Partial<CustomizerPayload> = {
     l: {},
     eq: [
         "BossHeartContainer",
@@ -252,11 +252,11 @@ export const customizerDefault = {
             wildMaps: false,
         },
         rom: {
-            dungeonCount: "off",
+            dungeonCount: enums.CompassMode.Off,
             freeItemMenu: false,
             freeItemText: false,
             mapOnPickup: false,
-            timerMode: "off",
+            timerMode: enums.ClockMode.Off,
             timerStart: "",
             rupeeBow: false,
             genericKeys: false,

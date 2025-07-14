@@ -1,10 +1,11 @@
-import * as strings from "./strings";
-import * as enums from "./enums";
+import * as strings from "./strings.js";
 import {
     Accessibility,
     BossShuffle,
+    Bottle,
     BottleLocation,
     Crystals,
+    Drop,
     EnemyDamage,
     EnemyShuffle,
     EnemyHealth,
@@ -18,268 +19,269 @@ import {
     ItemPool,
     Keysanity,
     Language,
+    Medallion,
     MedallionLocation,
+    Prize,
     PrizeLocation,
     Spoilers,
     TextDialog,
     Toggle,
     Weapons,
     WorldState,
-} from "./enums";
-import {
-    Bottle,
-    DungeonPrize,
     Item,
-    Medallion,
-} from "./strings";
+    ClockMode,
+    CompassMode,
+} from "./enums.js";
 
-export type SpriteAPIData = {
+/* Type definitions for various API structures on alttpr.com. */
+
+export interface SpriteAPIData {
     name: string,
     author: string,
     version: number,
     file: string,
     preview: string,
-    tags: Array<string>,
-    usage: Array<string>,
-};
+    tags: string[],
+    usage: string[],
+}
 
-export type DailyAPIData = {
+export interface DailyAPIData {
     hash: string,
     daily: string,
-};
+}
 
-export type PatchAPIData = {
+export interface PatchAPIData {
     hash: string,
     md5: string,
     bpsLocation: string,
-};
+}
 
-export type BaseRomAPIData = {
+export interface BaseRomAPIData {
     rom_hash: string,
     base_file: string,
-};
+}
 
-export type SeedAPIData = {
+export interface SeedAPIData {
     generated: string,
     hash: string,
     logic: string,
-    patch: Array<PatchElement>,
+    patch: PatchElement[],
     size: number,
     spoiler: SpoilerAPIData,
-};
+    current_rom_hash?: string,
+}
 
-export type GenerateSeedAPIData = SeedAPIData & {
-    current_rom_hash: string,
-};
-
-export type APIPreset = {
-    glitches_required: enums.Glitches,
-    item_placement: enums.ItemPlacement,
-    dungeon_items: enums.Keysanity,
-    accessibility: enums.Accessibility,
-    goal: enums.Goals,
-    tower_open: enums.Crystals,
-    ganon_open: enums.Crystals,
-    world_state: enums.WorldState,
-    entrance_shuffle: enums.Entrances,
-    boss_shuffle: enums.BossShuffle,
-    enemy_shuffle: enums.EnemyShuffle,
-    hints: enums.Toggle,
-    weapons: enums.Weapons,
-    item_pool: enums.ItemPool,
-    item_functionality: enums.ItemFunctionality,
-    enemy_damage: enums.EnemyDamage,
-    enemy_health: enums.EnemyHealth,
-};
+export interface APIPreset {
+    glitches_required: Glitches,
+    item_placement: ItemPlacement,
+    dungeon_items: Keysanity,
+    accessibility: Accessibility,
+    goal: Goals,
+    tower_open: Crystals,
+    ganon_open: Crystals,
+    world_state: WorldState,
+    entrance_shuffle: Entrances,
+    boss_shuffle: BossShuffle,
+    enemy_shuffle: EnemyShuffle,
+    hints: Toggle,
+    weapons: Weapons,
+    item_pool: ItemPool,
+    item_functionality: ItemFunctionality,
+    enemy_damage: EnemyDamage,
+    enemy_health: EnemyHealth,
+}
 
 export interface BasePayload {
-    accessibility: enums.Accessibility,
+    accessibility: Accessibility,
     allow_quickswap?: boolean,
     crystals: CrystalPayloadData,
-    dungeon_items: enums.Keysanity,
+    dungeon_items: Keysanity,
     enemizer: EnemizerPayloadData,
-    glitches: enums.Glitches,
-    goal: enums.Goals,
-    hints: enums.Toggle,
+    glitches: Glitches,
+    goal: Goals,
+    hints: Toggle,
     item: ItemPayloadData,
-    item_placement: enums.ItemPlacement,
-    lang: enums.Language,
-    mode: enums.WorldState,
+    item_placement: ItemPlacement,
+    lang: Language,
+    mode: WorldState,
     name?: string,
     notes?: string,
     override_start_screen?: StartHashOverride,
     pseudoboots?: boolean,
-    spoilers: enums.Spoilers,
+    spoilers: Spoilers,
     tournament: boolean,
-    weapons: enums.Weapons,
-};
+    weapons: Weapons,
+}
 
 export interface RandomizerPayload extends BasePayload {
-    entrances: enums.Entrances,
-};
+    entrances: Entrances,
+}
 
 export interface CustomizerPayload extends BasePayload {
     custom: CustomOptions,
     drops: PrizePackGroups,
-    eq: Array<enums.Item>,
-    l: Partial<
-        Record<enums.ItemLocation, enums.Item> &
-        Record<enums.BottleLocation, enums.Bottle> &
-        Record<enums.MedallionLocation, enums.Medallion> &
-        Record<enums.PrizeLocation, enums.Prize>
-    >,
-    texts?: Partial<Record<enums.TextDialog, string>>,
-};
+    eq: strings.StartingEquipment[],
+    l: LocationMap,
+    texts?: Partial<Record<TextDialog, string>>,
+}
 
 export interface CrystalPayloadData {
-    ganon: enums.Crystals,
-    tower: enums.Crystals,
-};
+    ganon: Crystals,
+    tower: Crystals,
+}
 
 export interface EnemizerPayloadData {
-    boss_shuffle: enums.BossShuffle,
-    enemy_damage: enums.EnemyDamage,
-    enemy_health: enums.EnemyHealth,
-    enemy_shuffle: enums.EnemyShuffle,
-    pot_shuffle?: enums.Toggle,
-};
+    boss_shuffle: BossShuffle,
+    enemy_damage: EnemyDamage,
+    enemy_health: EnemyHealth,
+    enemy_shuffle: EnemyShuffle,
+    pot_shuffle?: Toggle,
+}
 
 export interface ItemPayloadData {
-    functionality: enums.ItemFunctionality,
-    pool: enums.ItemPool,
-};
+    functionality: ItemFunctionality,
+    pool: ItemPool,
+}
 
-export type CustomOptions = AllowedGlitches & {
-    customPrizePacks?: boolean
+export interface CustomOptions extends AllowedGlitches {
+    customPrizePacks?: boolean,
     drop: {
-        count: CustomDropCounts
-    }
-    item: CustomizerItemOptions
-    prize: CustomizerPrizeOptions
-    region: CustomizerRegionOptions
-    rom: CustomizerRomOptions
+        count: CustomDropCounts,
+    },
+    item: CustomizerItemOptions,
+    prize: CustomizerPrizeOptions,
+    region: CustomizerRegionOptions,
+    rom: CustomizerRomOptions,
     spoil: {
-        BootsLocation: boolean
-    }
-};
+        BootsLocation: boolean,
+    },
+}
 
-export type AllowedGlitches = {
-    canBombJump?: boolean
-    canBootsClip: boolean
-    canBunnyRevive: boolean
-    canBunnySurf: boolean
-    canDungeonRevive: boolean
-    canFakeFlipper: boolean
-    canMirrorClip: boolean
-    canMirrorWrap: boolean
-    canOneFrameClipOW: boolean
-    canOneFrameClipUW: boolean
-    canOWYBA: boolean
-    canSuperBunny: boolean
-    canSuperSpeed: boolean
-    canTransitionWrapped: boolean
-    canWaterWalk: boolean
-};
+// Separate type so we can have a single setter function for the glitched
+// logic instead of 15.
+export interface AllowedGlitches {
+    canBombJump?: boolean,
+    canBootsClip: boolean,
+    canBunnyRevive: boolean,
+    canBunnySurf: boolean,
+    canDungeonRevive: boolean,
+    canFakeFlipper: boolean,
+    canMirrorClip: boolean,
+    canMirrorWrap: boolean,
+    canOneFrameClipOW: boolean,
+    canOneFrameClipUW: boolean,
+    canOWYBA: boolean,
+    canSuperBunny: boolean,
+    canSuperSpeed: boolean,
+    canTransitionWrapped: boolean,
+    canWaterWalk: boolean,
+}
 
-export type CustomDropCounts = Record<Exclude<enums.Drop, "auto_fill">, number>;
+export type CustomDropCounts = Record<Exclude<Drop, "auto_fill">, number>;
 
-export type CustomizerItemOptions = {
-    count: ExtendedItemCountOptions
+export interface CustomItemValues {
+    BlueClock: "" | number,
+    GreenClock: "" | number,
+    RedClock: "" | number,
+    Rupoor: "" | number,
+}
+
+export interface CustomizerItemOptions {
+    count: CustomItemCounts,
     Goal: {
-        Required: "" | number
-    }
-    overflow?: ItemOverflowOptions
+        Required: "" | number,
+    },
+    overflow?: ItemOverflowSettings,
     require: {
-        Lamp: boolean
-    }
-    value: {
-        BlueClock: "" | number
-        GreenClock: "" | number
-        RedClock: "" | number
-        Rupoor: "" | number
-    }
-};
+        Lamp: boolean,
+    },
+    value: CustomItemValues,
+}
 
-export type PatchElement = Record<number, Array<number>>;
+export type PatchElement = Record<number, number[]>;
 
-export type EntrancePaths = {
-    [x: string]: Array<Array<string | null>> | undefined
-};
+export type EntrancePaths = Record<string, (string | null)[][]>;
 
-export type Playthrough = {
-    [x: number]: {
-        [x: string]: string | undefined
-    } | undefined
-};
+export type Playthrough = Record<number, Record<string, string>>;
 
-export type Entrance = {
-    direction: strings.EntranceDirection
-    entrance: string
-    exit: string
-};
+export interface Entrance {
+    direction: strings.EntranceDirection,
+    entrance: string,
+    exit: string,
+}
 
-export type WorldRegion = {
-    [x: string]: string | undefined
-};
+export type WorldRegion = Record<string, string>;
 
-export type BossLocations = {
-    [x: string]: strings.Boss | undefined
-};
+export type BossLocations = Record<string, strings.Boss>;
 
-export type ShopData = {
-    item_0: string | ShopItemData
-    item_1: string | ShopItemData
-    item_2?: string | ShopItemData
-    location: string
-    type: string
-};
+export interface ShopData {
+    item_0: string | ShopItemData,
+    item_1: string | ShopItemData,
+    item_2?: string | ShopItemData,
+    location: string,
+    type: string,
+}
 
-export type ShopItemData = {
-    item: string
-    price: number
-};
+export interface ShopItemData {
+    item: string,
+    price: number,
+}
 
-export type SpoilerSpecialData = {
-    ["Misery Mire"]: strings.Medallion
-    ["Turtle Rock"]: strings.Medallion
-};
+export interface SpoilerSpecialData {
+    ["Misery Mire"]: Medallion,
+    ["Turtle Rock"]: Medallion,
+}
 
 export type StartHashOverride = [Hash, Hash, Hash, Hash, Hash];
 
-export type CustomizerPrizeOptions = {
-    crossWorld: boolean
-    shufflePendants: boolean
-    shuffleCrystals: boolean
-};
+export interface CustomizerPrizeOptions {
+    crossWorld: boolean,
+    shufflePendants: boolean,
+    shuffleCrystals: boolean,
+}
 
-export type CustomizerRegionOptions = {
-    [x in strings.RequiredRegionSettings]: boolean
-} & {
-        [x in strings.RegionSettings]?: boolean
-    };
+export type CustomizerRegionOptions = Record<strings.RequiredRegionSettings, boolean> & Partial<Record<strings.RegionSettings, boolean>>;
 
 export type RequiredRomOptions = {
     [x in strings.RequiredRomBoolSettings]: boolean
 } & {
-    timerMode: strings.ClockMode
+    timerMode: ClockMode
     timerStart: "" | number
-    dungeonCount: strings.CompassMode
+    dungeonCount: CompassMode
     logicMode: strings.RomMode
 };
 
-export type CustomizerRomOptions = RequiredRomOptions & {
+export interface CustomizerRomOptions extends RequiredRomOptions {
+    // CapeMagicUsage?: Partial<{
+    //     Normal: number,
+    //     Half: number,
+    //     Quarter: number,
+    // }>,
+    CaneOfByrnaInvulnerability?: boolean,
+    // PowderedSpriteFairyPrize?: number,
+    // BottleFill?: Partial<{
+    //     Health: number,
+    //     Magic: number,
+    // }>,
+    CatchableFairies?: boolean,
+    CatchableBees?: boolean,
+    // StunItems?: number,
+    SilversOnlyAtGanon?: boolean,
+    NoFarieDrops?: boolean,
+    GanonAgRNG?: "none" | "table",
+    vanillaKeys?: boolean,
+    vanillaBigKeys?: boolean,
+    vanillaCompasses?: boolean,
+    vanillaMaps?: boolean,
+}
 
-};
-
-export type ItemCountOptions = {
+export type CustomItemCounts = {
     [x in strings.RequiredItemCountOptions]: number
-};
-
-export type ExtendedItemCountOptions = ItemCountOptions & {
+} & {
     TwentyRupees2?: number
 };
 
-export type ItemOverflowOptions = {
+export type ItemOverflowSettings = {
     count: {
         [x in strings.Restrictable]?: number
     }
@@ -294,7 +296,7 @@ export interface CustomizerCustomOptions extends AllowedGlitches {
         count: CustomDropCounts
     }
     item: {
-        count: ItemCountOptions
+        count: CustomItemCounts
     }
     /* In an ideal world, the customizer would pass this and a bunch of other
      * values below as numbers. But for some reason, they are passed as strings.
@@ -328,13 +330,13 @@ export interface CustomizerCustomOptions extends AllowedGlitches {
     "region.wildCompasses": boolean
     "region.wildKeys": boolean
     "region.wildMaps": boolean
-    "rom.dungeonCount": strings.CompassMode
+    "rom.dungeonCount": CompassMode
     "rom.freeItemText": boolean
     "rom.genericKeys": boolean
     "rom.logicMode": strings.RomMode
     "rom.mapOnPickup": boolean
     "rom.rupeeBow": boolean
-    "rom.timerMode": strings.ClockMode
+    "rom.timerMode": ClockMode
     "rom.timerStart": string | number
     "spoil.BootsLocation": boolean
 };
@@ -342,7 +344,7 @@ export interface CustomizerCustomOptions extends AllowedGlitches {
 export type CustomizerJSON = {
     "vt.custom.drops": CustomDropCounts | null
     "vt.custom.equipment": CustomizerJSONEquipment | null
-    "vt.custom.items": ItemCountOptions | null
+    "vt.custom.items": CustomItemCounts | null
     "vt.custom.name": string | null
     "vt.custom.notes": string | null
     "vt.custom.locations": {
@@ -366,25 +368,25 @@ export type CustomizerJSON = {
         canSuperSpeed: boolean
         canWaterWalk: boolean
     }
-    "randomizer.glitches_required": strings.GlitchesRequired | null
-    "randomizer.item_placement": strings.ItemPlacement | null
-    "randomizer.dungeon_items": strings.DungeonItems | null
-    "randomizer.accessibility": strings.ItemAccessibility | null
-    "randomizer.goal": strings.Goal | null
-    "randomizer.tower_open": strings.CrystalRequirement | null
-    "randomizer.ganon_open": strings.CrystalRequirement | null
-    "randomizer.world_state": strings.WorldState | null
-    "randomizer.hints": strings.OptionToggle | null
-    "randomizer.boss_shuffle": strings.BossShuffle | null
-    "randomizer.enemy_shuffle": strings.EnemyShuffle | null
-    "randomizer.weapons": strings.Weapons | null
-    "randomizer.item_pool": strings.ItemPool | null
-    "randomizer.item_functionality": strings.ItemFunctionality | null
-    "randomizer.enemy_damage": strings.EnemyDamage | null
-    "randomizer.enemy_health": strings.EnemyHealth | null
+    "randomizer.glitches_required": Glitches | null
+    "randomizer.item_placement": ItemPlacement | null
+    "randomizer.dungeon_items": Keysanity | null
+    "randomizer.accessibility": Accessibility | null
+    "randomizer.goal": Goals | null
+    "randomizer.tower_open": Crystals | null
+    "randomizer.ganon_open": Crystals | null
+    "randomizer.world_state": WorldState | null
+    "randomizer.hints": Toggle | null
+    "randomizer.boss_shuffle": BossShuffle | null
+    "randomizer.enemy_shuffle": EnemyShuffle | null
+    "randomizer.weapons": Weapons | null
+    "randomizer.item_pool": ItemPool | null
+    "randomizer.item_functionality": ItemFunctionality | null
+    "randomizer.enemy_damage": EnemyDamage | null
+    "randomizer.enemy_health": EnemyHealth | null
 };
 
-export type CustomizerJSONEquipment = {
+export interface CustomizerJSONEquipment {
     ProgressiveArmor: number // Valid from 0-2
     ProgressiveSword: number // Valid from 0-4
     ProgressiveShield: number // Valid from 0-3
@@ -485,10 +487,10 @@ export type PrizePackGroups = {
     fish: [strings.CustomizerDrop]
 };
 
-export type LocationMap = Partial<Record<ItemLocation, strings.Item> &
-    Record<PrizeLocation, strings.DungeonPrize> &
-    Record<MedallionLocation, strings.Medallion> &
-    Record<BottleLocation, strings.Bottle>>;
+export type LocationMap = Partial<Record<ItemLocation, Item> &
+    Record<PrizeLocation, Prize> &
+    Record<MedallionLocation, Medallion> &
+    Record<BottleLocation, Bottle>>;
 
 export type TextMap = Partial<Record<TextDialog, string>>;
 
@@ -513,35 +515,35 @@ export type CustomizerJSONCustomSettings = {
     "region.wildCompasses": boolean
     "region.wildKeys": boolean
     "region.wildMaps": boolean
-    "rom.dungeonCount": strings.CompassMode
+    "rom.dungeonCount": CompassMode
     "rom.freeItemText": boolean
     "rom.genericKeys": boolean
     "rom.logicMode": strings.RomMode
     "rom.mapOnPickup": boolean
     "rom.rupeeBow": boolean
-    "rom.timerMode": strings.ClockMode
+    "rom.timerMode": ClockMode
     "rom.timerStart": string
     "spoil.BootsLocation": boolean
 };
 
 export type SpoilerAPIData = {
-    ["Agahnims Tower"]?: WorldRegion
+    "Agahnims Tower"?: WorldRegion
     Bosses?: BossLocations
-    ["Castle Tower"]?: WorldRegion
+    "Castle Tower"?: WorldRegion
     Caves?: WorldRegion
-    ["Dark Palace"]?: WorldRegion
-    ["Dark World"]?: WorldRegion
-    ["Death Mountain"]?: WorldRegion
-    ["Desert Palace"]?: WorldRegion
-    ["Eastern Palace"]?: WorldRegion
-    Entrances?: Array<Entrance>
+    "Dark Palace"?: WorldRegion
+    "Dark World"?: WorldRegion
+    "Death Mountain"?: WorldRegion
+    "Desert Palace"?: WorldRegion
+    "Eastern Palace"?: WorldRegion
+    Entrances?: Entrance[]
     ["Ganons Tower"]?: WorldRegion
     ["Hyrule Castle"]?: WorldRegion
     ["Ice Palace"]?: WorldRegion
     ["Light World"]?: WorldRegion
     ["Misery Mire"]?: WorldRegion
     ["Palace of Darkness"]?: WorldRegion
-    Shops?: Array<ShopData>
+    Shops?: ShopData[]
     ["Skull Woods"]?: WorldRegion
     Special?: SpoilerSpecialData
     ["Swamp Palace"]?: WorldRegion
@@ -555,37 +557,37 @@ export type SpoilerAPIData = {
 };
 
 export interface SeedMeta {
-    accessibility: strings.ItemAccessibility
+    accessibility: Accessibility
     allow_quickswap: boolean
     build: string
-    dungeon_items: strings.DungeonItems
-    ["enemizer.boss_shuffle"]: strings.BossShuffle
-    ["enemizer.enemy_damage"]: strings.EnemyDamage
-    ["enemizer.enemy_health"]: strings.EnemyHealth
-    ["enemizer.enemy_shuffle"]: strings.EnemyShuffle
-    ["enemizer.pot_shuffle"]: strings.OptionToggle
-    entry_crystals_ganon: strings.CrystalRequirement
-    entry_crystals_tower: strings.CrystalRequirement
-    goal: strings.Goal
-    hints: strings.OptionToggle
-    item_functionality: strings.ItemFunctionality
-    item_placement: strings.ItemPlacement
-    item_pool: strings.ItemPool
+    dungeon_items: Keysanity
+    "enemizer.boss_shuffle": BossShuffle
+    "enemizer.enemy_damage": EnemyDamage
+    "enemizer.enemy_health": EnemyHealth
+    "enemizer.enemy_shuffle": EnemyShuffle
+    "enemizer.pot_shuffle": Toggle
+    entry_crystals_ganon: Crystals
+    entry_crystals_tower: Crystals
+    goal: Goals
+    hints: Toggle
+    item_functionality: ItemFunctionality
+    item_placement: ItemPlacement
+    item_pool: ItemPool
     logic: strings.RomMode
-    mode: strings.WorldState
+    mode: WorldState
     pseudoboots: boolean
     rom_mode: strings.RomMode
     size: number
-    spoilers: strings.SpoilerSetting
+    spoilers: Spoilers
     tournament: boolean
-    weapons: strings.Weapons
+    weapons: Weapons
     world_id: number
     worlds: number
 };
 
 export interface EntranceSeedMeta extends SeedMeta {
     keysanity: boolean
-    shuffle: strings.EntranceShuffle
+    shuffle: Entrances
     version: string
 };
 

@@ -1,51 +1,35 @@
-import { CustomizerItemOptions } from "../../types/structures";
-import BaseBuilder from "./BaseBuilder";
-import { OverflowOptions } from "../../types/optionObjs";
+import BaseBuilder from "./BaseBuilder.js";
+import { CustomItemCounts, CustomItemValues, CustomizerItemOptions } from "../../types/structures.js";
+import { OverflowOptions } from "../../types/optionObjs.js";
+import { customizerDefault } from "../../types/payloads.js";
 
-export default class ItemSettingsBuilder extends BaseBuilder<keyof CustomizerItemOptions, any> {
+export default class ItemSettingsBuilder
+    extends BaseBuilder<CustomizerItemOptions> {
+    static readonly #default = customizerDefault.custom.item;
+
     constructor() {
         super();
+        this._body = super._deepCopy(ItemSettingsBuilder.#default);
     }
 
     get allowDarkRoomNav(): boolean {
-        return super._getProp("require").Lamp;
+        return this._body.require.Lamp;
     }
 
-    get requiredGoalCount(): number {
-        const val: number | string = super._getProp("Goal").Required;
-        return typeof val === "string" ? undefined : val;
+    get requiredGoalCount(): number | "" {
+        return this._body.Goal.Required;
     }
 
-    get blueClockValue(): number {
-        const val: number | string = super._getProp("value").BlueClock;
-        return typeof val === "string" ? undefined : val;
+    get itemValue(): Readonly<CustomItemValues> {
+        return this._body.value;
     }
 
-    get greenClockValue(): number {
-        const val: number | string = super._getProp("value").GreenClock;
-        return typeof val === "string" ? undefined : val;
+    get overflow(): Readonly<OverflowOptions> {
+        return this._body.overflow;
     }
-
-    get redClockValue(): number {
-        const val: number | string = super._getProp("value").RedClock;
-        return typeof val === "string" ? undefined : val;
-    }
-
-    get rupoorValue(): number {
-        const val: number | string = super._getProp("value").Rupoor;
-        return typeof val === "string" ? undefined : val;
-    }
-
-    // get swordOverflowCount(): number {
-    //     return super._getProp("overflow")?.count?.Sword;
-    // }
-
-    // get shieldOverflowCount(): number {
-    //     return super._getProp("overflow")?.count?.Shield;
-    // }
 
     setAllowDarkRoomNav(allow: boolean): this {
-        super._getProp("require").Lamp = allow;
+        this._body.require.Lamp = allow;
         return this;
     }
 
@@ -53,11 +37,32 @@ export default class ItemSettingsBuilder extends BaseBuilder<keyof CustomizerIte
         if (count < 0) {
             throw new Error("count must be positive.");
         }
-        super._getProp("Goal").required = count;
+        this._body.Goal.Required = count;
         return this;
     }
 
     setOverflow(opts: OverflowOptions): this {
-        return super._setProp("overflow", opts);
+        this._body.overflow = super._deepCopy(opts) as OverflowOptions;
+        return this;
+    }
+
+    setItemValue(value: Partial<CustomItemValues>): this {
+        const { value: vDefs } = ItemSettingsBuilder.#default;
+        for (const key in vDefs) {
+            if (!(key in value)) {
+                value[key as keyof CustomItemValues] = "";
+            }
+        }
+        this._body.value = super._deepCopy(value) as CustomItemValues;
+        return this;
+    }
+
+    setItemCounts(counts: Partial<CustomItemCounts>): this {
+        const res = super._deepCopy(ItemSettingsBuilder.#default.count) as CustomItemCounts;
+        for (const key in counts) {
+            res[key as keyof typeof counts] = counts[key as keyof typeof counts];
+        }
+        this._body.count = res;
+        return this;
     }
 }

@@ -1,20 +1,14 @@
-export default class BaseBuilder<K extends string> {
-    protected _body: { [x in K]?: unknown } = {};
+import JSONTranslatable from "../interfaces/JSONTranslatable.js";
 
-    protected _getProp(key: K): unknown {
-        return this._body[key];
-    }
+export default class BaseBuilder<T>
+    implements JSONTranslatable<T> {
+    protected _body: Partial<T> = {};
 
-    protected _setProp(key: K, value: unknown): this {
-        this._body[key] = value;
-        return this;
-    }
-
-    protected _deepCopy(value: unknown): unknown {
+    protected _deepCopy<S>(value: S): S {
         return JSON.parse(JSON.stringify(value));
     }
 
-    toJSON(): unknown {
-        return this._body;
+    toJSON(): T {
+        return this._body as T;
     }
 }

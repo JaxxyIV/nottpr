@@ -1,5 +1,6 @@
-import { StartHashOverride } from "./types/structures";
-import { Hash } from "./types/enums";
+import districts from "./districts.js";
+import { StartHashOverride } from "./types/structures.js";
+import { District, Hash, ItemLocation } from "./types/enums.js";
 
 /**
  * Utility function that generates a pseudorandom start screen hash. Useful for
@@ -13,4 +14,16 @@ export function randomStartHash(): StartHashOverride {
         res[i] = Math.floor(Math.random() * Object.keys(Hash).length);
     }
     return res as StartHashOverride;
+}
+
+/**
+ * Retrieves a common district of item locations. Useful for setting an item's
+ * placement within a specific region of the game.
+ *
+ * @param dist The district to be imported.
+ * @returns An array containing all the item locations within the specified
+ * district.
+ */
+export function getDistrict(dist: District): ItemLocation[] {
+    return districts[dist];
 }

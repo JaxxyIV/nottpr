@@ -1,3 +1,3 @@
-export default interface JSONTranslatable {
-    toJSON(): unknown;
+export default interface JSONTranslatable<T> {
+    toJSON(): T;
 }

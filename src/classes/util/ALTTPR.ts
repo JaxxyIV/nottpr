@@ -1,16 +1,15 @@
+import Request from "./Request.js";
+import Seed from "./Seed.js";
+import Sprite from "./Sprite.js";
+import CustomizerBuilder from "../builders/CustomizerBuilder.js";
+import SeedBuilder from "../builders/SeedBuilder.js";
 import {
     CustomizerPayload,
     DailyAPIData,
-    GenerateSeedAPIData,
     RandomizerPayload,
     SeedAPIData,
     SpriteAPIData,
-} from "../../types/structures";
-import CustomizerBuilder from "../builders/CustomizerBuilder";
-import Seed from "./Seed";
-import SeedBuilder from "../builders/SeedBuilder";
-import Sprite from "./Sprite";
-import Request from "./Request";
+} from "../../types/structures.js";
 
 /**
  * The ALTTPR class is the main class for interacting with alttpr.com's API.
@@ -84,12 +83,11 @@ export default class ALTTPR {
         if (typeof data === "function") {
             data = data(new SeedBuilder());
         }
-        const response: GenerateSeedAPIData =
-            await new Request("/api/randomizer")
-                .post(JSON.stringify(data), "json", {
-                    "Accept": "application/json, text/plain, */*",
-                    "Content-Type": "application/json"
-                });
+        const response: SeedAPIData = await new Request("/api/randomizer")
+            .post(JSON.stringify(data), "json", {
+                "Accept": "application/json, text/plain, */*",
+                "Content-Type": "application/json"
+            });
         const seed = new Seed(response, this.#sprites);
         this.#seeds.set(seed.hash, seed);
         return seed;
@@ -111,12 +109,11 @@ export default class ALTTPR {
         if (typeof data === "function") {
             data = data(new CustomizerBuilder());
         }
-        const response: GenerateSeedAPIData =
-            await new Request("/api/customizer")
-                .post(JSON.stringify(data), "json", {
-                    "Accept": "application/json, text/plain, */*",
-                    "Content-Type": "application/json"
-                });
+        const response: SeedAPIData = await new Request("/api/customizer")
+            .post(JSON.stringify(data), "json", {
+                "Accept": "application/json, text/plain, */*",
+                "Content-Type": "application/json"
+            });
         const seed = new Seed(response, this.#sprites);
         this.#seeds.set(seed.hash, seed);
         return seed;

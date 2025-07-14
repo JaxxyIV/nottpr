@@ -1,30 +1,25 @@
-import * as fs from "node:fs/promises";
-import { BpsPatch } from "rommage/BpsPatch";
-import { PaletteMode, PaletteRandomizerOptions } from "@maseya/z3pr";
-import {
-    SpoilerAPIData,
-    PatchAPIData,
-    SeedAPIData,
-    GenerateSeedAPIData,
-} from "../../types/structures";
-import { Droppable, EnemyPacks } from "../../types/strings";
-import { HeartColor, HeartSpeed, MenuSpeed } from "../../types/enums";
-import Patcher from "./Patcher";
-import Request from "./Request";
-import Sprite from "./Sprite";
+import patchZ3R, { PatchOptions } from "z3r-patch";
+// import { PaletteMode, PaletteRandomizerOptions } from "@maseya/z3pr";
+import Sprite from "./Sprite.js";
+import JSONTranslatable from "../interfaces/JSONTranslatable.js";
+import { SpoilerAPIData, SeedAPIData } from "../../types/structures.js";
+import { Droppable, EnemyPacks } from "../../types/strings.js";
+import { HeartColor, HeartSpeed, MenuSpeed } from "../../types/enums.js";
+
 
 /**
  * An instance of this class represents a seed generated on alttpr.com.
  */
-export default class Seed {
+export default class Seed
+    implements JSONTranslatable<SeedAPIData> {
     #logic: string;
     #spoiler: SpoilerAPIData;
     #hash: string;
     #generated: string;
     #size: number;
     #current_rom_hash?: string;
+    #origPatch: Record<number, number[]>[];
     #patchMap = new Map<number, number[]>();
-    #basePatch?: Buffer;
 
     readonly #sprites: Map<string, Sprite>;
 
@@ -38,11 +33,12 @@ export default class Seed {
         "Compass", "Big Key",
     ];
 
-    constructor(json: SeedData, sprites: Map<string, Sprite>) {
+    constructor(json: SeedAPIData, sprites: Map<string, Sprite>) {
         this.#sprites = sprites;
         ({
             logic: this.#logic,
             spoiler: this.#spoiler,
+            patch: this.#origPatch,
             hash: this.#hash,
             generated: this.#generated,
             size: this.#size,
@@ -50,7 +46,7 @@ export default class Seed {
 
         // By converting the patch data in the JSON to a Map, operations like
         // obtaining the file select hash will be much easier.
-        for (const patch of json.patch) {
+        for (const patch of this.#origPatch) {
             for (const key in patch) {
                 const bytes = patch[key];
                 this.#patchMap.set(parseInt(key, 10), bytes);
@@ -70,7 +66,7 @@ export default class Seed {
      * Returns this Seed's JSON patch data as a Map object. Elements in the Map
      * are keyed by their offsets.
      */
-    get patchAsMap(): Map<number, number[]> {
+    get patchMap(): ReadonlyMap<number, number[]> {
         return this.#patchMap;
     }
 
@@ -125,28 +121,15 @@ export default class Seed {
      *
      * **Notes:**
      * * The value for `options.sprite` can be passed as a string, Sprite object,
-     * or Buffer object.
-     * * `options.menuSpeed` will be forced to `"normal"` if the seed is a race
-     * seed.
+     * or ArrayBuffer object.
      *
      * @param base The path to the base ROM.
-     * @param options The post-generation options.
-     * @returns The patched ROM as a buffer.
+     * @param options Additional post-generation options.
+     * @returns The patched ROM as buffered data.
      */
-    async patchROM(base: string, options: PostGenOptions = {
-        heartSpeed: HeartSpeed.Normal,
-        heartColor: HeartColor.Red,
-        menuSpeed: MenuSpeed.Normal,
-        quickswap: true,
-        paletteShuffle: false,
-        backgroundMusic: true,
-        msu1Resume: true,
-        sprite: "Link",
-        reduceFlash: false
-    }): Promise<Buffer> {
+    async patch(base: string, options: PostGenOptions = {}): Promise<Buffer> {
         // Correct the value provided for sprite (if necessary)
-        if (!options.sprite) {
-            options.sprite = await this.#sprites.get("Link").fetch();
+        if (options.sprite === undefined) { // Empty if-statement to account for undefined
         } else if (typeof options.sprite === "string") {
             if (!this.#sprites.has(options.sprite)) {
                 throw new ReferenceError("Sprite does not exist in local cache.");
@@ -154,54 +137,33 @@ export default class Seed {
             options.sprite = await this.#sprites.get(options.sprite).fetch();
         } else if (options.sprite instanceof Sprite) {
             options.sprite = await options.sprite.fetch();
-        } else if (!(options.sprite instanceof Buffer)) {
+        } else if (!(options.sprite instanceof ArrayBuffer)) {
             throw new TypeError("Invalid argument for sprite.");
         }
-
-        const romBuffer = await fs.readFile(base);
-
-        // Base patch is applied first.
-        const basePatch = this.#basePatch ?? await this.fetchBasePatch();
-        const bpsPatch = new BpsPatch(basePatch);
-        const patched = bpsPatch.applyTo(romBuffer);
 
         // Apparently, trying to write a different menu speed for a tournament
         // seed doesn't modify the menu speed (which is the intended behavior).
         // However, it DOES (for some reason) modify the menu's sound effect.
         // This would obviously not be 1:1 with alttpr.com, so we have to add a
         // proper sanity check here for race seeds.
-        const actSpeed = this.#spoiler.meta.tournament ? "normal"
-            : (options.menuSpeed ?? "normal");
+        if (this.#spoiler.meta.tournament) {
+            delete options.menuSpeed;
+        }
 
-        // Then the seed-specific stuff is applied.
-        return new Patcher(patched)
-            .setSeedPatches(this.#patchMap)
-            .setSprite(options.sprite)
-            .setPaletteShuffle(options.paletteShuffle ?? false)
-            .setBackgroundMusic(options.backgroundMusic ?? true)
-            .setHeartColor(options.heartColor ?? "red")
-            .setHeartSpeed(options.heartSpeed ?? "normal")
-            .setMenuSpeed(actSpeed)
-            .setMsu1Resume(options.msu1Resume ?? true)
-            .setQuickswap(options.quickswap ?? true)
-            .setReduceFlashing(options.reduceFlash ?? false)
-            .fixChecksum() // Checksum fix must be done last
-            .buffer;
+        const rom = await patchZ3R(base, this.toJSON(), options as PatchOptions);
+        return Buffer.from(rom);
     }
 
-    async fetchBasePatch(): Promise<Buffer> {
-        if (!this.#basePatch) {
-            if (typeof this.#current_rom_hash === "undefined") {
-                await this.#setRomHash();
-            }
-
-            const response: ArrayBuffer =
-                await new Request(`/bps/${this.#current_rom_hash}.bps`)
-                    .get("buffer");
-            const buffer = Buffer.from(response);
-            this.#basePatch = buffer;
-        }
-        return this.#basePatch;
+    toJSON(): Readonly<SeedAPIData> {
+        return {
+            logic: this.#logic,
+            generated: this.#generated,
+            hash: this.#hash,
+            size: this.#size,
+            spoiler: this.#spoiler,
+            current_rom_hash: this.#current_rom_hash,
+            patch: this.#origPatch,
+        };
     }
 
     /**
@@ -223,7 +185,7 @@ export default class Seed {
             return Buffer.from(JSON.stringify(this.#spoiler, undefined, 4));
         }
 
-        const log: Record<string, any> = {};
+        const log: Record<string, any> = {}; // TODO: Properly type this
 
         const dungeons = {
             "A1": "CastleTower",
@@ -276,8 +238,7 @@ export default class Seed {
             log.Entrances = this.#spoiler.Entrances;
 
             for (const key in log.Prizes) {
-                const values: string[] =
-                    Object.values(this.#spoiler[key as keyof SpoilerAPIData]);
+                const values: string[] = Object.values(this.#spoiler[key as keyof SpoilerAPIData]);
                 log.Prizes[key] = values.find(v =>
                     v.startsWith("Crystal") || v.endsWith("Pendant"));
             }
@@ -323,8 +284,7 @@ export default class Seed {
                 for (const [rawLoc, rawItem] of entries) {
                     const loc = rawLoc.replace(":1", "");
                     let item = rawItem.replace(":1", "");
-                    const dKey = Object.keys(dungeons).find(k =>
-                        item.endsWith(k));
+                    const dKey = Object.keys(dungeons).find(k => item.endsWith(k));
 
                     if (typeof dKey !== "undefined") {
                         item += `-${dungeons[dKey as keyof typeof dungeons]}`;
@@ -461,12 +421,6 @@ export default class Seed {
         }
     }
 
-    async #setRomHash(): Promise<void> {
-        const response: PatchAPIData =
-            await new Request(`/api/h/${this.#hash}`).get("json");
-        ({ md5: this.#current_rom_hash } = response);
-    }
-
     /**
      * Searches the patch data for the given byte offset. If the offset does
      * not exist in the map, the requested data at the next closest offset is
@@ -485,7 +439,6 @@ export default class Seed {
 
         // If the offset does not exist here, then we know we are dealing with
         // an entrance seed. (The patch data is minified.)
-
         const offsets: number[] = [];
         for (const [key] of this.#patchMap) {
             offsets.push(key);
@@ -540,16 +493,15 @@ export default class Seed {
     }
 }
 
-type SeedData = SeedAPIData | GenerateSeedAPIData;
 type PostGenOptions = {
     heartSpeed?: HeartSpeed,
     heartColor?: HeartColor,
     menuSpeed?: MenuSpeed,
     quickswap?: boolean,
-    paletteShuffle?: PaletteRandomizerOptions<number> | boolean | PaletteMode,
+    //paletteShuffle?: PaletteRandomizerOptions<number> | boolean | PaletteMode,
     backgroundMusic?: boolean,
     msu1Resume?: boolean,
-    sprite?: string | Sprite | Buffer,
+    sprite?: string | Sprite | ArrayBuffer,
     reduceFlash?: boolean,
 };
 type DropsSpoilerData = {
@@ -560,7 +512,7 @@ type DropsSpoilerData = {
     }
     Stun?: Droppable
     Fish?: Droppable
-    Packs?: Partial<Record<EnemyPacks, string>>;
+    Packs?: Partial<Record<EnemyPacks, string>>
 
 };
 type PullTiers = Partial<Record<1 | 2 | 3, Droppable>>;

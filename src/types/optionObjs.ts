@@ -1,45 +1,32 @@
-import * as strings from "./strings";
-import * as structs from "./structures";
+import * as strings from "./strings.js";
+import * as structs from "./structures.js";
+import * as enums from "./enums.js";
 
 export type BaseSeedOptions = {
-    accessibility?: strings.ItemAccessibility
+    accessibility?: enums.Accessibility
     allow_quickswap?: boolean
     crystals?: CrystalOptions
-    dungeon_items?: strings.DungeonItems
+    dungeon_items?: enums.Keysanity
     enemizer?: EnemizerOptions
-    glitches?: strings.GlitchesRequired
-    goal?: strings.Goal
-    hints?: strings.OptionToggle
+    glitches?: enums.Glitches
+    goal?: enums.Goals
+    hints?: enums.Toggle
     item?: ItemOptions
-    item_placement?: strings.ItemPlacement
-    lang?: strings.Lang
-    mode?: strings.WorldState
+    item_placement?: enums.ItemPlacement
+    lang?: enums.Language
+    mode?: enums.WorldState
     name?: string
     notes?: string
     override_start_screen?: structs.StartHashOverride
     pseudoboots?: boolean
-    spoilers?: strings.SpoilerSetting
+    spoilers?: enums.Spoilers
     tournament?: boolean
-    weapons?: strings.Weapons
+    weapons?: enums.Weapons
 };
 
-export type CrystalOptions = {
-    ganon?: strings.CrystalRequirement
-    tower?: strings.CrystalRequirement
-};
-
-export type EnemizerOptions = {
-    boss_shuffle?: strings.BossShuffle
-    enemy_damage?: strings.EnemyDamage
-    enemy_health?: strings.EnemyHealth
-    enemy_shuffle?: strings.EnemyShuffle
-    pot_shuffle?: strings.OptionToggle
-};
-
-export type ItemOptions = {
-    functionality?: strings.ItemFunctionality
-    pool?: strings.ItemPool
-};
+export type CrystalOptions = Partial<structs.CrystalPayloadData>;
+export type EnemizerOptions = Partial<structs.EnemizerPayloadData>;
+export type ItemOptions = Partial<structs.ItemPayloadData>;
 
 export type CustomizerSeedOptions = BaseSeedOptions & {
     custom?: CustomizerCustomOptions
@@ -104,7 +91,7 @@ export type CustomizerCustomOptions = {
     }
     item?: {
         count?: {
-            [x in keyof structs.ExtendedItemCountOptions]?: number
+            [x in keyof structs.CustomItemCounts]?: number
         }
     }
     /* In an ideal world, the customizer would pass this and a bunch of other
@@ -139,13 +126,13 @@ export type CustomizerCustomOptions = {
     "region.wildCompasses"?: boolean
     "region.wildKeys"?: boolean
     "region.wildMaps"?: boolean
-    "rom.dungeonCount"?: strings.CompassMode
+    "rom.dungeonCount"?: enums.CompassMode
     "rom.freeItemText"?: boolean
     "rom.genericKeys"?: boolean
     "rom.logicMode"?: strings.RomMode
     "rom.mapOnPickup"?: boolean
     "rom.rupeeBow"?: boolean
-    "rom.timerMode"?: strings.ClockMode
+    "rom.timerMode"?: enums.ClockMode
     "rom.timerStart"?: string
     "spoil.BootsLocation"?: boolean
 };
@@ -153,8 +140,4 @@ export type CustomizerCustomOptions = {
 export type OverflowOptions = {
     count: Partial<Record<strings.Restrictable, number>>
     replacement: Partial<Record<strings.Restrictable, strings.Item>>
-}
-
-export type ItemValueOptions = {
-
 }

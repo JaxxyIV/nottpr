@@ -3,10 +3,16 @@
   "version": "1.0.0",
   "description": "A Node.js JS/TS library for alttpr.com",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "*.md",
+    "*.json",
+    "LICENSE"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "alttpr",
@@ -34,7 +40,7 @@
     "center-align": "^1.0.1",
     "flat": "^5.0.2",
     "node-fetch": "^3.3.2",
-    "rommage": "^3.1.2"
+    "z3r-patch": "^1.0.1"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.1",

@@ -1,133 +1,108 @@
-import { CustomizerRegionOptions } from "../../types/structures";
-import { RegionSettings } from "../../types/strings";
-import BaseBuilder from "./BaseBuilder";
+import BaseBuilder from "./BaseBuilder.js";
+import { CustomizerRegionOptions } from "../../types/structures.js";
+import { customizerDefault } from "../../types/payloads.js";
 
-export default class RegionSettingsBuilder extends BaseBuilder<keyof CustomizerRegionOptions, boolean> {
-    static readonly #default: CustomizerRegionOptions = {
-        bossNormalLocation: true,
-        wildBigKeys: false,
-        wildCompasses: false,
-        wildKeys: false,
-        wildMaps: false,
-    };
+export default class RegionSettingsBuilder
+    extends BaseBuilder<CustomizerRegionOptions> {
+    static readonly #default: CustomizerRegionOptions = customizerDefault.custom.region;
 
-    constructor(data?: RegionOptions) {
+    constructor(data?: Partial<CustomizerRegionOptions>) {
         super();
-        if (typeof data !== "object") {
-            this._body = RegionSettingsBuilder.#default;
-        } else {
-            this._body = RegionSettingsBuilder.#fill(data, RegionSettingsBuilder.#default);
-        }
-    }
-
-    static #fill(passed: any, def: any): any {
-        for (const key in def) {
-            if (!(key in passed)) {
-                passed[key] = def[key];
-            } else if (typeof passed[key] === "object" && !Array.isArray(passed[key])) {
-                passed[key] = this.#fill(passed[key], def[key]);
+        this._body = super._deepCopy(RegionSettingsBuilder.#default);
+        if (data) {
+            for (const key in data) {
+                this._body[key as keyof typeof data] = data[key as keyof typeof data];
             }
         }
-        return passed;
     }
 
-    get bossHeartsInPool(): boolean | undefined {
-        return super._getProp("bossHeartsInPool");
+    get bossHeartsInPool(): boolean {
+        return this._body.bossHeartsInPool;
     }
 
     get bossNormalLocation(): boolean {
-        return super._getProp("bossNormalLocation");
+        return this._body.bossNormalLocation;
     }
 
-    get bossesHaveItem(): boolean | undefined {
-        return super._getProp("bossesHaveItem");
+    get bossesHaveItem(): boolean {
+        return this._body.bossesHaveItem;
     }
 
-    get forceSkullWoodsKey(): boolean | undefined {
-        return super._getProp("forceSkullWoodsKey");
+    get forceSkullWoodsKey(): boolean {
+        return this._body.forceSkullWoodsKey;
     }
 
-    get requireBetterBow(): boolean | undefined {
-        return super._getProp("requireBetterBow");
+    get swordsInPool(): boolean {
+        return this._body.swordsInPool;
     }
 
-    get requireBetterSword(): boolean | undefined {
-        return super._getProp("requireBetterSword");
-    }
-
-    get swordsInPool(): boolean | undefined {
-        return super._getProp("swordsInPool");
-    }
-
-    get takeAnys(): boolean | undefined {
-        return super._getProp("takeAnys");
+    get takeAnys(): boolean {
+        return this._body.takeAnys;
     }
 
     get wildBigKeys(): boolean {
-        return super._getProp("wildBigKeys");
+        return this._body.wildBigKeys;
     }
 
     get wildCompasses(): boolean {
-        return super._getProp("wildCompasses");
+        return this._body.wildCompasses;
     }
 
     get wildKeys(): boolean {
-        return super._getProp("wildKeys");
+        return this._body.wildKeys;
     }
 
     get wildMaps(): boolean {
-        return super._getProp("wildMaps");
+        return this._body.wildMaps;
     }
 
     setBossHeartsInPool(bool: boolean): this {
-        return super._setProp("bossHeartsInPool", bool);
+        this._body.bossHeartsInPool = bool;
+        return this;
     }
 
     setBossNormalLocation(bool: boolean): this {
-        return super._setProp("bossNormalLocation", bool);
+        this._body.bossNormalLocation = bool;
+        return this;
     }
 
     setBossesHaveItem(bool: boolean): this {
-        return super._setProp("bossesHaveItem", bool);
+        this._body.bossesHaveItem = bool;
+        return this;
     }
 
     setForceSkullWoodsKey(bool: boolean): this {
-        return super._setProp("forceSkullWoodsKey", bool);
-    }
-
-    setRequireBetterBow(bool: boolean): this {
-        return super._setProp("requireBetterBow", bool);
-    }
-
-    setRequireBetterSword(bool: boolean): this {
-        return super._setProp("requireBetterSword", bool);
+        this._body.forceSkullWoodsKey = bool;
+        return this;
     }
 
     setSwordsInPool(bool: boolean): this {
-        return super._setProp("swordsInPool", bool);
+        this._body.swordsInPool = bool;
+        return this;
     }
 
     setTakeAnys(bool: boolean): this {
-        return super._setProp("takeAnys", bool);
+        this._body.takeAnys = bool;
+        return this;
     }
 
     setWildBigKeys(bool: boolean): this {
-        return super._setProp("wildBigKeys", bool);
+        this._body.wildBigKeys = bool;
+        return this;
     }
 
     setWildCompasses(bool: boolean): this {
-        return super._setProp("wildCompasses", bool);
+        this._body.wildCompasses = bool;
+        return this;
     }
 
     setWildKeys(bool: boolean): this {
-        return super._setProp("wildKeys", bool);
+        this._body.wildKeys = bool;
+        return this;
     }
 
     setWildMaps(bool: boolean): this {
-        return super._setProp("wildMaps", bool);
+        this._body.wildMaps = bool;
+        return this;
     }
 }
-
-type RegionOptions = {
-    [x in RegionSettings]?: boolean;
-};

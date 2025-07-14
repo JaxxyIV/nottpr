@@ -1,26 +1,9 @@
-import { ItemLocation, PrizeLocation, MedallionLocation, BottleLocation, TextDialog } from "./enums";
-
-export type GlitchesRequired = "none" | "overworld_glitches" | "hybrid_major_glitches" | "major_glitches" | "no_logic";
-export type ItemPlacement = "basic" | "advanced";
-export type DungeonItems = "standard" | "mc" | "mcs" | "full";
-export type ItemAccessibility = "items" | "locations" | "none";
-export type Goal = "ganon" | "fast_ganon" | "pedestal" | "dungeons" | "triforce-hunt" | "ganonhunt" | "completionist";
-export type CrystalRequirement = NumberString<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7> | "random";
-export type WorldState = "open" | "standard" | "inverted" | "retro";
-export type EntranceShuffle = "none" | "simple" | "restricted" | "full" | "crossed" | "insanity";
-export type BossShuffle = "none" | "simple" | "full" | "random";
-export type EnemyShuffle = "none" | "shuffled" | "random";
-export type OptionToggle = "on" | "off";
-export type Weapons = "randomized" | "assured" | "vanilla" | "swordless";
-export type ItemPool = "normal" | "hard" | "expert" | "crowd_control";
-export type ItemFunctionality = "normal" | "hard" | "expert";
-export type EnemyDamage = "default" | "shuffled" | "random";
-export type EnemyHealth = "default" | "easy" | "hard" | "expert";
-export type Lang = "en" | "de" | "fr" | "es";
-export type SpoilerSetting = "on" | "off" | "generate" | "mystery";
-export type HeartSpeed = "off" | "half" | "quarter" | "double" | "normal";
-export type HeartColor = "red" | "blue" | "green" | "yellow";
-export type MenuSpeed = "slow" | "normal" | "fast" | "instant";
+import {
+    ItemLocation,
+    PrizeLocation,
+    MedallionLocation,
+    BottleLocation
+} from "./enums.js";
 
 export type GameRegion = "Light World" | "Hyrule Castle" | "Eastern Palace" | "Desert Palace" | "Death Mountain" | "Tower of Hera" | "Castle Tower" | "Dark World" | "Dark Palace" | "Swamp Palace" | "Skull Woods" | "Thieves Town" | "Ice Palace" | "Misery Mire" | "Turtle Rock" | "Ganons Tower" | "Special";
 
@@ -73,8 +56,8 @@ export type RequiredRegionSettings = "bossNormalLocation" | "wildBigKeys" | "wil
 export type RegionSettings = "requireBetterBow" | "requireBetterSword" | "forceSkullWoodsKey" | "swordsInPool" | "bossHeartsInPool" | "bossesHaveItem" | "takeAnys";
 export type CustomSettings = "item" | "prize" | "region" | "rom" | "spoil.BootsLocation" | "drop";
 export type Restrictable = "Sword" | "Armor" | "Bow" | "Shield" | "BossHeartContainer" | "PieceOfHeart" | "Bottle";
-export type ClockMode = "stopwatch" | "countdown-ohko" | "countdown-continue" | "countdown-stop" | "countdown-end" | "off";
-export type CompassMode = OptionToggle | "pickup";
+// export type ClockMode = "stopwatch" | "countdown-ohko" | "countdown-continue" | "countdown-stop" | "countdown-end" | "off";
+// export type CompassMode = Toggle | "pickup";
 
 export type SpoilerItemString<I extends Item> = `${I}:1`;
 

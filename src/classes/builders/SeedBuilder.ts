@@ -1,8 +1,8 @@
-import BaseSeedBuilder from "./BaseSeedBuilder";
-import { EntranceShuffle } from "../../types/strings";
-import { BaseSeedOptions } from "../../types/optionObjs";
-import Request from "../util/Request";
-import { APIPreset } from "../../types/structures";
+import BaseSeedBuilder from "./BaseSeedBuilder.js";
+import Request from "../util/Request.js";
+import { BaseSeedOptions } from "../../types/optionObjs.js";
+import { APIPreset, RandomizerPayload } from "../../types/structures.js";
+import { Entrances } from "../../types/enums.js";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -26,24 +26,26 @@ import { APIPreset } from "../../types/structures";
  * const seed = await ALTTPR.randomizer(builder);
  * ```
  */
-export default class SeedBuilder extends BaseSeedBuilder<"entrances"> {
+export default class SeedBuilder
+    extends BaseSeedBuilder<RandomizerPayload> {
     static #webPresets: Record<WebPreset, APIPreset>;
 
     constructor(data?: SeedOptions) {
-        super(data);
+        super();
         if (typeof data === "undefined" || !("entrances" in data)) {
-            super._setProp("entrances", "none");
+            this.setEntrances(Entrances.None);
         } else {
-            super._setProp("entrances", data.entrances);
+            this.setEntrances(data.entrances);
         }
     }
 
-    get entrances(): EntranceShuffle {
-        return super._getProp("entrances") as EntranceShuffle;
+    get entrances(): Entrances {
+        return this._body.entrances;
     }
 
-    setEntrances(shuffle: EntranceShuffle): this {
-        return super._setProp("entrances", shuffle);
+    setEntrances(shuffle: Entrances): this {
+        this._body.entrances = shuffle;
+        return this;
     }
 
     /**
@@ -69,10 +71,7 @@ export default class SeedBuilder extends BaseSeedBuilder<"entrances"> {
 
         return new this()
             .setAccessibility(selected.accessibility)
-            .setCrystals({
-                tower: selected.tower_open,
-                ganon: selected.ganon_open,
-            })
+            .setCrystals(selected.tower_open, selected.ganon_open)
             .setDungeonItems(selected.dungeon_items)
             .setEnemizer({
                 boss_shuffle: selected.boss_shuffle,
@@ -97,5 +96,5 @@ export default class SeedBuilder extends BaseSeedBuilder<"entrances"> {
 type WebPreset = "beginner" | "default" | "veetorp" | "crosskeys" | "quick" | "nightmare";
 
 export type SeedOptions = BaseSeedOptions & {
-    entrances?: EntranceShuffle
+    entrances?: Entrances
 };

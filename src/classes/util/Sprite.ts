@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { SpriteAPIData } from "../../types/structures";
+import { SpriteAPIData } from "../../types/structures.js";
 
 export default class Sprite {
     #name: string;
@@ -8,7 +8,7 @@ export default class Sprite {
     #file: string;
     #tags: string[];
     #usage: string[];
-    #buffer?: Buffer;
+    #buffer?: ArrayBuffer;
 
     constructor(json: SpriteAPIData) {
         ({
@@ -37,16 +37,16 @@ export default class Sprite {
         return this.#file;
     }
 
-    get tags(): string[] {
+    get tags(): ReadonlyArray<string> {
         return Array.from(this.#tags);
     }
 
-    get usage(): string[] {
+    get usage(): ReadonlyArray<string> {
         return Array.from(this.#usage);
     }
 
     get [Symbol.toStringTag](): string {
-        return `Sprite-${this.#name}`;
+        return this.#name;
     }
 
     /**
@@ -54,11 +54,10 @@ export default class Sprite {
      *
      * @returns The buffered data.
      */
-    async fetch(): Promise<Buffer> {
+    async fetch(): Promise<ArrayBuffer> {
         if (!this.#buffer) {
             this.#buffer = await fetch(this.#file)
-                .then(res => res.arrayBuffer())
-                .then(buffer => Buffer.from(buffer));
+                .then(res => res.arrayBuffer());
         }
         return this.#buffer;
     }

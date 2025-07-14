@@ -1,23 +1,42 @@
+import BaseSeedBuilder from "./BaseSeedBuilder.js";
+import CustomSettingsBuilder from "./CustomSettingsBuilder.js";
+import EquipmentBuilder from "./EquipmentBuilder.js";
 import {
     AllowedGlitches,
     CustomizerJSON,
     CustomizerJSONEquipment,
+    CustomizerPayload,
+    CustomOptions,
     LocationMap,
+    PrizePackGroups,
     TextMap,
-} from "../../types/structures";
+} from "../../types/structures.js";
+import { RupeeAmount, StartingEquipment } from "../../types/strings.js";
 import {
-    CustomizerSettings,
+    Bottle,
+    BottleLocation,
     Item,
-    RupeeAmount,
-    StartingEquipment,
-} from "../../types/strings";
-import { BaseSeedOptions, CustomizerSeedOptions } from "../../types/optionObjs";
-import BaseSeedBuilder from "./BaseSeedBuilder";
-import CustomSettingsBuilder from "./CustomSettingsBuilder";
-import * as flat from "flat";
-const { unflatten } = flat;
+    ItemLocation,
+    Medallion,
+    MedallionLocation,
+    Prize,
+    PrizeLocation,
+} from "../../types/enums.js";
+import { CustomizerSeedOptions } from "../../types/optionObjs.js";
+import { baseDefault, customizerDefault } from "../../types/payloads.js";
 
-export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSettings> {
+/**
+ * An instance of this class represents a payload object to be supplied to
+ * alttpr.com's customizer API. By default, all instances are initialized with
+ * default settings to mimic an open 7/7 defeat Ganon.
+ *
+ * Like SeedBuilder objects, settings can be modified through the use of setters.
+ * These setters often expect smaller builder objects to be supplied as arguments;
+ * however, you can use callback functions to avoid importing multiple builder
+ * classes.
+ */
+export default class CustomizerBuilder
+    extends BaseSeedBuilder<CustomizerPayload> {
     static #websiteJSONMap: [keyof CustomizerJSON, string][] = [
         ["randomizer.accessibility", "accessibility"],
         ["randomizer.boss_shuffle", "enemizer.boss_shuffle"],
@@ -44,47 +63,22 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
         ["vt.custom.settings", "custom"],
     ];
 
+    static readonly #default = this.#createDefault();
+
+    #forcedItems: ItemTuple[] = [];
+
     constructor(data?: CustomizerSeedOptions) {
-        function isCustomizer(obj: object): obj is CustomizerSeedOptions {
-            return "custom" in obj || "drops" in obj || "eq" in obj ||
-                "l" in obj || "texts" in obj;
+        super();
+        this._body = super._deepCopy(CustomizerBuilder.#default);
+
+        if (!data) {
+            return;
         }
 
-        super();
-        // if (typeof data === "undefined") {
-        //     //super();
-        //     return;
-        // }
-
-        // const hold: { [x: string]: unknown } = {};
-        // const copy: CustomizerSeedOptions | BaseSeedOptions = JSON.parse(JSON.stringify(data ?? BaseSeedBuilder._default()));
-
-        // if (isCustomizer(copy)) {
-        //     const unparsed: (keyof CustomizerSeedOptions)[] = ["custom", "drops", "eq", "l", "texts"];
-        //     for (const key of unparsed) {
-        //         if (typeof copy[key] !== "undefined") {
-        //             hold[key] = copy[key];
-        //             delete copy[key];
-        //         }
-        //     }
-        // }
-
-        // super(copy as BaseSeedOptions);
-
-        // if (typeof data !== "object" || data === null) {
-        //     super();
-        // } else {
-        //     const unparsed: (keyof CustomizerSeedOptions)[] = ["custom", "drops", "eq", "l", "texts"];
-        //     const hold: { [x: string]: unknown } = {};
-        //     const copy: CustomizerSeedOptions = JSON.parse(JSON.stringify(data));
-        //     for (const key of unparsed) {
-        //         if (typeof copy[key] !== "undefined") {
-        //             hold[key] = copy[key];
-        //             delete copy[key];
-        //         }
-        //     }
-        //     super(copy);
-        // }
+        const vals = super._deepCopy(data);
+        for (const [key, val] of Object.entries(vals)) {
+            this._body[key as keyof CustomizerPayload] = val as never;
+        }
     }
 
     /**
@@ -101,12 +95,15 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
         const nest = (obj: any, keys: string[], value: unknown): void => {
             let temp = obj;
             for (let i = 0; i < keys.length; ++i) {
-                if (i === keys.length - 1) temp[keys[i]] = value;
-                else if (!(keys[i] in temp)) temp[keys[i]] = {};
+                if (i === keys.length - 1) {
+                    temp[keys[i]] = value;
+                } else if (!(keys[i] in temp)) {
+                    temp[keys[i]] = {};
+                }
                 temp = temp[keys[i]];
             }
         };
-        const copy: CustomizerJSON = JSON.parse(JSON.stringify(data));
+        const copy: CustomizerJSON = this.prototype._deepCopy(data);
         const converted: CustomizerSeedOptions = {};
 
         for (const [jsonKey, payloadKey] of this.#websiteJSONMap) {
@@ -131,18 +128,23 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
             } else if (typeof v === "boolean" && v) {
                 eq.push(k as StartingEquipment);
             } else if (typeof v === "number") {
-                if (v <= 0) continue;
+                if (v <= 0) {
+                    continue;
+                }
 
                 const eqK = k as keyof CustomizerJSONEquipment;
                 const isClonable = (s: string) => s.startsWith("Progressive") || s === "BossHeartContainer";
 
                 if (eqK === "ProgressiveBow") {
-                    if (v === 1) eq.push("SilverArrowUpgrade");
-                    else for (let i = 0; i < v - 1; ++i)
+                    if (v === 1) {
+                        eq.push("SilverArrowUpgrade");
+                    } else for (let i = 0; i < v - 1; ++i) {
                         eq.push(k as StartingEquipment);
+                    }
                 } else if (isClonable(eqK)) {
-                    for (let i = 0; i < v; ++i)
+                    for (let i = 0; i < v; ++i) {
                         eq.push(k as StartingEquipment);
+                    }
                 } else if (eqK === "Ocarina") {
                     eq.push(v === 1 ? "OcarinaInactive" : "OcarinaActive");
                 } else if (eqK === "Boomerang") {
@@ -158,7 +160,9 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
                         6: "BottleWithGoldBee",
                         7: "BottleWithFairy",
                     };
-                    if (v in bottleMap) eq.push(bottleMap[v]);
+                    if (v in bottleMap) {
+                        eq.push(bottleMap[v]);
+                    }
                 }
             } else if (typeof v === "string") { // k is "Rupees"
                 const rupeeMap: Record<number, RupeeAmount> = {
@@ -175,8 +179,9 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
                     const parsed = parseInt(key);
                     const toAdd = Math.floor(rupees / parsed);
 
-                    for (let i = 0; i < toAdd; ++i)
+                    for (let i = 0; i < toAdd; ++i) {
                         eq.push(rupeeMap[parsed]);
+                    }
 
                     rupees %= parsed;
                 }
@@ -187,299 +192,204 @@ export default class CustomizerBuilder extends BaseSeedBuilder<CustomizerSetting
         return new this(converted);
     }
 
-    get eq(): Item[] {
-        return Array.from<Item>(super._getProp("eq"));
+    get eq(): ReadonlyArray<StartingEquipment> {
+        return Array.from(this._body.eq);
     }
 
-    get locations(): LocationMap {
-        return super._getProp("l")
+    get locations(): Readonly<LocationMap> {
+        return this._body.l;
     }
 
-    get texts(): TextMap {
-        return super._getProp("texts");
+    get texts(): Readonly<TextMap> {
+        return this._body.texts;
     }
 
-    get custom(): CustomSettingsBuilder {
-        return super._getProp("custom");
+    get custom(): Readonly<CustomOptions> {
+        return this._body.custom;
     }
 
-    get drops(): object {
-        return super._getProp("drops");
+    get drops(): Readonly<PrizePackGroups> {
+        return this._body.drops;
     }
 
     /**
-     * Overwrites the current starting equipment with the provided array.
+     * Overwrites the current starting equipment with the provided argument.
      *
-     * **NOTE:** Using this method will also overwrite the starting heart
-     * containers unless they are also specified in the array being passed.
-     * If you do not intend to overwrite these items, use the `addEquipment`
-     * method instead.
+     * **Note:** Passing an array will replace the stored array's contents
+     * exactly, including starting health.
+     * @param equipment The starting equipment for the preset described by this
+     * builder. The argument can be either an array, EquipmentBuilder, or a
+     * callback function.
+     * @returns The current object, for chaining.
+     * @example
+     * ```js
+     * const builder = new CustomizerBuilder()
+     *     .setEquipment(["PegasusBoots"]); // Zero hearts? Enjoy death!
      *
-     * @param equipment
-     * @returns
+     * const builder = new CustomizerBuilder()
+     *     .setEquipment([ // OK!
+     *         "PegasusBoots",
+     *         "BossHeartContainer",
+     *         "BossHeartContainer",
+     *         "BossHeartContainer"
+     *     ]);
+     * ```
      */
-    setEquipment(equipment: Item[]): this {
-        if (!Array.isArray(equipment)) {
-            throw new TypeError("eq must be an array.");
+    setEquipment(equipment: EquipmentBuilder): this;
+    setEquipment(equipment: StartingEquipment[]): this;
+    setEquipment(equipment: ((builder: EquipmentBuilder) => EquipmentBuilder)): this;
+    setEquipment(equipment: StartingEquipment[] | EquipmentBuilder | ((builder: EquipmentBuilder) => EquipmentBuilder)): this {
+        if (Array.isArray(equipment)) {
+            this._body.eq = super._deepCopy(equipment);
+        } else if (typeof equipment === "function") {
+            this._body.eq = equipment(new EquipmentBuilder()).toJSON();
+        } else {
+            this._body.eq = equipment.toJSON();
         }
-        return super._setProp("eq", equipment);
-    }
 
-    addEquipment(equipment: Item[]): this {
-        if (!Array.isArray(equipment)) {
-            throw new TypeError("eq must be an array.");
-        }
-        (super._getProp("eq") as Item[]).push(...equipment);
         return this;
     }
 
-    setLocations(l: LocationMap): this {
-        return super._setProp("l", l);
+    /**
+     * Sets the possible "by location" placements for this CustomizerBuilder.
+     *
+     * @param loc A record of locations and their item placements.
+     * @returns The current object, for chaining.
+     * @example
+     * ```js
+     * import { CustomizerBuilder, Item, ItemLocation } from "nottpr";
+     * const builder = new CustomizerBuilder()
+     *     .setLocations({
+     *         [ItemLocation.Pedestal]: Item.IceRod, // Hardsets ice rod at pedestal
+     *     });
+     * ```
+     * @see {@link CustomizerBuilder.setForcedItems()}
+     */
+    setLocations(loc: LocationMap): this {
+        this._body.l = loc;
+        return this;
+    }
+
+    /**
+     * Sets the possible "by item" placements for this CustomizerBuilder.
+     *
+     * Item placements are specified as a rest parameter of single-entry
+     * records. Placements are specified an array of locations.
+     *
+     * @param loc A rest argument of single-entry records containing items and
+     * their possible location placements.
+     * @returns The current object, for chaining.
+     * @example
+     * ```js
+     * import { CustomizerBuilder, Item, ItemLocation } from "nottpr";
+     * const builder = new CustomizerBuilder()
+     *     .setForcedItems(
+     *         // Bombos placed at either Aginah or Bob's torch
+     *         { [Item.Bombos]: [ItemLocation.Aginah, ItemLocation.GanonBobsTorch] },
+     *     );
+     * ```
+     * @see {@link CustomizerBuilder.setLocations()}
+     */
+    setForcedItems(...loc: ForcedItem[]): this {
+        const result: ItemTuple[] = [];
+        for (const entry of loc) {
+            for (const kv of Object.entries(entry)) {
+                result.push(kv as ItemTuple);
+            }
+        }
+        this.#forcedItems = result;
+        return this;
     }
 
     setTexts(texts: TextMap): this {
-        return super._setProp("texts", texts);
+        this._body.texts = super._deepCopy(texts);
+        return this;
     }
 
     setCustom(custom: CustomSettingsBuilder): this;
+    setCustom(custom: Partial<CustomOptions>): this;
     setCustom(custom: ((builder: CustomSettingsBuilder) => CustomSettingsBuilder)): this;
-    setCustom(custom: CustomSettingsBuilder | ((builder: CustomSettingsBuilder) => CustomSettingsBuilder)): this {
-        let obj: { [x: string]: any };
+    setCustom(custom: Partial<CustomOptions> | CustomSettingsBuilder | ((builder: CustomSettingsBuilder) => CustomSettingsBuilder)): this {
         if (typeof custom === "function") {
-            obj = custom(new CustomSettingsBuilder()).toJSON();
+            this._body.custom = custom(new CustomSettingsBuilder()).toJSON();
         } else if (custom instanceof CustomSettingsBuilder) {
-            obj = custom.toJSON();
-        }
-
-        return super._setProp("custom", obj);
-    }
-
-    setDrops(drops: any): this {
-        return super._setProp("drops", drops);
-    }
-
-    static #fill(passed: any, def: any): any {
-        for (const key in def) {
-            if (!(key in passed)) {
-                passed[key] = def[key];
-            } else if (typeof passed[key] === "object" && !Array.isArray(passed[key])) {
-                passed[key] = this.#fill(passed[key], def[key]);
+            this._body.custom = custom.toJSON();
+        } else {
+            const res = super._deepCopy(CustomizerBuilder.#default.custom);
+            for (const [key, val] of Object.entries(custom)) {
+                res[key as keyof typeof res] = val as never;
             }
         }
-        return passed;
+        return this;
+    }
+
+    setDrops(drops: Partial<PrizePackGroups>): this {
+        const def = super._deepCopy(CustomizerBuilder.#default.drops);
+
+        for (const key in drops) {
+            if (drops[key as keyof typeof drops].length !== def[key as keyof typeof def].length) {
+                // assume drops[key].length < def[key].length
+                let difference = def[key as keyof typeof def].length - drops[key as keyof typeof drops].length;
+                while (difference > 0) {
+                    drops[key as keyof typeof drops].push("auto_fill");
+                    --difference;
+                }
+            }
+            def[key as keyof typeof def] = drops[key as keyof typeof drops] as never;
+        }
+
+        this._body.drops = def;
+        return this;
+    }
+
+    toJSON(): CustomizerPayload {
+        const res = super._deepCopy(this._body) as CustomizerPayload;
+        res.l = this.#rollLocations();
+        return res;
+    }
+
+    #rollLocations(): LocationMap {
+        const pick = (arr: unknown[]) => Math.floor(Math.random() * arr.length);
+        const result: LocationMap = super._deepCopy(this._body.l);
+        const remaining = super._deepCopy(this.#forcedItems);
+
+        while (remaining.length != 0) {
+            const randInd = pick(remaining);
+            const [item, locs] = remaining[randInd];
+            let ok = false;
+            while (!ok) {
+                if (!locs.length) { // If all the possible locations are used up
+                    throw new Error(`Unable to place ${item}: Ran out of locations.`);
+                }
+
+                const randLoc = pick(locs);
+                if (result[locs[randLoc]]) { // Location is already occupied
+                    locs.splice(randLoc, 1); // Remove the location so it can't be rolled again
+                } else {
+                    result[locs[randLoc]] = item as never;
+                    ok = true;
+                }
+            }
+            remaining.splice(randInd, 1);
+        }
+
+        return result;
+    }
+
+    static #createDefault(): CustomizerPayload {
+        const payload: Partial<CustomizerPayload> = this.prototype._deepCopy(baseDefault);
+        for (const key in customizerDefault) {
+            payload[key as keyof CustomizerPayload] = customizerDefault[key as keyof CustomizerPayload] as never;
+        }
+        return payload as CustomizerPayload;
     }
 }
 
-const _def = {
-    l: {},
-    eq: ["BossHeartContainer", "BossHeartContainer", "BossHeartContainer"],
-    drops: {
-        0: ["auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill"],
-        1: ["auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill"],
-        2: ["auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill"],
-        3: ["auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill"],
-        4: ["auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill"],
-        5: ["auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill"],
-        6: ["auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill", "auto_fill"],
-        pull: ["auto_fill", "auto_fill", "auto_fill"],
-        crab: ["auto_fill", "auto_fill"],
-        stun: ["auto_fill"],
-        fish: ["auto_fill"],
-    },
-    custom: {
-        "item.Goal.Required": "",
-        "item.require.Lamp": false,
-        "item.value.BlueClock": "",
-        "item.value.GreenClock": "",
-        "item.value.RedClock": "",
-        "item.value.Rupoor": "",
-        "prize.crossWorld": true,
-        "prize.shuffleCrystals": true,
-        "prize.shufflePendants": true,
-        "region.bossNormalLocation": true,
-        "region.wildBigKeys": false,
-        "region.wildCompasses": false,
-        "region.wildKeys": false,
-        "region.wildMaps": false,
-        "rom.dungeonCount": "off",
-        "rom.freeItemMenu": false,
-        "rom.freeItemText": false,
-        "rom.mapOnPickup": false,
-        "rom.timerMode": "off",
-        "rom.timerStart": "",
-        "rom.rupeeBow": false,
-        "rom.genericKeys": false,
-        "rom.logicMode": "NoGlitches",
-        "spoil.BootsLocation": false,
-        canBootsClip: false,
-        canBunnyRevive: false,
-        canBunnySurf: false,
-        canDungeonRevive: false,
-        canFakeFlipper: false,
-        canMirrorClip: false,
-        canMirrorWrap: false,
-        canTransitionWrapped: false,
-        canOneFrameClipOW: false,
-        canOneFrameClipUW: false,
-        canOWYBA: false,
-        canSuperBunny: false,
-        canSuperSpeed: false,
-        canWaterWalk: false,
-        item: {
-            count: {
-                BottleWithRandom: 4,
-                Nothing: 0,
-                L1Sword: 0,
-                L1SwordAndShield: 0,
-                MasterSword: 0,
-                L3Sword: 0,
-                L4Sword: 0,
-                BlueShield: 0,
-                RedShield: 0,
-                MirrorShield: 0,
-                FireRod: 1,
-                IceRod: 1,
-                Hammer: 1,
-                Hookshot: 1,
-                Bow: 0,
-                Boomerang: 1,
-                Powder: 1,
-                Bombos: 1,
-                Ether: 1,
-                Quake: 1,
-                Lamp: 1,
-                Shovel: 1,
-                OcarinaInactive: 1,
-                CaneOfSomaria: 1,
-                Bottle: 0,
-                PieceOfHeart: 24,
-                CaneOfByrna: 1,
-                Cape: 1,
-                MagicMirror: 1,
-                PowerGlove: 0,
-                TitansMitt: 0,
-                BookOfMudora: 1,
-                Flippers: 1,
-                MoonPearl: 1,
-                BugCatchingNet: 1,
-                BlueMail: 0,
-                RedMail: 0,
-                Bomb: 0,
-                ThreeBombs: 16,
-                Mushroom: 1,
-                RedBoomerang: 1,
-                BottleWithRedPotion: 0,
-                BottleWithGreenPotion: 0,
-                BottleWithBluePotion: 0,
-                TenBombs: 1,
-                OneRupee: 2,
-                FiveRupees: 4,
-                TwentyRupees: 28,
-                BowAndArrows: 0,
-                BowAndSilverArrows: 0,
-                BottleWithBee: 0,
-                BottleWithFairy: 0,
-                BossHeartContainer: 10,
-                HeartContainer: 1,
-                OneHundredRupees: 1,
-                FiftyRupees: 7,
-                Heart: 0,
-                Arrow: 1,
-                TenArrows: 12,
-                SmallMagic: 0,
-                ThreeHundredRupees: 5,
-                BottleWithGoldBee: 0,
-                OcarinaActive: 0,
-                PegasusBoots: 1,
-                BombUpgrade5: 0,
-                BombUpgrade10: 0,
-                ArrowUpgrade5: 0,
-                ArrowUpgrade10: 0,
-                HalfMagic: 1,
-                QuarterMagic: 0,
-                SilverArrowUpgrade: 0,
-                Rupoor: 0,
-                RedClock: 0,
-                BlueClock: 0,
-                GreenClock: 0,
-                ProgressiveSword: 4,
-                ProgressiveShield: 3,
-                ProgressiveArmor: 2,
-                ProgressiveGlove: 2,
-                ProgressiveBow: 2,
-                Triforce: 0,
-                TriforcePiece: 0,
-                MapA2: 1,
-                MapD7: 1,
-                MapD4: 1,
-                MapP3: 1,
-                MapD5: 1,
-                MapD3: 1,
-                MapD6: 1,
-                MapD1: 1,
-                MapD2: 1,
-                MapA1: 0,
-                MapP2: 1,
-                MapP1: 1,
-                MapH2: 1,
-                CompassA2: 1,
-                CompassD7: 1,
-                CompassD4: 1,
-                CompassP3: 1,
-                CompassD5: 1,
-                CompassD3: 1,
-                CompassD6: 1,
-                CompassD1: 1,
-                CompassD2: 1,
-                CompassA1: 0,
-                CompassP2: 1,
-                CompassP1: 1,
-                CompassH2: 0,
-                BigKeyA2: 1,
-                BigKeyD7: 1,
-                BigKeyD4: 1,
-                BigKeyP3: 1,
-                BigKeyD5: 1,
-                BigKeyD3: 1,
-                BigKeyD6: 1,
-                BigKeyD1: 1,
-                BigKeyD2: 1,
-                BigKeyA1: 0,
-                BigKeyP2: 1,
-                BigKeyP1: 1,
-                BigKeyH2: 0,
-                KeyH2: 1,
-                KeyP1: 0,
-                KeyP2: 1,
-                KeyA1: 2,
-                KeyD2: 1,
-                KeyD1: 6,
-                KeyD6: 3,
-                KeyD3: 3,
-                KeyD5: 2,
-                KeyP3: 1,
-                KeyD4: 1,
-                KeyD7: 4,
-                KeyA2: 4,
-            },
-        },
-        drop: {
-            count: {
-                Bee: 0,
-                BeeGood: 0,
-                Heart: 13,
-                RupeeGreen: 9,
-                RupeeBlue: 7,
-                RupeeRed: 6,
-                BombRefill1: 7,
-                BombRefill4: 1,
-                BombRefill8: 2,
-                MagicRefillSmall: 6,
-                MagicRefillFull: 3,
-                ArrowRefill5: 5,
-                ArrowRefill10: 3,
-                Fairy: 1,
-            },
-        },
-    },
-};
+type ForcedItem = Partial<Record<Item, ItemLocation[]> |
+    Record<Bottle, BottleLocation[]> |
+    Record<Medallion, MedallionLocation[]> |
+    Record<Prize, PrizeLocation[]>>;
+
+type LocTuple<Type, Pool> = [Type, Pool[]];
+
+type ItemTuple = LocTuple<Item, ItemLocation> | LocTuple<Bottle, BottleLocation> | LocTuple<Medallion, MedallionLocation> | LocTuple<Prize, PrizeLocation>;
