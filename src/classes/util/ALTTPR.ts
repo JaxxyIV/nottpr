@@ -10,6 +10,8 @@ import {
     SeedAPIData,
     SpriteAPIData,
 } from "../../types/structures.js";
+import BaseSeedBuilder from "../builders/BaseSeedBuilder.js";
+
 
 /**
  * The ALTTPR class is the main class for interacting with alttpr.com's API.
@@ -27,6 +29,11 @@ import {
 export default class ALTTPR {
     static #seeds = new Map<string, Seed>();
     static #sprites = new Map<string, Sprite>();
+
+    static #postHeaders: Record<string, string> = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json"
+    };
 
     constructor() {
         throw new Error("You cannot instantiate this class.");
@@ -49,71 +56,40 @@ export default class ALTTPR {
     }
 
     /**
-     * Generates a randomized seed on alttpr.com and adds it to the local cache.
+     * Sets the Authorization header to be used in API requests to alttpr.com.
      *
-     * @param data The data to provide to the API. This argument can be passed
-     * as a JSON object, a SeedBuilder, or a callback function.
-     * @returns The generated Seed.
-     * @example
-     * ```js
-     * // Crosskeys using SeedBuilder:
-     * const preset = new SeedBuilder()
-     *     .setAccessibility(Accessibility.Locations)
-     *     .setDungeonItems(Keysanity.Full)
-     *     .setGoal(Goals.FastGanon)
-     *     .setEntrances(Entrances.Crossed);
-     * const seed = await ALTTPR.randomizer(preset);
-     * console.log(seed.permalink);
-     *
-     * // Crosskeys using a callback:
-     * const seed = await ALTTPR.randomizer(builder => builder
-     *     .setAccessibility(Accessibility.Locations)
-     *     .setDungeonItems(Keysanity.Full)
-     *     .setGoal(Goals.FastGanon)
-     *     .setEntrances(Entrances.Crossed));
-     * console.log(seed.permalink);
-     * ```
+     * @param login The login key.
+     * @param password The password.
      */
-    static async randomizer(data: SeedBuilder): Promise<Seed>
-    static async randomizer(data: RandomizerPayload): Promise<Seed>
-    static async randomizer(data: (builder: SeedBuilder) => SeedBuilder):
-        Promise<Seed>
-    static async randomizer(data: RandomizerAPIData |
-        ((builder: SeedBuilder) => SeedBuilder)): Promise<Seed> {
-        if (typeof data === "function") {
-            data = data(new SeedBuilder());
-        }
-        const response: SeedAPIData = await new Request("/api/randomizer")
-            .post(JSON.stringify(data), "json", {
-                "Accept": "application/json, text/plain, */*",
-                "Content-Type": "application/json"
-            });
-        const seed = new Seed(response, this.#sprites);
-        this.#seeds.set(seed.hash, seed);
-        return seed;
+    static setCredentials(login: string, password: string): void {
+        this.#postHeaders.Authorization =
+            `Basic ${Buffer.from(`${login}:${password}`).toString("base64")}`;
     }
 
     /**
-     * Generates a customizer seed on alttpr.com and adds it to the local cache.
+     * Generates a new seed on alttpr.com with the provided settings and adds
+     * it to the local cache.
      *
-     * @param data The data to provide to the API. This argument can be passed
-     * as a JSON object, a CustomizerBuilder, or a callback function.
-     * @returns The generated Seed.
+     * The endpoint used for seed generation is determined automatically from
+     * your input.
+     *
+     * Note: Object literals are not checked for correctness or completeness.
+     *
+     * @param data The data to supply to the API. This argument can be passed
+     * as a JSON object, a SeedBuilder, or a CustomizerBuilder.
+     * @returns The resulting Seed object.
      */
-    static async customizer(data: CustomizerBuilder): Promise<Seed>
-    static async customizer(data: CustomizerPayload): Promise<Seed>
-    static async customizer(data: (builder: CustomizerBuilder) =>
-        CustomizerBuilder): Promise<Seed>
-    static async customizer(data: CustomizerAPIData |
-        ((builder: CustomizerBuilder) => CustomizerBuilder)): Promise<Seed> {
-        if (typeof data === "function") {
-            data = data(new CustomizerBuilder());
+    static async generate(data: SeedBuilder): Promise<Seed>
+    static async generate(data: CustomizerBuilder): Promise<Seed>
+    static async generate(data: RandomizerPayload): Promise<Seed>
+    static async generate(data: CustomizerPayload): Promise<Seed>
+    static async generate(data: RandomizerAPIData | CustomizerAPIData): Promise<Seed> {
+        if (data instanceof BaseSeedBuilder) {
+            data = data.toJSON(); // Force as literal to check customizer
         }
-        const response: SeedAPIData = await new Request("/api/customizer")
-            .post(JSON.stringify(data), "json", {
-                "Accept": "application/json, text/plain, */*",
-                "Content-Type": "application/json"
-            });
+        const endpoint = "custom" in data ? "customizer" : "randomizer";
+        const response: SeedAPIData = await new Request(`/api/${endpoint}`)
+            .post(JSON.stringify(data), "json", this.#postHeaders);
         const seed = new Seed(response, this.#sprites);
         this.#seeds.set(seed.hash, seed);
         return seed;

@@ -51,7 +51,7 @@ const { "default": ALTTPR } = require("nottpr");
 ### Seed Generation
 
 nottpr offers two ways you can create payloads: the manual way or with a
-builder.
+builder. All seed generation is done through the `ALTTPR.generate` method.
 
 The manual way is similar to pyz3r:
 
@@ -59,7 +59,7 @@ The manual way is similar to pyz3r:
 import ALTTPR from "nottpr";
 
 // Crosskeys 2023 settings
-const seed = await ALTTPR.randomizer({
+const seed = await ALTTPR.generate({
     accessibility: "locations",
     crystals: {
         ganon: "7",
@@ -114,7 +114,7 @@ const builder = new SeedBuilder()
     .setEntrances(Entrances.Crossed)
     .setGoal(Goals.FastGanon);
 
-const seed = await ALTTPR.randomizer(builder);
+const seed = await ALTTPR.generate(builder);
 console.log(seed.permalink);
 ```
 
@@ -122,7 +122,7 @@ Both examples result in the same value being passed to the generator.
 
 #### Customizer Seeds
 
-Customizer seeds are generated through the `ALTTPR.customizer` method. Like
+Customizer seeds are also generated through the `ALTTPR.generate` method. Like
 regular seeds, you can provide a complete payload or use a `CustomizerBuilder`.
 Customizer JSON files created on alttpr.com can be converted to a builder
 through the static `CustomizerBuilder.fromCustomizerJSON` method.
@@ -154,7 +154,7 @@ const builder = new CustomizerBuilder()
     .setMode(WorldState.Standard)
     .setWeapons(Weapons.Assured);
 
-const seed = await ALTTPR.customizer(builder);
+const seed = await ALTTPR.generate(builder);
 
 console.log(seed.permalink);
 console.log(seed.hashCode);
@@ -224,7 +224,7 @@ const builder = new SeedBuilder()
     })
     .setPseudoboots(true);
 
-const seed = await ALTTPR.randomizer(builder);
+const seed = await ALTTPR.generate(builder);
 const patched = await seed.patch(pathToJp10Rom, {
     heartSpeed: HeartSpeed.Half,
     heartColor: HeartColor.Green,

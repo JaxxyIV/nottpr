@@ -31,6 +31,8 @@ import {
     Item,
     ClockMode,
     CompassMode,
+    Icon,
+    RomMode,
 } from "./enums.js";
 
 /* Type definitions for various API structures on alttpr.com. */
@@ -184,12 +186,17 @@ export interface CustomItemValues {
     GreenClock: "" | number,
     RedClock: "" | number,
     Rupoor: "" | number,
+    BombUpgrade5?: number,
+    BombUpgrade10?: number,
+    ArrowUpgrade5?: number,
+    ArrowUpgrade10?: number,
 }
 
 export interface CustomizerItemOptions {
     count: CustomItemCounts,
     Goal: {
         Required: "" | number,
+        Icon?: Icon,
     },
     overflow?: ItemOverflowSettings,
     require: {
@@ -199,9 +206,7 @@ export interface CustomizerItemOptions {
 }
 
 export type PatchElement = Record<number, number[]>;
-
 export type EntrancePaths = Record<string, (string | null)[][]>;
-
 export type Playthrough = Record<number, Record<string, string>>;
 
 export interface Entrance {
@@ -211,7 +216,6 @@ export interface Entrance {
 }
 
 export type WorldRegion = Record<string, string>;
-
 export type BossLocations = Record<string, strings.Boss>;
 
 export interface ShopData {
@@ -242,9 +246,7 @@ export interface CustomizerPrizeOptions {
 
 export type CustomizerRegionOptions = Record<strings.RequiredRegionSettings, boolean> & Partial<Record<strings.RegionSettings, boolean>>;
 
-export type RequiredRomOptions = {
-    [x in strings.RequiredRomBoolSettings]: boolean
-} & {
+export type RequiredRomOptions = Record<strings.RequiredRomBoolSettings, boolean> & {
     timerMode: ClockMode
     timerStart: "" | number
     dungeonCount: CompassMode
@@ -252,20 +254,20 @@ export type RequiredRomOptions = {
 };
 
 export interface CustomizerRomOptions extends RequiredRomOptions {
-    // CapeMagicUsage?: Partial<{
-    //     Normal: number,
-    //     Half: number,
-    //     Quarter: number,
-    // }>,
+    CapeMagicUsage?: Partial<{
+        Normal: number,
+        Half: number,
+        Quarter: number,
+    }>,
     CaneOfByrnaInvulnerability?: boolean,
-    // PowderedSpriteFairyPrize?: number,
-    // BottleFill?: Partial<{
-    //     Health: number,
-    //     Magic: number,
-    // }>,
+    PowderedSpriteFairyPrize?: number,
+    BottleFill?: Partial<{
+        Health: number,
+        Magic: number,
+    }>,
     CatchableFairies?: boolean,
     CatchableBees?: boolean,
-    // StunItems?: number,
+    StunItems?: number,
     SilversOnlyAtGanon?: boolean,
     NoFarieDrops?: boolean,
     GanonAgRNG?: "none" | "table",
@@ -273,22 +275,17 @@ export interface CustomizerRomOptions extends RequiredRomOptions {
     vanillaBigKeys?: boolean,
     vanillaCompasses?: boolean,
     vanillaMaps?: boolean,
+    hudItemCounter?: boolean,
 }
 
-export type CustomItemCounts = {
-    [x in strings.RequiredItemCountOptions]: number
-} & {
+export type CustomItemCounts = Record<strings.RequiredItemCountOptions, number> & {
     TwentyRupees2?: number
 };
 
-export type ItemOverflowSettings = {
-    count: {
-        [x in strings.Restrictable]?: number
-    }
-    replacement: {
-        [x in strings.Restrictable]?: strings.Item
-    }
-};
+export interface ItemOverflowSettings {
+    count: Partial<Record<strings.Restrictable, number>>
+    replacement: Partial<Record<strings.Restrictable, number>>
+}
 
 export interface CustomizerCustomOptions extends AllowedGlitches {
     customPrizePacks?: boolean
@@ -339,9 +336,9 @@ export interface CustomizerCustomOptions extends AllowedGlitches {
     "rom.timerMode": ClockMode
     "rom.timerStart": string | number
     "spoil.BootsLocation": boolean
-};
+}
 
-export type CustomizerJSON = {
+export interface CustomizerJSON {
     "vt.custom.drops": CustomDropCounts | null
     "vt.custom.equipment": CustomizerJSONEquipment | null
     "vt.custom.items": CustomItemCounts | null
@@ -384,7 +381,7 @@ export type CustomizerJSON = {
     "randomizer.item_functionality": ItemFunctionality | null
     "randomizer.enemy_damage": EnemyDamage | null
     "randomizer.enemy_health": EnemyHealth | null
-};
+}
 
 export interface CustomizerJSONEquipment {
     ProgressiveArmor: number // Valid from 0-2
@@ -431,9 +428,9 @@ export interface CustomizerJSONEquipment {
     BossHeartContainer: number // Valid from 1-20
     Rupees: string
     empty: boolean // I'm not sure what this is
-};
+}
 
-export type PrizePackGroups = {
+export interface PrizePackGroups {
     0: [
         strings.CustomizerDrop, strings.CustomizerDrop,
         strings.CustomizerDrop, strings.CustomizerDrop,
@@ -485,7 +482,7 @@ export type PrizePackGroups = {
     ],
     stun: [strings.CustomizerDrop]
     fish: [strings.CustomizerDrop]
-};
+}
 
 export type LocationMap = Partial<Record<ItemLocation, Item> &
     Record<PrizeLocation, Prize> &
@@ -494,7 +491,7 @@ export type LocationMap = Partial<Record<ItemLocation, Item> &
 
 export type TextMap = Partial<Record<TextDialog, string>>;
 
-export type CustomizerJSONCustomSettings = {
+export interface CustomizerJSONCustomSettings {
     "item.Goal.Required": string
     "item.overflow.count.Armor"?: string
     "item.overflow.count.BossHeartContainer"?: string
@@ -518,15 +515,15 @@ export type CustomizerJSONCustomSettings = {
     "rom.dungeonCount": CompassMode
     "rom.freeItemText": boolean
     "rom.genericKeys": boolean
-    "rom.logicMode": strings.RomMode
+    "rom.logicMode": RomMode
     "rom.mapOnPickup": boolean
     "rom.rupeeBow": boolean
     "rom.timerMode": ClockMode
     "rom.timerStart": string
     "spoil.BootsLocation": boolean
-};
+}
 
-export type SpoilerAPIData = {
+export interface SpoilerAPIData {
     "Agahnims Tower"?: WorldRegion
     Bosses?: BossLocations
     "Castle Tower"?: WorldRegion
@@ -554,7 +551,7 @@ export type SpoilerAPIData = {
     meta: SeedMeta
     paths?: EntrancePaths
     playthrough?: Playthrough
-};
+}
 
 export interface SeedMeta {
     accessibility: Accessibility
@@ -583,33 +580,25 @@ export interface SeedMeta {
     weapons: Weapons
     world_id: number
     worlds: number
-};
+}
 
 export interface EntranceSeedMeta extends SeedMeta {
     keysanity: boolean
     shuffle: Entrances
     version: string
-};
+}
 
 export interface CustomizerSeedMeta extends SeedMeta {
     difficulty: string
-};
+}
 
-export interface BaseSeedSpoiler {
-
-};
+export interface BaseSeedSpoiler {}
 
 export interface EntranceSpoiler extends BaseSeedSpoiler {
     Entrances?: Array<Entrance>
-    "Light World"?: {
-        [x in strings.EntranceLightWorldLocation]: string
-    }
-    "Dark World"?: {
-        [x in strings.EntranceDarkWorldLocation]: string
-    }
-    Caves?: {
-        [x in strings.EntranceUnderworldLocation]: string
-    }
+    "Light World"?: Record<strings.EntranceLightWorldLocation, string>
+    "Dark World"?: Record<strings.EntranceDarkWorldLocation, string>
+    Caves?: Record<strings.EntranceUnderworldLocation, string>
     "Hyrule Castle"?: {
         [x in strings.AggregateLocation<"Hyrule Castle", "Boomerang Chest" | "Map Chest" | "Zelda's Chest">]: string
     } & {
@@ -617,4 +606,4 @@ export interface EntranceSpoiler extends BaseSeedSpoiler {
     } & {
         Sanctuary: string
     }
-};
+}

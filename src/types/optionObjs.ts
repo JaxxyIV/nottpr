@@ -80,9 +80,7 @@ export type CustomizerSeedOptions = BaseSeedOptions & {
     }
 };
 
-export type CustomizerCustomOptions = {
-    [x in keyof structs.AllowedGlitches]?: boolean
-} & {
+export type CustomizerCustomOptions = Partial<structs.AllowedGlitches> & {
     customPrizePacks?: boolean
     drop?: {
         count?: {
@@ -137,7 +135,7 @@ export type CustomizerCustomOptions = {
     "spoil.BootsLocation"?: boolean
 };
 
-export type OverflowOptions = {
+export interface OverflowOptions {
     count: Partial<Record<strings.Restrictable, number>>
-    replacement: Partial<Record<strings.Restrictable, strings.Item>>
+    replacement: Partial<Record<strings.Restrictable, enums.Item>>
 }

@@ -1,7 +1,8 @@
 import BaseBuilder from "./BaseBuilder.js";
-import { CustomItemCounts, CustomItemValues, CustomizerItemOptions } from "../../types/structures.js";
+import { CustomItemCounts, CustomItemValues, CustomizerItemOptions, ItemOverflowSettings } from "../../types/structures.js";
 import { OverflowOptions } from "../../types/optionObjs.js";
 import { customizerDefault } from "../../types/payloads.js";
+import { Icon } from "../../types/enums.js";
 
 export default class ItemSettingsBuilder
     extends BaseBuilder<CustomizerItemOptions> {
@@ -24,8 +25,12 @@ export default class ItemSettingsBuilder
         return this._body.value;
     }
 
-    get overflow(): Readonly<OverflowOptions> {
+    get overflow(): Readonly<ItemOverflowSettings> {
         return this._body.overflow;
+    }
+
+    get goalIcon(): Icon {
+        return this._body.Goal.Icon;
     }
 
     setAllowDarkRoomNav(allow: boolean): this {
@@ -41,8 +46,13 @@ export default class ItemSettingsBuilder
         return this;
     }
 
-    setOverflow(opts: OverflowOptions): this {
-        this._body.overflow = super._deepCopy(opts) as OverflowOptions;
+    setOverflow(opts: ItemOverflowSettings): this {
+        this._body.overflow = super._deepCopy(opts);
+        return this;
+    }
+
+    setGoalIcon(icon: Icon): this {
+        this._body.Goal.Icon = icon;
         return this;
     }
 
@@ -50,7 +60,10 @@ export default class ItemSettingsBuilder
         const { value: vDefs } = ItemSettingsBuilder.#default;
         for (const key in vDefs) {
             if (!(key in value)) {
-                value[key as keyof CustomItemValues] = "";
+                if (key.startsWith("Bomb") || key.startsWith("Arrow")) {
+                    continue;
+                }
+                value[key as keyof CustomItemValues] = "" as never;
             }
         }
         this._body.value = super._deepCopy(value) as CustomItemValues;

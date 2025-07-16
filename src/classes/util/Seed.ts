@@ -1,4 +1,4 @@
-import patchZ3R, { PatchOptions } from "z3r-patch";
+import patch, { PatchOptions } from "z3r-patch";
 // import { PaletteMode, PaletteRandomizerOptions } from "@maseya/z3pr";
 import Sprite from "./Sprite.js";
 import JSONTranslatable from "../interfaces/JSONTranslatable.js";
@@ -127,7 +127,7 @@ export default class Seed
      * @param options Additional post-generation options.
      * @returns The patched ROM as buffered data.
      */
-    async patch(base: string, options: PostGenOptions = {}): Promise<Buffer> {
+    async patch(base: string, options: PostGenOptions = {}): Promise<Uint8Array> {
         // Correct the value provided for sprite (if necessary)
         if (options.sprite === undefined) { // Empty if-statement to account for undefined
         } else if (typeof options.sprite === "string") {
@@ -150,8 +150,7 @@ export default class Seed
             delete options.menuSpeed;
         }
 
-        const rom = await patchZ3R(base, this.toJSON(), options as PatchOptions);
-        return Buffer.from(rom);
+        return patch(base, this.toJSON(), options as PatchOptions);
     }
 
     toJSON(): Readonly<SeedAPIData> {
@@ -167,13 +166,13 @@ export default class Seed
     }
 
     /**
-     * Formats the spoiler log for this Seed and outputs the data as a buffer.
+     * Formats the spoiler log for this Seed and outputs the data as a Uint8Array.
      *
      * @param showDrops Should additional data about prize packs and tree pulls
      * be included?
-     * @returns The formatted spoiler log as a buffer.
+     * @returns The formatted spoiler log as a Uint8Array.
      */
-    formatSpoiler(showDrops = false): Buffer {
+    formatSpoiler(showDrops = false): Uint8Array {
         // if "off" or "mystery", nothing special happens. Just return the
         // spoiler as-is.
         if (this.#spoiler.meta.spoilers === "off" ||
@@ -182,7 +181,8 @@ export default class Seed
             log.meta.hash = this.#hash;
             log.meta.permalink = this.permalink;
             log.meta.code = this.hashCode.join(", ");
-            return Buffer.from(JSON.stringify(this.#spoiler, undefined, 4));
+            return new TextEncoder()
+                .encode(JSON.stringify(this.#spoiler, undefined, 4));
         }
 
         const log: Record<string, any> = {}; // TODO: Properly type this
@@ -317,7 +317,8 @@ export default class Seed
         log.meta.permalink = this.permalink;
         log.meta.code = this.hashCode.join(", ");
 
-        return Buffer.from(JSON.stringify(log, undefined, 4));
+        return new TextEncoder()
+            .encode(JSON.stringify(log, undefined, 4));
     }
 
     // Thanks clearmouse
