@@ -38,41 +38,41 @@ export const customizerDefault: Partial<CustomizerPayload> = {
     ],
     drops: {
         0: [
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
         ],
         1: [
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
         ],
         2: [
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
         ],
         3: [
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
         ],
         4: [
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
         ],
         5: [
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
         ],
         6: [
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
-            "auto_fill", "auto_fill", "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
         ],
         pull: [
-            "auto_fill", "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random, enums.Drop.Random,
         ],
         crab: [
-            "auto_fill", "auto_fill",
+            enums.Drop.Random, enums.Drop.Random,
         ],
-        stun: ["auto_fill"],
-        fish: ["auto_fill"],
+        stun: [enums.Drop.Random],
+        fish: [enums.Drop.Random],
     },
     custom: {
         canBootsClip: false,
