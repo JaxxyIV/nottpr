@@ -1,4 +1,4 @@
-import { District, ItemLocation } from "./types/enums.js";
+import { District, ItemLocation } from "../enums.js";
 
 export default {
     [District.BigChests]: [

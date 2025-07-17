@@ -77,7 +77,7 @@ export default class EquipmentBuilder
      * ```
      *
      * @param boots Should boots be in the starting equipment?
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setStartingBoots(boots: boolean): this {
         this.#startingBoots = boots;
@@ -94,7 +94,7 @@ export default class EquipmentBuilder
      * the starting equipment array to the mutated argument.
      *
      * @param equipment The new starting equipment.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      * @see {@link setEquipment()}
      */
     setEquipmentSafe(equipment: StartingEquipment[]): this {
@@ -172,7 +172,7 @@ export default class EquipmentBuilder
      * this method can yield unexpected results.
      *
      * @param equipment The new starting equipment.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      * @example
      * ```js
      * const b1 = new EquipmentBuilder()
@@ -194,7 +194,7 @@ export default class EquipmentBuilder
      * and be divisible by 5.
      *
      * @param arrows The starting arrow capacity extension.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setArrowUpgrades(arrows: number): this {
         arrows = Math.floor(arrows);
@@ -214,7 +214,7 @@ export default class EquipmentBuilder
      * and be divisible by 5.
      *
      * @param bombs The starting bomb capacity extension.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setBombUpgrades(bombs: number): this {
         bombs = Math.floor(bombs);
@@ -234,7 +234,7 @@ export default class EquipmentBuilder
      * [1,20].
      *
      * @param hearts The count of starting heart containers.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setStartingHearts(hearts: number): this {
         hearts = Math.floor(hearts);
@@ -251,7 +251,7 @@ export default class EquipmentBuilder
      * Sets the starting rupee amount. Value must be in range [0,9999].
      *
      * @param rupees The starting rupee amount.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setStartingRupees(rupees: number): this {
         rupees = Math.floor(rupees);

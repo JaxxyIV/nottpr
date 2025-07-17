@@ -1,8 +1,8 @@
 import { TextPause, TextSpeed } from "../../types/strings.js";
 
 /**
- * An instance of this class represents a formatted text string designed to be
- * used in the texts portion of the alttpr.com customizer API.
+ * The Formatter class contains several static methods useful for formatting
+ * text boxes in ALTTPR seeds.
  *
  * Some characters are reserved symbols in the text parser:
  * * "≥" is used for the cursor in select menus or yes/no dialogs.

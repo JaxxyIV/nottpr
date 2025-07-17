@@ -23,7 +23,8 @@ import {
     PrizeLocation,
 } from "../../types/enums.js";
 import { CustomizerSeedOptions } from "../../types/optionObjs.js";
-import { baseDefault, customizerDefault } from "../../types/payloads.js";
+import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
+import PrizePackBuilder from "./PrizePackBuilder.js";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -34,6 +35,8 @@ import { baseDefault, customizerDefault } from "../../types/payloads.js";
  * These setters often expect smaller builder objects to be supplied as arguments;
  * however, you can use callback functions to avoid importing multiple builder
  * classes.
+ *
+ * @extends BaseSeedBuilder
  */
 export default class CustomizerBuilder
     extends BaseSeedBuilder<CustomizerPayload> {
@@ -103,7 +106,7 @@ export default class CustomizerBuilder
                 temp = temp[keys[i]];
             }
         };
-        const copy: CustomizerJSON = this.prototype._deepCopy(data);
+        const copy = this.prototype._deepCopy(data);
         const converted: CustomizerSeedOptions = {};
 
         for (const [jsonKey, payloadKey] of this.#websiteJSONMap) {
@@ -220,7 +223,7 @@ export default class CustomizerBuilder
      * @param equipment The starting equipment for the preset described by this
      * builder. The argument can be either an array, EquipmentBuilder, or a
      * callback function.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      * @example
      * ```js
      * const builder = new CustomizerBuilder()
@@ -254,7 +257,7 @@ export default class CustomizerBuilder
      * Sets the possible "by location" placements for this CustomizerBuilder.
      *
      * @param loc A record of locations and their item placements.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      * @example
      * ```js
      * import { CustomizerBuilder, Item, ItemLocation } from "nottpr";
@@ -278,7 +281,7 @@ export default class CustomizerBuilder
      *
      * @param loc A rest argument of single-entry records containing items and
      * their possible location placements.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      * @example
      * ```js
      * import { CustomizerBuilder, Item, ItemLocation } from "nottpr";
@@ -293,8 +296,8 @@ export default class CustomizerBuilder
     setForcedItems(...loc: ForcedItem[]): this {
         const result: ItemTuple[] = [];
         for (const entry of loc) {
-            for (const kv of Object.entries(entry)) {
-                result.push(kv as ItemTuple);
+            for (const kv of Object.entries(entry) as ItemTuple[]) {
+                result.push(kv);
             }
         }
         this.#forcedItems = result;
@@ -323,25 +326,37 @@ export default class CustomizerBuilder
         return this;
     }
 
-    setDrops(drops: Partial<PrizePackGroups>): this {
-        const def = super._deepCopy(CustomizerBuilder.#default.drops);
-
-        for (const key in drops) {
-            if (drops[key as keyof typeof drops].length !== def[key as keyof typeof def].length) {
-                // assume drops[key].length < def[key].length
-                let difference = def[key as keyof typeof def].length - drops[key as keyof typeof drops].length;
-                while (difference > 0) {
-                    drops[key as keyof typeof drops].push("auto_fill");
-                    --difference;
-                }
-            }
-            def[key as keyof typeof def] = drops[key as keyof typeof drops] as never;
+    /**
+     * Sets the prize packs for this CustomizerBuilder.
+     *
+     * @param drops The replacement prize packs. This argument can be passed as
+     * a partial object literal, a PrizePackBuilder, or a callback function.
+     * @returns The current object for chaining.
+     */
+    setDrops(drops: PrizePackBuilder): this;
+    setDrops(drops: Partial<PrizePackGroups>): this;
+    setDrops(drops: ((builder: PrizePackBuilder) => PrizePackBuilder)): this;
+    setDrops(drops: Partial<PrizePackGroups> | PrizePackBuilder | ((builder: PrizePackBuilder) => PrizePackBuilder)): this {
+        if (typeof drops === "function") {
+            drops = drops(new PrizePackBuilder()).toJSON();
+        } else if (drops instanceof PrizePackBuilder) {
+            drops = drops.toJSON();
+        } else {
+            drops = new PrizePackBuilder(drops).toJSON();
         }
 
-        this._body.drops = def;
+        this._body.drops = super._deepCopy(drops) as PrizePackGroups;
         return this;
     }
 
+    /**
+     * Returns the JSON representation of this CustomizerBuilder.
+     *
+     * If `setForcedItems` is used on this builder, this method will also roll
+     * the locations for those respective items.
+     *
+     * @returns The JSON representation of this CustomizerBuilder.
+     */
     toJSON(): CustomizerPayload {
         const res = super._deepCopy(this._body) as CustomizerPayload;
         res.l = this.#rollLocations();

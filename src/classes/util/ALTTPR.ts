@@ -1,6 +1,7 @@
 import Request from "./Request.js";
 import Seed from "./Seed.js";
 import Sprite from "./Sprite.js";
+import BaseSeedBuilder from "../builders/BaseSeedBuilder.js";
 import CustomizerBuilder from "../builders/CustomizerBuilder.js";
 import SeedBuilder from "../builders/SeedBuilder.js";
 import {
@@ -10,7 +11,6 @@ import {
     SeedAPIData,
     SpriteAPIData,
 } from "../../types/structures.js";
-import BaseSeedBuilder from "../builders/BaseSeedBuilder.js";
 
 
 /**
@@ -32,7 +32,7 @@ export default class ALTTPR {
 
     static #postHeaders: Record<string, string> = {
         "Accept": "application/json, text/plain, */*",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     };
 
     constructor() {
@@ -57,6 +57,7 @@ export default class ALTTPR {
 
     /**
      * Sets the Authorization header to be used in API requests to alttpr.com.
+     * The provided credentials will be encoded in base64.
      *
      * @param login The login key.
      * @param password The password.
@@ -83,13 +84,13 @@ export default class ALTTPR {
     static async generate(data: CustomizerBuilder): Promise<Seed>
     static async generate(data: RandomizerPayload): Promise<Seed>
     static async generate(data: CustomizerPayload): Promise<Seed>
-    static async generate(data: RandomizerAPIData | CustomizerAPIData): Promise<Seed> {
+    static async generate(data: SeedBuilder | RandomizerPayload | CustomizerPayload | CustomizerBuilder): Promise<Seed> {
         if (data instanceof BaseSeedBuilder) {
             data = data.toJSON(); // Force as literal to check customizer
         }
         const endpoint = "custom" in data ? "customizer" : "randomizer";
-        const response: SeedAPIData = await new Request(`/api/${endpoint}`)
-            .post(JSON.stringify(data), "json", this.#postHeaders);
+        const response = await new Request(`/api/${endpoint}`)
+            .post(JSON.stringify(data), "json", this.#postHeaders) as SeedAPIData;
         const seed = new Seed(response, this.#sprites);
         this.#seeds.set(seed.hash, seed);
         return seed;
@@ -101,8 +102,7 @@ export default class ALTTPR {
      * @returns The daily hash.
      */
     static async fetchDaily(): Promise<string> {
-        const { hash }: DailyAPIData = await new Request("/api/daily")
-            .get("json");
+        const { hash } = await new Request("/api/daily").get("json") as DailyAPIData;
         return hash;
     }
 
@@ -117,8 +117,7 @@ export default class ALTTPR {
             return this.#seeds.get(hash);
         }
 
-        const response: string = await new Request(`/hash/${hash}`)
-            .get("text");
+        const response = await new Request(`/hash/${hash}`).get("text") as string;
         let parsed: SeedAPIData;
 
         try {
@@ -142,8 +141,8 @@ export default class ALTTPR {
      * @returns `this.sprites`
      * @example
      * ```js
-     * await ALTTPR.fetchSprites();
-     * const sprite = ALTTPR.sprites.get("Angel");
+     * const sprite = await ALTTPR.fetchSprites()
+     *     .then(sprites => sprites.get("Angel"));
      * const file = await sprite.fetch();
      * // or
      * const sprite = (await ALTTPR.fetchSprites()).get("Angel");
@@ -151,8 +150,7 @@ export default class ALTTPR {
      * ```
      */
     static async fetchSprites(): Promise<Map<string, Sprite>> {
-        const response: SpriteAPIData[] = await new Request("/sprites")
-            .get("json");
+        const response = await new Request("/sprites").get("json") as SpriteAPIData[];
         for (const element of response) {
             const sprite = new Sprite(element);
             this.#sprites.set(sprite.name, sprite);
@@ -160,6 +158,3 @@ export default class ALTTPR {
         return this.#sprites;
     }
 }
-
-type RandomizerAPIData = SeedBuilder | RandomizerPayload;
-type CustomizerAPIData = CustomizerBuilder | CustomizerPayload;

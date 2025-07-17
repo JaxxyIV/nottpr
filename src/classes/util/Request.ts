@@ -1,57 +1,41 @@
-import fetch, { Response } from "node-fetch";
-
 export default class Request {
-    readonly #base_link: string = "https://alttpr.com";
+    static readonly #base_link = "https://alttpr.com";
     #path: string;
 
     constructor(path: string) {
         this.#path = path;
     }
 
-    async get(as: ResponseType): Promise<any> {
-        const response: Response = await fetch(this.#url);
+    async get(as: ResponseType): Promise<unknown> {
+        const response = await fetch(this.#url);
 
         if (!response.ok) {
-            const text: string = await response.text();
-            throw new Error(text);
+            throw new Error(await response.text());
         }
 
-        switch (as) {
-            case "text":
-                return response.text();
-            case "buffer":
-                return response.arrayBuffer();
-            case "json":
-            default:
-                return response.json();
-        }
+        return as === "text" ? response.text()
+            : as === "buffer" ? response.arrayBuffer()
+            : response.json();
     }
 
-    async post(body: any, as: ResponseType, headers?: HeadersInit): Promise<any> {
+    async post(body: BodyInit, as: ResponseType, headers?: HeadersInit): Promise<unknown> {
         const response: Response = await fetch(this.#url, {
             method: "post",
             headers,
-            body
+            body,
         });
 
         if (!response.ok) {
-            const text: string = await response.text();
-            throw new Error(text);
+            throw new Error(await response.text());
         }
 
-        switch (as) {
-            case "text":
-                return response.text();
-            case "buffer":
-                return response.arrayBuffer();
-            case "json":
-            default:
-                return response.json();
-        }
+        return as === "text" ? response.text()
+            : as === "buffer" ? response.arrayBuffer()
+            : response.json();
     }
 
     get #url(): string {
-        return `${this.#base_link}${this.#path}`;
+        return `${Request.#base_link}${this.#path}`;
     }
 }
 

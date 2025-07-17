@@ -4,6 +4,7 @@ export { default as CustomizerBuilder } from "./classes/builders/CustomizerBuild
 export { default as CustomSettingsBuilder } from "./classes/builders/CustomSettingsBuilder.js";
 export { default as EquipmentBuilder } from "./classes/builders/EquipmentBuilder.js"
 export { default as ItemSettingsBuilder } from "./classes/builders/ItemSettingsBuilder.js";
+export { default as PrizePackBuilder } from "./classes/builders/PrizePackBuilder.js";
 export { default as RegionSettingsBuilder } from "./classes/builders/RegionSettingsBuilder.js";
 export { default as RomSettingsBuilder } from "./classes/builders/RomSettingsBuilder.js";
 export { default as SeedBuilder } from "./classes/builders/SeedBuilder.js";
@@ -17,6 +18,7 @@ export {
     District,
     Drop,
     EnemyDamage,
+    EnemyGroup,
     EnemyHealth,
     EnemyShuffle,
     Entrances,

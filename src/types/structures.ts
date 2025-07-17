@@ -177,6 +177,7 @@ export interface AllowedGlitches {
     canSuperSpeed: boolean,
     canTransitionWrapped: boolean,
     canWaterWalk: boolean,
+    canWaterFairyRevive?: boolean,
 }
 
 export type CustomDropCounts = Record<Exclude<Drop, "auto_fill">, number>;
@@ -431,58 +432,22 @@ export interface CustomizerJSONEquipment {
 }
 
 export interface PrizePackGroups {
-    0: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop
-    ],
-    1: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-    ],
-    2: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-    ],
-    3: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-    ],
-    4: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-    ],
-    5: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-    ],
-    6: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop, strings.CustomizerDrop,
-    ],
-    pull: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-        strings.CustomizerDrop,
-    ],
-    crab: [
-        strings.CustomizerDrop, strings.CustomizerDrop,
-    ],
-    stun: [strings.CustomizerDrop]
-    fish: [strings.CustomizerDrop]
+    0: PackTuple,
+    1: PackTuple,
+    2: PackTuple,
+    3: PackTuple,
+    4: PackTuple,
+    5: PackTuple,
+    6: PackTuple,
+    pull: TreePullTuple,
+    crab: [Drop, Drop],
+    stun: [Drop]
+    fish: [Drop]
 }
+
+export type PackTuple = [Drop, Drop, Drop, Drop, Drop, Drop, Drop, Drop];
+export type TreePullTuple = [Drop, Drop, Drop];
+export type CrabTuple = [Drop, Drop];
 
 export type LocationMap = Partial<Record<ItemLocation, Item> &
     Record<PrizeLocation, Prize> &

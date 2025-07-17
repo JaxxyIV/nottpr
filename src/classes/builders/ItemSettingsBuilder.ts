@@ -1,7 +1,7 @@
 import BaseBuilder from "./BaseBuilder.js";
 import { CustomItemCounts, CustomItemValues, CustomizerItemOptions, ItemOverflowSettings } from "../../types/structures.js";
 import { OverflowOptions } from "../../types/optionObjs.js";
-import { customizerDefault } from "../../types/payloads.js";
+import { customizerDefault } from "../../types/symbol/payloads.js";
 import { Icon } from "../../types/enums.js";
 
 export default class ItemSettingsBuilder
@@ -58,12 +58,12 @@ export default class ItemSettingsBuilder
 
     setItemValue(value: Partial<CustomItemValues>): this {
         const { value: vDefs } = ItemSettingsBuilder.#default;
-        for (const key in vDefs) {
+        for (const key of Object.keys(vDefs) as (keyof CustomItemValues)[]) {
             if (!(key in value)) {
                 if (key.startsWith("Bomb") || key.startsWith("Arrow")) {
                     continue;
                 }
-                value[key as keyof CustomItemValues] = "" as never;
+                value[key] = "" as never;
             }
         }
         this._body.value = super._deepCopy(value) as CustomItemValues;
@@ -71,9 +71,9 @@ export default class ItemSettingsBuilder
     }
 
     setItemCounts(counts: Partial<CustomItemCounts>): this {
-        const res = super._deepCopy(ItemSettingsBuilder.#default.count) as CustomItemCounts;
-        for (const key in counts) {
-            res[key as keyof typeof counts] = counts[key as keyof typeof counts];
+        const res = super._deepCopy(ItemSettingsBuilder.#default.count);
+        for (const key of Object.keys(counts) as (keyof CustomItemCounts)[]) {
+            res[key] = counts[key];
         }
         this._body.count = res;
         return this;

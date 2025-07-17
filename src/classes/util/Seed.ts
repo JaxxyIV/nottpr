@@ -3,9 +3,15 @@ import patch, { PatchOptions } from "z3r-patch";
 import Sprite from "./Sprite.js";
 import JSONTranslatable from "../interfaces/JSONTranslatable.js";
 import { SpoilerAPIData, SeedAPIData } from "../../types/structures.js";
-import { Droppable, EnemyPacks } from "../../types/strings.js";
-import { HeartColor, HeartSpeed, MenuSpeed } from "../../types/enums.js";
-
+import {
+    Drop,
+    DropByte,
+    EnemyGroup,
+    HeartColor,
+    HeartSpeed,
+    MenuSpeed,
+} from "../../types/enums.js";
+import { prizePacks } from "../../types/symbol/prizePacks.js";
 
 /**
  * An instance of this class represents a seed generated on alttpr.com.
@@ -66,7 +72,7 @@ export default class Seed
      * Returns this Seed's JSON patch data as a Map object. Elements in the Map
      * are keyed by their offsets.
      */
-    get patchMap(): ReadonlyMap<number, number[]> {
+    get patchMap(): ReadonlyMap<number, ReadonlyArray<number>> {
         return this.#patchMap;
     }
 
@@ -99,7 +105,7 @@ export default class Seed
     /**
      * Returns the start screen hash of this Seed as a string array.
      */
-    get hashCode(): string[] {
+    get hashCode(): ReadonlyArray<string> {
         return this.#seekInPatch(1573397, 5)
             .map(b => Seed.#HASH_STRINGS[b]);
     }
@@ -202,7 +208,6 @@ export default class Seed
             "D6": "MiseryMire",
             "D7": "TurtleRock",
         };
-
 
         if ("shuffle" in this.#spoiler.meta) { // Entrance rando
             log.Prizes = {
@@ -330,30 +335,21 @@ export default class Seed
             fish: 950988,
             enemy: 227960,
         };
-        const itemSprites: Record<number, Droppable> = {
-            121: "Bee",
-            178: "BeeGood",
-            216: "Heart",
-            217: "RupeeGreen",
-            218: "RupeeBlue",
-            219: "RupeeRed",
-            220: "BombRefill1",
-            221: "BombRefill4",
-            222: "BombRefill8",
-            223: "MagicRefillSmall",
-            224: "MagicRefillFull",
-            225: "ArrowRefill5",
-            226: "ArrowRefill10",
-            227: "Fairy",
-        };
-        const vanillaPacks: Record<EnemyPacks, number[]> = {
-            Heart: [216, 216, 216, 216, 217, 216, 216, 217],
-            Rupee: [218, 217, 218, 219, 218, 217, 218, 218],
-            Magic: [224, 223, 223, 218, 224, 223, 216, 223],
-            Bomb: [220, 220, 220, 221, 220, 220, 222, 220],
-            Arrow: [225, 216, 225, 226, 225, 216, 225, 226],
-            SmallVariety: [223, 217, 216, 225, 223, 220, 217, 216],
-            BigVariety: [216, 227, 224, 219, 222, 216, 219, 226],
+        const itemSprites: Record<DropByte, Drop> = {
+            [DropByte.Bee]: Drop.BeeSwarm,
+            [DropByte.GoodBee]: Drop.GoodBee,
+            [DropByte.Heart]: Drop.Heart,
+            [DropByte.OneRupee]: Drop.GreenRupee,
+            [DropByte.FiveRupees]: Drop.BlueRupee,
+            [DropByte.TwentyRupees]: Drop.RedRupee,
+            [DropByte.OneBomb]: Drop.OneBomb,
+            [DropByte.FourBombs]: Drop.FourBombs,
+            [DropByte.EightBombs]: Drop.EightBombs,
+            [DropByte.SmallMagic]: Drop.SmallMagic,
+            [DropByte.LargeMagic]: Drop.FullMagic,
+            [DropByte.FiveArrows]: Drop.FiveArrows,
+            [DropByte.TenArrows]: Drop.TenArrows,
+            [DropByte.Fairy]: Drop.Fairy,
         };
 
         const drops: DropsSpoilerData = {
@@ -382,7 +378,7 @@ export default class Seed
         drops.Crab.Last = getDropSprite(this.#seekInPatch(offsets.crab[1], 1)[0]);
 
         // Enemy Packs
-        const packs: number[][] = [[], [], [], [], [], [], [],];
+        const packs: DropByte[][] = [[], [], [], [], [], [], [],];
         const rowLimit = 8;
 
         const prizePackDrops = this.#seekInPatch(offsets.enemy);
@@ -391,13 +387,13 @@ export default class Seed
         }
 
         for (let i = 0; i < packs.length; ++i) {
-            const key = Object.keys(vanillaPacks)[i] as EnemyPacks;
+            const key = Object.keys(prizePacks)[i] as EnemyGroup;
             drops.Packs[key] = getPrizePackName(packs[i]);
         }
 
         return drops;
 
-        function getDropSprite(byte: number): Droppable {
+        function getDropSprite(byte: DropByte): Drop {
             if (byte in itemSprites) {
                 return itemSprites[byte];
             } else {
@@ -405,14 +401,14 @@ export default class Seed
             }
         }
 
-        function getPrizePackName(pack: number[]): string {
+        function getPrizePackName(pack: DropByte[]): string {
             // If the array contains one of these two bytes, we can safely assume
             // that the pack is not vanilla.
-            if (pack.some(b => b === 121 || b === 178)) {
+            if (pack.some(b => b === DropByte.Bee || b === DropByte.GoodBee)) {
                 return pack.map(b => getDropSprite(b)).join(", ");
             }
 
-            for (const [key, values] of Object.entries(vanillaPacks)) {
+            for (const [key, values] of Object.entries(prizePacks)) {
                 if (pack.toString() === values.toString()) {
                     return key;
                 }
@@ -508,12 +504,12 @@ type PostGenOptions = {
 type DropsSpoilerData = {
     Tree?: PullTiers
     Crab?: {
-        Main?: Droppable
-        Last?: Droppable
+        Main?: Drop
+        Last?: Drop
     }
-    Stun?: Droppable
-    Fish?: Droppable
-    Packs?: Partial<Record<EnemyPacks, string>>
+    Stun?: Drop
+    Fish?: Drop
+    Packs?: Partial<Record<EnemyGroup, string>>
 
 };
-type PullTiers = Partial<Record<1 | 2 | 3, Droppable>>;
+type PullTiers = Partial<Record<1 | 2 | 3, Drop>>;

@@ -19,8 +19,7 @@ import {
     ItemPayloadData,
     StartHashOverride,
 } from "../../types/structures.js";
-import { baseDefault } from "../../types/payloads.js";
-import { EnemizerOptions, ItemOptions } from "../../types/optionObjs.js";
+import { baseDefault } from "../../types/symbol/payloads.js";
 
 export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
     extends BaseBuilder<S> {
@@ -117,7 +116,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * Default behavior: always allow quickswap
      *
      * @param allow Should quickswap be allowed?
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setAllowQuickswap(allow: boolean): this {
         this._body.allow_quickswap = allow;
@@ -131,7 +130,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * * One value: Sets both tower and Ganon to the given value.
      * * Two values: Sets tower to the first value and Ganon to the second
      * value.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setCrystals(...crystals: Crystals[]): this {
         const [arg0, arg1] = crystals;
@@ -158,9 +157,9 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * Sets the enemizer settings for the seed.
      *
      * @param options The new enemizer settings.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
-    setEnemizer(options: EnemizerOptions): this {
+    setEnemizer(options: Partial<EnemizerPayloadData>): this {
         const settings = super._deepCopy(baseDefault.enemizer);
         const keys = Object.keys(options) as Array<keyof typeof options>;
 
@@ -191,9 +190,9 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * Sets the item settings for the seed.
      *
      * @param options The new item settings.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
-    setItem(options: ItemOptions): this {
+    setItem(options: Partial<ItemPayloadData>): this {
         const settings = super._deepCopy(baseDefault.item);
 
         if ("functionality" in options) {
@@ -236,7 +235,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * Overrides the random start screen hash with a custom input.
      *
      * @param hash A 5-element array of numbers between 0 and 31.
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setOverrideStartScreen(hash: StartHashOverride): this {
         if (!Array.isArray(hash)) {
@@ -245,10 +244,8 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
             throw new Error("Array must contain 5 elements.");
         }
 
-        // deep copy to not modify original arg
-        const copy = Array.from(hash) as StartHashOverride;
-
-        this._body.override_start_screen = copy;
+        // Deep copy to not modify original arg
+        this._body.override_start_screen = Array.from(hash) as StartHashOverride;
         return this;
     }
 
@@ -258,7 +255,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * Default behavior: seed is generated with pseudoboots disabled
      *
      * @param enable Should pseudoboots be enabled?
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setPseudoboots(enable: boolean): this {
         this._body.pseudoboots = enable;

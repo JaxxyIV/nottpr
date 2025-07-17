@@ -2,7 +2,7 @@ import BaseBuilder from "./BaseBuilder.js";
 import RegionSettingsBuilder from "./RegionSettingsBuilder.js";
 import ItemSettingsBuilder from "./ItemSettingsBuilder.js";
 import RomSettingsBuilder from "./RomSettingsBuilder.js";
-import { customizerDefault } from "../../types/payloads.js";
+import { customizerDefault } from "../../types/symbol/payloads.js";
 import {
     AllowedGlitches,
     CustomDropCounts,
@@ -32,6 +32,7 @@ export default class CustomSettingsBuilder
         canSuperBunny: false,
         canSuperSpeed: false,
         canWaterWalk: false,
+        canWaterFairyRevive: false,
     };
 
     constructor() {
@@ -67,19 +68,38 @@ export default class CustomSettingsBuilder
         return this._body.spoil.BootsLocation;
     }
 
-    setAllowedGlitches(options: AllowGlitchOptions): this {
-        for (const key of Object.keys(CustomSettingsBuilder.#defGlit)) {
-            this._body[key as keyof AllowedGlitches] = options[key as keyof typeof options] ??
-                CustomSettingsBuilder.#defGlit[key as keyof AllowedGlitches];
+    /**
+     * Sets the independent glitch rules for this CustomSettingsBuilder.
+     *
+     * @param options A partial object literal containing the new glitch rules.
+     * @returns The current object for chaining.
+     */
+    setAllowedGlitches(options: Partial<AllowedGlitches>): this {
+        for (const key of Object.keys(CustomSettingsBuilder.#defGlit) as (keyof AllowedGlitches)[]) {
+            this._body[key] = options[key] ?? CustomSettingsBuilder.#defGlit[key];
         }
         return this;
     }
 
+    /**
+     * Sets whether the prize packs generated are completely random or conform
+     * to v31.
+     *
+     * @param enable Whether non-v31 prize packs should be enabled.
+     * @returns The current object for chaining.
+     */
     setCustomPrizePacks(enable: boolean): this {
         this._body.customPrizePacks = enable;
         return this;
     }
 
+    /**
+     * Sets whether the boots location is spoiled by the uncle/the sign in front
+     * of Link's house.
+     *
+     * @param spoil Should the boots location be spoiled?
+     * @returns The current object for chaining.
+     */
     setSpoilBoots(spoil: boolean): this {
         this._body.spoil.BootsLocation = spoil;
         return this;
@@ -87,15 +107,16 @@ export default class CustomSettingsBuilder
 
     setRegion(region: RegionSettingsBuilder): this
     setRegion(region: (builder: RegionSettingsBuilder) => RegionSettingsBuilder): this
-    setRegion(region: RegionSettingsBuilder |
-        ((builder: RegionSettingsBuilder) => RegionSettingsBuilder)): this {
+    setRegion(region: RegionSettingsBuilder | Partial<CustomizerRegionOptions> | ((builder: RegionSettingsBuilder) => RegionSettingsBuilder)): this {
         if (typeof region === "function") {
-            this._body.region = region(new RegionSettingsBuilder()).toJSON();
-            return this;
+            region = region(new RegionSettingsBuilder()).toJSON();
         } else if (region instanceof RegionSettingsBuilder) {
-            this._body.region = region.toJSON();
+            region = region.toJSON();
+        } else {
+            region = new RegionSettingsBuilder(region).toJSON();
         }
-        throw new TypeError("region must be a function or RegionSettingsBuilder");
+        this._body.region = region as CustomizerRegionOptions;
+        return this;
     }
 
     setItemSettings(item: ItemSettingsBuilder): this;
@@ -128,11 +149,9 @@ export default class CustomSettingsBuilder
 
     setPrize(prize: Partial<CustomizerPrizeOptions>): this {
         const { prize: def } = CustomSettingsBuilder.#default;
-        for (const key of Object.keys(def)) {
-            this._body.prize[key as keyof CustomizerPrizeOptions] = prize[key as keyof typeof prize] ?? def[key as keyof typeof def];
+        for (const key of Object.keys(def) as (keyof CustomizerPrizeOptions)[]) {
+            this._body.prize[key] = prize[key] ?? def[key];
         }
         return this;
     }
 }
-
-type AllowGlitchOptions = Record<keyof AllowedGlitches, boolean>;

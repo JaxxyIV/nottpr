@@ -1,5 +1,5 @@
-import * as enums from "./enums.js";
-import { BasePayload, CustomizerPayload } from "./structures.js";
+import * as enums from "../enums.js";
+import { BasePayload, CustomizerPayload } from "../structures.js";
 
 export const baseDefault: BasePayload = {
     accessibility: enums.Accessibility.Items,

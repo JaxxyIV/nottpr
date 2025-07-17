@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { SpriteAPIData } from "../../types/structures.js";
 
 export default class Sprite {

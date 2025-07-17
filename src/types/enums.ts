@@ -375,6 +375,33 @@ export enum Drop {
     Fairy = "Fairy",
 };
 
+export enum DropByte {
+    Bee = 121,
+    GoodBee = 178,
+    Heart = 216,
+    OneRupee,
+    FiveRupees,
+    TwentyRupees,
+    OneBomb,
+    FourBombs,
+    EightBombs,
+    SmallMagic,
+    LargeMagic,
+    FiveArrows,
+    TenArrows,
+    Fairy,
+};
+
+export enum EnemyGroup {
+    Heart = "Heart",
+    Rupee = "Rupee",
+    Magic = "Magic",
+    Bomb = "Bomb",
+    Arrow = "Arrow",
+    SmallVariety = "SmallVariety",
+    BigVariety = "BigVariety",
+};
+
 export enum ItemLocation {
     SahaHutLeft = "U2FoYXNyYWhsYSdzIEh1dCAtIExlZnQ6MQ==",
     SahaHutMiddle = "U2FoYXNyYWhsYSdzIEh1dCAtIE1pZGRsZTox",

@@ -56,8 +56,9 @@ export default class SeedBuilder
      */
     static async fromWebPreset(name: WebPreset): Promise<SeedBuilder> {
         if (!this.#webPresets) {
-            const res = await new Request("/randomizer/settings").get("json");
-            const presets = res.presets as Record<WebPreset, APIPreset>;
+            const { presets } = await new Request("/randomizer/settings").get("json") as {
+                presets: Record<WebPreset, APIPreset>
+            };
             this.#webPresets = presets;
         }
 

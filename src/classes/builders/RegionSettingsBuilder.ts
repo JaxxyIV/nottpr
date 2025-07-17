@@ -1,6 +1,6 @@
 import BaseBuilder from "./BaseBuilder.js";
 import { CustomizerRegionOptions } from "../../types/structures.js";
-import { customizerDefault } from "../../types/payloads.js";
+import { customizerDefault } from "../../types/symbol/payloads.js";
 
 export default class RegionSettingsBuilder
     extends BaseBuilder<CustomizerRegionOptions> {

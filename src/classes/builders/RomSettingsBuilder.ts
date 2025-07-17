@@ -1,6 +1,6 @@
 import BaseBuilder from "./BaseBuilder.js";
 import { CustomizerRomOptions } from "../../types/structures.js";
-import { customizerDefault } from "../../types/payloads.js";
+import { customizerDefault } from "../../types/symbol/payloads.js";
 import { ClockMode, CompassMode } from "../../types/enums.js";
 const { custom: { rom: def } } = customizerDefault;
 
@@ -102,7 +102,7 @@ export default class RomSettingsBuilder
      * Setting normal to `false` is default behavior.
      *
      * @param normal Should Ganon/Aga 1 RNG be normalized?
-     * @returns The current object, for chaining.
+     * @returns The current object for chaining.
      */
     setGanonAgaRNG(normal: boolean): this {
         this._body.GanonAgRNG = normal ? "none" : "table";
