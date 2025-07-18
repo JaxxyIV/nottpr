@@ -154,4 +154,13 @@ export default class CustomSettingsBuilder
         }
         return this;
     }
+
+    setDrop(drop: Partial<CustomDropCounts>): this {
+        const rep = super._deepCopy(CustomSettingsBuilder.#default.drop.count);
+        for (const key of Object.keys(drop) as (keyof typeof drop)[]) {
+            rep[key] = drop[key];
+        }
+        this._body.drop.count = rep;
+        return this;
+    }
 }

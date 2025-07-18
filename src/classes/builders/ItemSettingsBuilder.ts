@@ -1,8 +1,12 @@
 import BaseBuilder from "./BaseBuilder.js";
-import { CustomItemCounts, CustomItemValues, CustomizerItemOptions, ItemOverflowSettings } from "../../types/structures.js";
-import { OverflowOptions } from "../../types/optionObjs.js";
-import { customizerDefault } from "../../types/symbol/payloads.js";
 import { Icon } from "../../types/enums.js";
+import {
+    CustomItemCounts,
+    CustomItemValues,
+    CustomizerItemOptions,
+    ItemOverflowSettings,
+} from "../../types/structures.js";
+import { customizerDefault } from "../../types/symbol/payloads.js";
 
 export default class ItemSettingsBuilder
     extends BaseBuilder<CustomizerItemOptions> {

@@ -12,7 +12,6 @@ import {
     SpriteAPIData,
 } from "../../types/structures.js";
 
-
 /**
  * The ALTTPR class is the main class for interacting with alttpr.com's API.
  * All methods in the class are static and the class cannot be instantiated.

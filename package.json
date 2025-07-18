@@ -6,9 +6,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "*.js",
-    "./dist/index.d.ts",
-    "*.json"
+    "**/dist/*.js",
+    "**/dist/index.d.ts"
   ],
   "scripts": {
     "build": "echo \"Error: no test specified\" && exit 1"

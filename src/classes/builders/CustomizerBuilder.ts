@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import CustomSettingsBuilder from "./CustomSettingsBuilder.js";
 import EquipmentBuilder from "./EquipmentBuilder.js";
@@ -85,16 +86,17 @@ export default class CustomizerBuilder
     }
 
     /**
-     * Accepts a JSON object of VT customizer settings and converts the data to
-     * a CustomizerBuilder.
+     * Accepts a file path to a customizer .json file or an object literal and
+     * converts it to a CustomizerBuilder.
      *
-     * **Note:** The data must already be converted to an object. Strings, buffers,
-     * or streams will not be parsed.
-     *
-     * @param data The customizer settings as a JSON object.
+     * @param data The data to be parsed.
      * @returns The settings converted to a builder.
      */
-    static fromCustomizerJSON(data: CustomizerJSON): CustomizerBuilder {
+    static fromCustomizerJSON(data: string | CustomizerJSON): CustomizerBuilder {
+        if (typeof data === "string") {
+            data = JSON.parse(fs.readFileSync(data).toString()) as CustomizerJSON;
+        }
+
         const nest = (obj: any, keys: string[], value: unknown): void => {
             let temp = obj;
             for (let i = 0; i < keys.length; ++i) {

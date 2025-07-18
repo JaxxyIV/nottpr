@@ -27,6 +27,11 @@ export default class EquipmentBuilder
     #arrows = 0;
     #bombs = 0;
     #startingBoots = false;
+    #swords = 0;
+    #shields = 0;
+    #armor = 0;
+    #glove = 0;
+    #bow = 0;
     #eq: StartingEquipment[] = [];
 
     /**
@@ -64,7 +69,27 @@ export default class EquipmentBuilder
         return this.#startingBoots;
     }
 
-    get equipment(): StartingEquipment[] {
+    get swords(): number {
+        return this.#swords;
+    }
+
+    get shields(): number {
+        return this.#shields;
+    }
+
+    get armor(): number {
+        return this.#armor;
+    }
+
+    get glove(): number {
+        return this.#glove;
+    }
+
+    get bow(): number {
+        return this.#bow;
+    }
+
+    get equipment(): ReadonlyArray<StartingEquipment> {
         return Array.from(this.#eq);
     }
 
@@ -89,9 +114,14 @@ export default class EquipmentBuilder
      *
      * This method is the slow version of {@link setEquipment()}. Compared
      * to the normal version, this method scans the passed array for boots,
-     * heart containers, rupees, and capacity upgrades; removes those entries
-     * from the array and updates any corresponding variables; then sets
-     * the starting equipment array to the mutated argument.
+     * heart containers, rupees, capacity upgrades, and progressive equipment;
+     * removes those entries from the array and updates any corresponding
+     * variables; then sets the starting equipment array to the mutated
+     * argument.
+     *
+     * **LIMITATION**: Regarding swords and other progressive equipment, this
+     * method intentionally does not process hardset items like "PowerGlove" or
+     * "MirrorShield". It is intended to be used with progressive items.
      *
      * @param equipment The new starting equipment.
      * @returns The current object for chaining.
@@ -102,6 +132,11 @@ export default class EquipmentBuilder
         let newRup = 0;
         let newBom = 0;
         let newArr = 0;
+        let newSrd = 0;
+        let newArm = 0;
+        let newShl = 0;
+        let newGlv = 0;
+        let newBow = 0;
         for (let i = 0; i < equipment.length;) {
             let found = false;
             const eq = equipment[i];
@@ -111,21 +146,30 @@ export default class EquipmentBuilder
             } else if (eq === Item.HeartContainer) {
                 ++newHP;
                 found = true;
+            } else if (eq === Item.ProgressiveArmor) {
+                ++newArm;
+                found = true;
+            } else if (eq === Item.ProgressiveShield) {
+                ++newShl;
+                found = true;
+            } else if (eq === Item.ProgressiveSword) {
+                ++newSrd;
+                found = true;
+            } else if (eq === Item.ProgressiveGlove) {
+                ++newGlv;
+                found = true;
+            } else if (eq === Item.ProgressiveBow) {
+                ++newBow;
+                found = true;
             } else if (eq.includes("Rupee")) {
                 found = true;
                 switch (eq.slice(0, eq.indexOf("R") - 1)) {
-                    case "One": newRup += 1;
-                        break;
-                    case "Five": newRup += 5;
-                        break;
-                    case "Twenty": newRup += 20;
-                        break;
-                    case "Fifty": newRup += 50;
-                        break;
-                    case "OneHundred": newRup += 100;
-                        break;
-                    case "ThreeHundred": newRup += 300;
-                        break;
+                    case "One": newRup += 1; break;
+                    case "Five": newRup += 5; break;
+                    case "Twenty": newRup += 20; break;
+                    case "Fifty": newRup += 50; break;
+                    case "OneHundred": newRup += 100; break;
+                    case "ThreeHundred": newRup += 300; break;
                 }
             } else if (eq.endsWith("0") || eq.endsWith("e5")) {
                 found = true;
@@ -144,18 +188,17 @@ export default class EquipmentBuilder
             }
         }
 
-        if (newHP) {
-            this.#hearts = newHP;
-        }
-        if (newRup) {
-            this.#rupees = newRup;
-        }
-        if (newBom) {
-            this.#bombs = newBom;
-        }
-        if (newArr) {
-            this.#arrows = newArr;
-        }
+        // We'll just assume these values are correct. If an incorrect use of
+        // the method causes a generation failure, that's not our problem.
+        if (newHP) this.#hearts = newHP;
+        if (newRup) this.#rupees = newRup;
+        if (newBom) this.#bombs = newBom;
+        if (newArr) this.#arrows = newArr;
+        if (newArm) this.#armor = newArm;
+        if (newGlv) this.#glove = newGlv;
+        if (newShl) this.#shields = newShl;
+        if (newSrd) this.#swords = newSrd;
+        if (newBow) this.#bow = newBow;
 
         return this.setEquipment(equipment);
     }
@@ -198,13 +241,11 @@ export default class EquipmentBuilder
      */
     setArrowUpgrades(arrows: number): this {
         arrows = Math.floor(arrows);
-
         if (arrows % 5 !== 0) {
             throw new Error("arrows parameter must be an increment of 5.");
         } else if (arrows < 0 || arrows > EquipmentBuilder.#MAX_CAP) {
             throw new RangeError("Arrow quantity out of range.");
         }
-
         this.#arrows = arrows;
         return this;
     }
@@ -218,13 +259,11 @@ export default class EquipmentBuilder
      */
     setBombUpgrades(bombs: number): this {
         bombs = Math.floor(bombs);
-
         if (bombs % 5 !== 0) {
             throw new Error("bombs parameter must be an increment of 5.");
         } else if (bombs < 0 || bombs > EquipmentBuilder.#MAX_CAP) {
             throw new RangeError("Bomb quantity out of range.");
         }
-
         this.#bombs = bombs;
         return this;
     }
@@ -238,11 +277,9 @@ export default class EquipmentBuilder
      */
     setStartingHearts(hearts: number): this {
         hearts = Math.floor(hearts);
-
         if (hearts < 1 || hearts > 20) {
             throw new RangeError("Heart quantity out of range.");
         }
-
         this.#hearts = hearts;
         return this;
     }
@@ -255,73 +292,152 @@ export default class EquipmentBuilder
      */
     setStartingRupees(rupees: number): this {
         rupees = Math.floor(rupees);
-
         if (rupees < 0 || rupees > 9999) {
             throw new RangeError("Rupee amount out of range.");
         }
-
         this.#rupees = rupees;
         return this;
     }
 
+    /**
+     * Sets the starting sword level. Value must be in range [0,4].
+     *
+     * @param swords The starting sword level.
+     * @returns The current object for chaining.
+     */
+    setSwords(swords: number): this {
+        swords = Math.floor(swords);
+        if (swords < 0 || swords > 4) {
+            throw new RangeError("Sword count out of range.");
+        }
+        this.#swords = swords;
+        return this;
+    }
+
+    /**
+     * Sets the starting shield level. Value must be in range [0,3].
+     *
+     * @param shields The starting shield level.
+     * @returns The current object for chaining.
+     */
+    setShields(shields: number): this {
+        shields = Math.floor(shields);
+        if (shields < 0 || shields > 3) {
+            throw new RangeError("Shield count out of range.");
+        }
+        this.#shields = shields;
+        return this;
+    }
+
+    /**
+     * Sets the starting armor level. Value must be in range [0,2].
+     *
+     * @param armor The starting armor level.
+     * @returns The current object for chaining.
+     */
+    setArmor(armor: number): this {
+        armor = Math.floor(armor);
+        if (armor < 0 || armor > 2) {
+            throw new RangeError("Armor count out of range.");
+        }
+        this.#armor = armor;
+        return this;
+    }
+
+    /**
+     * Sets the starting lift level. Value must be in range [0,2].
+     *
+     * @param glove The starting lift level.
+     * @returns The current object for chaining.
+     */
+    setGlove(glove: number): this {
+        glove = Math.floor(glove);
+        if (glove < 0 || glove > 2) {
+            throw new RangeError("Glove count out of range.");
+        }
+        this.#glove = glove;
+        return this;
+    }
+
+    /**
+     * Sets the starting bow level. Value must be in range [0,2].
+     *
+     * @param bow The starting bow level.
+     * @returns The current object for chaining.
+     */
+    setBow(bow: number): this {
+        bow = Math.floor(bow);
+        if (bow < 0 || bow > 2) {
+            throw new RangeError("Bow count out of range.");
+        }
+        this.#bow = bow;
+        return this;
+    }
+
+    /**
+     * Returns a JSON representation of this EquipmentBuilder.
+     *
+     * @returns A JSON object.
+     */
     toJSON(): StartingEquipment[] {
-        const { equipment } = this;
+        const equipment = Array.from(this.#eq);
+        let {
+            hearts,
+            arrowUpgrades: arrows,
+            bombUpgrades: bombs,
+            swords,
+            shields,
+            armor,
+            glove,
+            bow,
+        } = this;
 
         if (this.startingBoots) {
             equipment.push(Item.PegasusBoots);
         }
 
-        let { hearts } = this;
-        while (hearts > 0) {
-            equipment.push(Item.HeartContainer);
-            --hearts;
-        }
-
-        let { arrowUpgrades: arrows } = this;
-        if (arrows % 10 !== 0) {
-            equipment.push(Item.ArrowUpgrade5);
-            arrows -= 5;
-        }
-        arrows /= 10;
-        while (arrows > 0) {
-            equipment.push(Item.ArrowUpgrade10);
-            --arrows;
-        }
-
-        let { bombUpgrades: bombs } = this;
-        if (bombs % 10 !== 0) {
-            equipment.push(Item.BombUpgrade5);
-            bombs -= 5;
-        }
-        bombs /= 10;
-        while (arrows > 0) {
-            equipment.push(Item.BombUpgrade10);
-            --bombs;
-        }
+        seqPush(hearts, Item.HeartContainer);
+        seqPush(swords, Item.ProgressiveSword);
+        seqPush(shields, Item.ProgressiveShield);
+        seqPush(armor, Item.ProgressiveArmor);
+        seqPush(glove, Item.ProgressiveGlove);
+        seqPush(bow, Item.ProgressiveBow);
+        capPush(arrows, [Item.ArrowUpgrade5, Item.ArrowUpgrade10]);
+        capPush(bombs, [Item.BombUpgrade5, Item.BombUpgrade10]);
 
         if (this.rupees > 0) {
             equipment.push(...this.#rupeeArray());
         }
 
         return equipment;
+
+        function capPush(val: number, [item5, item10]: [Item, Item]): void {
+            if (val % 10 !== 0) {
+                equipment.push(item5 as StartingEquipment);
+            }
+            val /= 10;
+            seqPush(val, item10);
+        }
+        function seqPush(val: number, item: Item): void {
+            while (val > 0) {
+                equipment.push(item as StartingEquipment);
+                --val;
+            }
+        }
     }
 
     #rupeeArray(): RupeeAmount[] {
         let remaining = this.#rupees;
         const array: RupeeAmount[] = [];
-
         for (const key of Object.keys(EquipmentBuilder.#rupeeMap)) {
             const amount = parseInt(key);
             let r = Math.floor(remaining / amount);
-
             while (r > 0) {
                 array.push(EquipmentBuilder.#rupeeMap[amount]);
                 --r;
             }
-
             remaining %= amount;
         }
-
         return array;
     }
 }

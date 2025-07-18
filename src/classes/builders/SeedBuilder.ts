@@ -51,7 +51,7 @@ export default class SeedBuilder
     /**
      * Creates a new class instance from a preset stored on alttpr.com.
      *
-     * @param name The name of the preset
+     * @param name The name of the preset.
      * @returns The given preset as a builder.
      */
     static async fromWebPreset(name: WebPreset): Promise<SeedBuilder> {

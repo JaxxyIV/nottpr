@@ -161,7 +161,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      */
     setEnemizer(options: Partial<EnemizerPayloadData>): this {
         const settings = super._deepCopy(baseDefault.enemizer);
-        const keys = Object.keys(options) as Array<keyof typeof options>;
+        const keys = Object.keys(options) as (keyof EnemizerPayloadData)[];
 
         for (const key of keys) {
             settings[key] = options[key] as never; // errors unless asserted as never
@@ -250,9 +250,9 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
     }
 
     /**
-     * Sets whether or not this seed is generated with pseudoboots equipped.
+     * Sets whether this seed is generated with pseudoboots equipped.
      *
-     * Default behavior: seed is generated with pseudoboots disabled
+     * Default behavior: Seed is generated with pseudoboots disabled.
      *
      * @param enable Should pseudoboots be enabled?
      * @returns The current object for chaining.
