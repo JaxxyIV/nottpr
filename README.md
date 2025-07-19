@@ -204,6 +204,10 @@ method. Be advised that when patching a ROM, it is returned as a buffer. It will
 not create a new file on your system. How the buffered data is handled is up to
 the implementer.
 
+You can also retrieve a seed's spoiler log by using the `Seed.spoilerLog` method.
+It accepts an optional boolean parameter to output additional information about
+prize packs. By default, this behavior is disabled.
+
 ```js
 import ALTTPR, {
     SeedBuilder,
@@ -236,4 +240,5 @@ const patched = await seed.patch(pathToJp10Rom, {
 });
 
 await fs.writeFile(`./seeds/${seed.hash}.sfc`, patched);
+await fs.writeFile(`./seeds/logs/spoiler_${seed.hash}.json`, seed.spoilerLog(true));
 ```

@@ -58,9 +58,9 @@ export default class Seed
             }
         }
 
-        this.#current_rom_hash = "current_rom_hash" in json
-            ? json.current_rom_hash
-            : undefined;
+        if ("current_rom_hash" in json) {
+            this.#current_rom_hash = json.current_rom_hash;
+        }
     }
 
     get logic(): string {
@@ -167,7 +167,7 @@ export default class Seed
             spoiler: this.#spoiler,
             patch: this.#origPatch,
         };
-        if (#current_rom_hash in this) {
+        if (this.#current_rom_hash) {
             res.current_rom_hash = this.#current_rom_hash;
         }
         return res;
@@ -180,7 +180,7 @@ export default class Seed
      * be included?
      * @returns The formatted spoiler log as a Uint8Array.
      */
-    formatSpoiler(showDrops = false): Uint8Array {
+    spoilerLog(showDrops = false): Uint8Array {
         // if "off" or "mystery", nothing special happens. Just return the
         // spoiler as-is.
         if (this.#spoiler.meta.spoilers === "off" ||
