@@ -3,6 +3,7 @@ import Request from "../util/Request.js";
 import { BaseSeedOptions } from "../../types/optionObjs.js";
 import { APIPreset, RandomizerPayload } from "../../types/structures.js";
 import { Entrances } from "../../types/enums.js";
+import { baseDefault } from "../../types/symbol/payloads.js";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -23,7 +24,7 @@ import { Entrances } from "../../types/enums.js";
  *     .setMode(WorldState.Inverted)
  *     .setGoal(Goals.Dungeons)
  *     .setDungeonItems(Keysanity.Full);
- * const seed = await ALTTPR.randomizer(builder);
+ * const seed = await ALTTPR.generate(builder);
  * ```
  */
 export default class SeedBuilder
@@ -32,11 +33,9 @@ export default class SeedBuilder
 
     constructor(data?: SeedOptions) {
         super();
-        if (typeof data === "undefined" || !("entrances" in data)) {
-            this.setEntrances(Entrances.None);
-        } else {
-            this.setEntrances(data.entrances);
-        }
+        if (!data) return;
+
+        this._body = super._deepCopy(data) as typeof this._body;
     }
 
     get entrances(): Entrances {

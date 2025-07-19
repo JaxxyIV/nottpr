@@ -56,8 +56,6 @@ export type RequiredRegionSettings = "bossNormalLocation" | "wildBigKeys" | "wil
 export type RegionSettings = "requireBetterBow" | "requireBetterSword" | "forceSkullWoodsKey" | "swordsInPool" | "bossHeartsInPool" | "bossesHaveItem" | "takeAnys";
 export type CustomSettings = "item" | "prize" | "region" | "rom" | "spoil.BootsLocation" | "drop";
 export type Restrictable = "Sword" | "Armor" | "Bow" | "Shield" | "BossHeartContainer" | "PieceOfHeart" | "Bottle";
-// export type ClockMode = "stopwatch" | "countdown-ohko" | "countdown-continue" | "countdown-stop" | "countdown-end" | "off";
-// export type CompassMode = Toggle | "pickup";
 
 export type SpoilerItemString<I extends Item> = `${I}:1`;
 
