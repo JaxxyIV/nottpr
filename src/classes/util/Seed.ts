@@ -1,5 +1,4 @@
 import patch, { PatchOptions } from "z3r-patch";
-// import { PaletteMode, PaletteRandomizerOptions } from "@maseya/z3pr";
 import Sprite from "./Sprite.js";
 import JSONTranslatable from "../interfaces/JSONTranslatable.js";
 import { SpoilerAPIData, SeedAPIData } from "../../types/structures.js";

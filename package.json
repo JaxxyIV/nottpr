@@ -34,11 +34,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@maseya/z3pr": "^1.0.1",
     "center-align": "^1.0.1",
-    "flat": "^5.0.2",
-    "node-fetch": "^3.3.2",
-    "z3r-patch": "^1.0.1"
+    "z3r-patch": "^1.0.4"
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.1",
