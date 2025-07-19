@@ -3,7 +3,6 @@ import Request from "../util/Request.js";
 import { BaseSeedOptions } from "../../types/optionObjs.js";
 import { APIPreset, RandomizerPayload } from "../../types/structures.js";
 import { Entrances } from "../../types/enums.js";
-import { baseDefault } from "../../types/symbol/payloads.js";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -31,6 +30,11 @@ export default class SeedBuilder
     extends BaseSeedBuilder<RandomizerPayload> {
     static #webPresets: Record<WebPreset, APIPreset>;
 
+    /**
+     * Constructs a new SeedBuilder.
+     *
+     * @param data An optional partial payload object.
+     */
     constructor(data?: SeedOptions) {
         super();
         if (!data) return;
