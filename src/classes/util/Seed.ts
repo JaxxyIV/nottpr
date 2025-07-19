@@ -159,15 +159,18 @@ export default class Seed
     }
 
     toJSON(): Readonly<SeedAPIData> {
-        return {
+        const res: SeedAPIData = {
             logic: this.#logic,
             generated: this.#generated,
             hash: this.#hash,
             size: this.#size,
             spoiler: this.#spoiler,
-            current_rom_hash: this.#current_rom_hash,
             patch: this.#origPatch,
         };
+        if (#current_rom_hash in this) {
+            res.current_rom_hash = this.#current_rom_hash;
+        }
+        return res;
     }
 
     /**
