@@ -429,11 +429,11 @@ export default class EquipmentBuilder
     #rupeeArray(): RupeeAmount[] {
         let remaining = this.#rupees;
         const array: RupeeAmount[] = [];
-        for (const key of Object.keys(EquipmentBuilder.#rupeeMap)) {
+        for (const [key, value] of Object.entries(EquipmentBuilder.#rupeeMap).reverse()) {
             const amount = parseInt(key);
             let r = Math.floor(remaining / amount);
             while (r > 0) {
-                array.push(EquipmentBuilder.#rupeeMap[amount]);
+                array.push(value);
                 --r;
             }
             remaining %= amount;

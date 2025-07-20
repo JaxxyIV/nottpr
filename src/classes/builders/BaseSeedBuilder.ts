@@ -17,6 +17,7 @@ import {
     CrystalPayloadData,
     EnemizerPayloadData,
     ItemPayloadData,
+    Keys,
     StartHashOverride,
 } from "../../types/structures.js";
 import { baseDefault } from "../../types/symbol/payloads.js";
@@ -161,7 +162,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      */
     setEnemizer(options: Partial<EnemizerPayloadData>): this {
         const settings = super._deepCopy(baseDefault.enemizer);
-        const keys = Object.keys(options) as (keyof EnemizerPayloadData)[];
+        const keys = Object.keys(options) as Keys<EnemizerPayloadData>;
 
         for (const key of keys) {
             settings[key] = options[key] as never; // errors unless asserted as never

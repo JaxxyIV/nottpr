@@ -1,5 +1,5 @@
 import BaseBuilder from "./BaseBuilder.js";
-import { CustomizerRomOptions } from "../../types/structures.js";
+import { CustomizerRomOptions, Pairs } from "../../types/structures.js";
 import { customizerDefault } from "../../types/symbol/payloads.js";
 import { ClockMode, CompassMode } from "../../types/enums.js";
 const { custom: { rom: def } } = customizerDefault;
@@ -12,8 +12,8 @@ export default class RomSettingsBuilder
 
         if (typeof opts !== "object") return;
 
-        for (const [key, val] of Object.entries(opts)) {
-            this._body[key as keyof typeof this._body] = val as never;
+        for (const [key, val] of Object.entries(opts) as Pairs<typeof def>) {
+            this._body[key] = val as never;
         }
     }
 

@@ -4,10 +4,12 @@ import CustomSettingsBuilder from "./CustomSettingsBuilder.js";
 import EquipmentBuilder from "./EquipmentBuilder.js";
 import {
     AllowedGlitches,
+    BuilderCallback,
     CustomizerJSON,
     CustomizerJSONEquipment,
     CustomizerPayload,
     CustomOptions,
+    Keys,
     LocationMap,
     PrizePackGroups,
     TextMap,
@@ -180,7 +182,7 @@ export default class CustomizerBuilder
                 };
 
                 let rupees = parseInt(v);
-                for (const key of Object.keys(rupeeMap)) {
+                for (const key of Object.keys(rupeeMap).reverse()) {
                     const parsed = parseInt(key);
                     const toAdd = Math.floor(rupees / parsed);
 
@@ -242,8 +244,8 @@ export default class CustomizerBuilder
      */
     setEquipment(equipment: EquipmentBuilder): this;
     setEquipment(equipment: StartingEquipment[]): this;
-    setEquipment(equipment: ((builder: EquipmentBuilder) => EquipmentBuilder)): this;
-    setEquipment(equipment: StartingEquipment[] | EquipmentBuilder | ((builder: EquipmentBuilder) => EquipmentBuilder)): this {
+    setEquipment(equipment: (builder: EquipmentBuilder) => EquipmentBuilder): this;
+    setEquipment(equipment: StartingEquipment[] | EquipmentBuilder | BuilderCallback<EquipmentBuilder>): this {
         if (Array.isArray(equipment)) {
             this._body.eq = super._deepCopy(equipment);
         } else if (typeof equipment === "function") {
@@ -313,8 +315,8 @@ export default class CustomizerBuilder
 
     setCustom(custom: CustomSettingsBuilder): this;
     setCustom(custom: Partial<CustomOptions>): this;
-    setCustom(custom: ((builder: CustomSettingsBuilder) => CustomSettingsBuilder)): this;
-    setCustom(custom: Partial<CustomOptions> | CustomSettingsBuilder | ((builder: CustomSettingsBuilder) => CustomSettingsBuilder)): this {
+    setCustom(custom: (builder: CustomSettingsBuilder) => CustomSettingsBuilder): this;
+    setCustom(custom: Partial<CustomOptions> | CustomSettingsBuilder | BuilderCallback<CustomSettingsBuilder>): this {
         if (typeof custom === "function") {
             this._body.custom = custom(new CustomSettingsBuilder()).toJSON();
         } else if (custom instanceof CustomSettingsBuilder) {
@@ -337,8 +339,8 @@ export default class CustomizerBuilder
      */
     setDrops(drops: PrizePackBuilder): this;
     setDrops(drops: Partial<PrizePackGroups>): this;
-    setDrops(drops: ((builder: PrizePackBuilder) => PrizePackBuilder)): this;
-    setDrops(drops: Partial<PrizePackGroups> | PrizePackBuilder | ((builder: PrizePackBuilder) => PrizePackBuilder)): this {
+    setDrops(drops: (builder: PrizePackBuilder) => PrizePackBuilder): this;
+    setDrops(drops: Partial<PrizePackGroups> | PrizePackBuilder | BuilderCallback<PrizePackBuilder>): this {
         if (typeof drops === "function") {
             drops = drops(new PrizePackBuilder()).toJSON();
         } else if (drops instanceof PrizePackBuilder) {
@@ -395,8 +397,8 @@ export default class CustomizerBuilder
 
     static #createDefault(): CustomizerPayload {
         const payload: Partial<CustomizerPayload> = this.prototype._deepCopy(baseDefault);
-        for (const key in customizerDefault) {
-            payload[key as keyof CustomizerPayload] = customizerDefault[key as keyof CustomizerPayload] as never;
+        for (const key of Object.keys(customizerDefault) as Keys<CustomizerPayload>) {
+            payload[key] = customizerDefault[key] as never;
         }
         return payload as CustomizerPayload;
     }

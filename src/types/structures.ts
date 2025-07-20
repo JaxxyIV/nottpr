@@ -285,7 +285,7 @@ export type CustomItemCounts = Record<strings.RequiredItemCountOptions, number> 
 
 export interface ItemOverflowSettings {
     count: Partial<Record<strings.Restrictable, number>>
-    replacement: Partial<Record<strings.Restrictable, number>>
+    replacement: Partial<Record<strings.Restrictable, Item>>
 }
 
 export interface CustomizerCustomOptions extends AllowedGlitches {
@@ -572,3 +572,10 @@ export interface EntranceSpoiler extends BaseSeedSpoiler {
         Sanctuary: string
     }
 }
+
+/* UTIL TYPES */
+export type BuilderCallback<B> = (builder: B) => typeof builder;
+export type PartialRecord<K extends string | number | symbol, V> = Partial<Record<K, V>>;
+export type Keys<T> = (keyof T)[];
+export type Values<T> = T[keyof T];
+export type Pairs<T> = [keyof T, Values<T>][];

@@ -1,5 +1,5 @@
 import BaseBuilder from "./BaseBuilder.js";
-import { CustomizerRegionOptions } from "../../types/structures.js";
+import { CustomizerRegionOptions, Keys } from "../../types/structures.js";
 import { customizerDefault } from "../../types/symbol/payloads.js";
 
 export default class RegionSettingsBuilder
@@ -10,8 +10,8 @@ export default class RegionSettingsBuilder
         super();
         this._body = super._deepCopy(RegionSettingsBuilder.#default);
         if (data) {
-            for (const key in data) {
-                this._body[key as keyof typeof data] = data[key as keyof typeof data];
+            for (const key of Object.keys(data) as Keys<CustomizerRegionOptions>) {
+                this._body[key] = data[key];
             }
         }
     }

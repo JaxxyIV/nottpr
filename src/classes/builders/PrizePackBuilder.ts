@@ -2,6 +2,7 @@ import BaseBuilder from "./BaseBuilder.js";
 import { Drop, EnemyGroup } from "../../types/enums.js";
 import {
     CrabTuple,
+    Keys,
     PackTuple,
     PrizePackGroups,
     TreePullTuple,
@@ -16,7 +17,7 @@ export default class PrizePackBuilder
         super();
         this._body = super._deepCopy(PrizePackBuilder.#def);
 
-        for (const key of Object.keys(packs) as (keyof PrizePackGroups)[]) {
+        for (const key of Object.keys(packs) as Keys<PrizePackGroups>) {
             for (let i = 0; i < packs[key].length; ++i) {
                 this._body[key][i] = packs[key][i];
             }

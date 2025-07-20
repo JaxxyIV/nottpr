@@ -5,12 +5,14 @@ import RomSettingsBuilder from "./RomSettingsBuilder.js";
 import { customizerDefault } from "../../types/symbol/payloads.js";
 import {
     AllowedGlitches,
+    BuilderCallback,
     CustomDropCounts,
     CustomizerItemOptions,
     CustomizerPrizeOptions,
     CustomizerRegionOptions,
     CustomizerRomOptions,
     CustomOptions,
+    Keys,
 } from "../../types/structures.js";
 
 export default class CustomSettingsBuilder
@@ -75,7 +77,7 @@ export default class CustomSettingsBuilder
      * @returns The current object for chaining.
      */
     setAllowedGlitches(options: Partial<AllowedGlitches>): this {
-        for (const key of Object.keys(CustomSettingsBuilder.#defGlit) as (keyof AllowedGlitches)[]) {
+        for (const key of Object.keys(CustomSettingsBuilder.#defGlit) as Keys<AllowedGlitches>) {
             this._body[key] = options[key] ?? CustomSettingsBuilder.#defGlit[key];
         }
         return this;
@@ -107,7 +109,7 @@ export default class CustomSettingsBuilder
 
     setRegion(region: RegionSettingsBuilder): this
     setRegion(region: (builder: RegionSettingsBuilder) => RegionSettingsBuilder): this
-    setRegion(region: RegionSettingsBuilder | Partial<CustomizerRegionOptions> | ((builder: RegionSettingsBuilder) => RegionSettingsBuilder)): this {
+    setRegion(region: RegionSettingsBuilder | Partial<CustomizerRegionOptions> | BuilderCallback<RegionSettingsBuilder>): this {
         if (typeof region === "function") {
             region = region(new RegionSettingsBuilder()).toJSON();
         } else if (region instanceof RegionSettingsBuilder) {
@@ -121,8 +123,8 @@ export default class CustomSettingsBuilder
 
     setItemSettings(item: ItemSettingsBuilder): this;
     setItemSettings(item: CustomizerItemOptions): this;
-    setItemSettings(item: ((builder: ItemSettingsBuilder) => ItemSettingsBuilder)): this;
-    setItemSettings(item: CustomizerItemOptions | ItemSettingsBuilder | ((builder: ItemSettingsBuilder) => ItemSettingsBuilder)): this {
+    setItemSettings(item: (builder: ItemSettingsBuilder) => ItemSettingsBuilder): this;
+    setItemSettings(item: CustomizerItemOptions | ItemSettingsBuilder | BuilderCallback<ItemSettingsBuilder>): this {
         if (typeof item === "function") {
             this._body.item = item(new ItemSettingsBuilder()).toJSON();
         } else if (item instanceof ItemSettingsBuilder) {
@@ -135,8 +137,8 @@ export default class CustomSettingsBuilder
 
     setRomSettings(rom: RomSettingsBuilder): this;
     setRomSettings(rom: CustomizerRomOptions): this;
-    setRomSettings(rom: ((builder: RomSettingsBuilder) => RomSettingsBuilder)): this;
-    setRomSettings(rom: CustomizerRomOptions | RomSettingsBuilder | ((builder: RomSettingsBuilder) => RomSettingsBuilder)): this {
+    setRomSettings(rom: (builder: RomSettingsBuilder) => RomSettingsBuilder): this;
+    setRomSettings(rom: CustomizerRomOptions | RomSettingsBuilder | BuilderCallback<RomSettingsBuilder>): this {
         if (typeof rom === "function") {
             this._body.rom = rom(new RomSettingsBuilder()).toJSON();
         } else if (rom instanceof RomSettingsBuilder) {
@@ -149,7 +151,7 @@ export default class CustomSettingsBuilder
 
     setPrize(prize: Partial<CustomizerPrizeOptions>): this {
         const { prize: def } = CustomSettingsBuilder.#default;
-        for (const key of Object.keys(def) as (keyof CustomizerPrizeOptions)[]) {
+        for (const key of Object.keys(def) as Keys<typeof def>) {
             this._body.prize[key] = prize[key] ?? def[key];
         }
         return this;
@@ -157,7 +159,7 @@ export default class CustomSettingsBuilder
 
     setDrop(drop: Partial<CustomDropCounts>): this {
         const rep = super._deepCopy(CustomSettingsBuilder.#default.drop.count);
-        for (const key of Object.keys(drop) as (keyof typeof drop)[]) {
+        for (const key of Object.keys(drop) as Keys<typeof drop>) {
             rep[key] = drop[key];
         }
         this._body.drop.count = rep;
