@@ -127,32 +127,38 @@ regular seeds, you can provide a complete payload or use a `CustomizerBuilder`.
 Customizer JSON files created on alttpr.com can be converted to a builder
 through the static `CustomizerBuilder.fromCustomizerJSON` method.
 
-Creating customizer seeds with nottpr is slightly more complex, but still simple
-enough to understand.
+When using a `CustomizerBuilder`, it is important to note that the item pool and
+drop pool counts will sync with starting equipment/placed items and prize packs
+respectively. You do not need to provide these counts manually.
 
 ```js
 import ALTTPR, {
+    util,
     CustomizerBuilder,
-    Item,
+    Accessibility,
+    District,
     Goals,
-    Keysanity,
-    Weapons,
-    WorldState
+    Item,
+    ItemLocation,
+    Keysanity
 } from "nottpr";
 
-// Cabookey
-const builder = new CustomizerBuilder()
+// AD Keys Boots w/ vanilla CT smalls + GT-restricted GTBK
+const preset = new CustomizerBuilder()
+    .setAccessibility(Accessibility.Locations)
     .setCustom(custom => custom
-        .setCustomPrizePacks(false)
-        .setItemSettings(item => item.setItemCounts({
-            [Item.PegasusBoots]: 0,
-            [Item.GreenTwenty]: 1
-        })))
+        .setCustomPrizePacks(false))
     .setDungeonItems(Keysanity.Full)
-    .setEquipment(eq => eq.setStartingBoots(true))
+    .setEquipment(equipment => equipment
+        .setStartingBoots(true))
+    .setForcedItems({
+        [Item.BigKeyGT]: util.getDistrict(District.GanonsTowerNoBK)
+    })
     .setGoal(Goals.Dungeons)
-    .setMode(WorldState.Standard)
-    .setWeapons(Weapons.Assured);
+    .setLocations({
+        [ItemLocation.CTFirstFloor]: Item.SmallKeyCT,
+        [ItemLocation.CTDarkMaze]: Item.SmallKeyCT
+    });
 
 const seed = await ALTTPR.generate(builder);
 
@@ -234,8 +240,7 @@ const patched = await seed.patch(pathToJp10Rom, {
     heartColor: HeartColor.Green,
     quickswap: true,
     msu1resume: true,
-    sprite: await ALTTPR.fetchSprites()
-        .then(sprites => sprites.get("Dark Boy")),
+    sprite: (await ALTTPR.fetchSprites()).get("Dark Boy"),
     reduceFlash: true
 });
 

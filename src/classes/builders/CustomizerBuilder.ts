@@ -19,6 +19,7 @@ import { RupeeAmount, StartingEquipment } from "../../types/strings.js";
 import {
     Bottle,
     BottleLocation,
+    Drop,
     Item,
     ItemLocation,
     Medallion,
@@ -39,6 +40,27 @@ import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
  * however, you can use callback functions to avoid importing multiple builder
  * classes.
  *
+ * Item pool counts will sync with placed items and starting equipment when
+ * calling the `toJSON` method.
+ *
+ * @example
+ * ```js
+ * import { CustomizerBuilder, Item } from "nottpr";
+ *
+ * // Works, but can be simplified.
+ * const builder = new CustomizerBuilder()
+ *     .setEquipment(equip => equip
+ *         .setStartingBoots(true))
+ *     .setCustom(custom => custom
+ *         .setItemSettings(item => item
+ *             .setItemCounts({
+ *                 [Item.PegasusBoots]: 0
+ *             })));
+ * // OK!
+ * const builder = new CustomizerBuilder()
+ *     .setEquipment(equip => equip
+ *         .setStartingBoots(true));
+ * ```
  * @extends BaseSeedBuilder
  */
 export default class CustomizerBuilder
@@ -390,7 +412,52 @@ export default class CustomizerBuilder
     toJSON(): CustomizerPayload {
         const res = super._deepCopy(this._body) as CustomizerPayload;
         res.l = this.#rollLocations();
+        this.#syncItemCounts(res);
+        this.#syncDropCounts(res);
         return res;
+    }
+
+    #syncItemCounts(json: CustomizerPayload): void {
+        for (const [loc, item] of Object.entries(json.l)) {
+            // Skip anything that isn't an item placement.
+            if (isPrize(item) ||
+                loc === BottleLocation.PyramidFairy || loc === BottleLocation.WaterfallFairy ||
+                loc === MedallionLocation.MiseryMire || loc === MedallionLocation.TurtleRock) {
+                continue;
+            }
+            if (json.custom.item.count[item as never] > 0) {
+                --json.custom.item.count[item as never];
+            }
+        }
+        let hearts = 0;
+        for (const item of json.eq) {
+            if (item.includes("Rupee") || isPrize(item as Item) ||
+                item.endsWith("e5") || item.endsWith("e10")) {
+                continue;
+            }
+            if (item === Item.HeartContainer) { // We don't want to remove the starting 3 hearts.
+                ++hearts;
+            }
+            if (json.custom.item.count[item as never] > 0) {
+                if (item !== Item.HeartContainer || hearts > 3) {
+                    --json.custom.item.count[item as never];
+                }
+            }
+        }
+
+        function isPrize(item: Item | Bottle | Medallion | Prize) {
+            return item.startsWith("Crystal") || item.startsWith("Pendant");
+        }
+    }
+
+    #syncDropCounts(json: CustomizerPayload): void {
+        const placed: Drop[] = Object.values(json.drops).flat()
+            .filter(d => d !== Drop.Random);
+        for (const drop of placed as Exclude<Drop, Drop.Random>[]) {
+            if (json.custom.drop.count[drop] > 0) {
+                --json.custom.drop.count[drop];
+            }
+        }
     }
 
     #rollLocations(): LocationMap {

@@ -205,9 +205,6 @@ export default class CustomSettingsBuilder
      *
      * Has no effect if `this.customPrizePacks` is `false`.
      *
-     * **NOTE:** This method and CustomizerBuilder.setDrops do not sync
-     * automatically. It is recommended to use only one of these two methods.
-     *
      * @param drop A partial object literal of drop pool modifications.
      * @returns The current object for chaining.
      */
