@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import CustomSettingsBuilder from "./CustomSettingsBuilder.js";
 import EquipmentBuilder from "./EquipmentBuilder.js";
+import PrizePackBuilder from "./PrizePackBuilder.js";
 import {
     AllowedGlitches,
     BuilderCallback,
@@ -27,7 +28,6 @@ import {
 } from "../../types/enums.js";
 import { CustomizerSeedOptions } from "../../types/optionObjs.js";
 import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
-import PrizePackBuilder from "./PrizePackBuilder.js";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -308,11 +308,37 @@ export default class CustomizerBuilder
         return this;
     }
 
+    /**
+     * Sets the dialog modifications for this CustomizerBuilder.
+     *
+     * @param texts A record of dialog boxes to modify.
+     * @returns The current object for chaining.
+     * @example
+     * ```js
+     * // Setting the Triforce text:
+     * import { CustomizerBuilder, TextDialog } from "nottpr";
+     *
+     * const preset = new CustomizerBuilder()
+     *     .setTexts({
+     *         [TextDialog.TriforceText]: "Hello World!"
+     *     });
+     * ```
+     */
     setTexts(texts: TextMap): this {
         this._body.texts = super._deepCopy(texts);
         return this;
     }
 
+    /**
+     * Sets the custom settings portion of this CustomizerBuilder.
+     *
+     * This portion of the customizer is the most exhaustive. Refer to the
+     * {@link CustomSettingsBuilder} class for more intricate documentation.
+     *
+     * @param custom The custom options. This argument can be passed as an
+     * object literal, a CustomSettingsBuilder, or a callback function.
+     * @returns The current object for chaining.
+     */
     setCustom(custom: CustomSettingsBuilder): this;
     setCustom(custom: Partial<CustomOptions>): this;
     setCustom(custom: (builder: CustomSettingsBuilder) => CustomSettingsBuilder): this;

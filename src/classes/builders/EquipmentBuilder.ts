@@ -381,7 +381,7 @@ export default class EquipmentBuilder
      */
     toJSON(): StartingEquipment[] {
         const equipment = Array.from(this.#eq);
-        let {
+        const {
             hearts,
             arrowUpgrades: arrows,
             bombUpgrades: bombs,

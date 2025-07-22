@@ -21,6 +21,7 @@ import {
     StartHashOverride,
 } from "../../types/structures.js";
 import { baseDefault } from "../../types/symbol/payloads.js";
+import { ItemOptions } from "../../types/optionObjs.js";
 
 export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
     extends BaseBuilder<S> {
@@ -73,7 +74,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this._body.lang;
     }
 
-    get mode(): WorldState {
+    get worldState(): WorldState {
         return this._body.mode;
     }
 
@@ -85,7 +86,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this._body.notes;
     }
 
-    get overrideStartScreen(): StartHashOverride {
+    get startHashCode(): StartHashOverride {
         return this._body.override_start_screen;
     }
 
@@ -182,8 +183,8 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this;
     }
 
-    setHints(toggle: Toggle): this {
-        this._body.hints = toggle;
+    setHints(toggle: boolean): this {
+        this._body.hints = toggle ? Toggle.On : Toggle.Off;
         return this;
     }
 
@@ -192,10 +193,22 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      *
      * @param options The new item settings.
      * @returns The current object for chaining.
+     * @example
+     * ```js
+     * import { SeedBuilder, ItemPlacement, ItemPool, ItemFunctionality } from "nottpr";
+     * const builder = new SeedBuilder()
+     *     .setItem({
+     *         placement: ItemPlacement.Basic,
+     *         pool: ItemPool.Hard,
+     *         functionality: ItemFunctionality.Expert
+     *     });
+     * ```
      */
-    setItem(options: Partial<ItemPayloadData>): this {
+    setItem(options: ItemOptions): this {
         const settings = super._deepCopy(baseDefault.item);
-
+        if ("placement" in options) {
+            this._body.item_placement = options.placement;
+        }
         if ("functionality" in options) {
             settings.functionality = options.functionality;
         }
@@ -207,17 +220,12 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this;
     }
 
-    setItemPlacement(placement: ItemPlacement): this {
-        this._body.item_placement = placement;
-        return this;
-    }
-
     setLanguage(lang: Language): this {
         this._body.lang = lang;
         return this;
     }
 
-    setMode(mode: WorldState): this {
+    setWorldState(mode: WorldState): this {
         this._body.mode = mode;
         return this;
     }
@@ -238,9 +246,9 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * @param hash A 5-element array of numbers between 0 and 31.
      * @returns The current object for chaining.
      */
-    setOverrideStartScreen(hash: StartHashOverride): this {
+    setHashCode(hash: StartHashOverride): this {
         if (!Array.isArray(hash)) {
-            throw new Error("Parameter hash must be an array.");
+            throw new TypeError("Parameter hash must be an array.");
         } else if (hash.length < 5) {
             throw new Error("Array must contain 5 elements.");
         }

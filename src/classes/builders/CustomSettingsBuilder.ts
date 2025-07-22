@@ -15,6 +15,13 @@ import {
     Keys,
 } from "../../types/structures.js";
 
+/**
+ * An instance of this class represents a custom settings payload supplied to
+ * alttpr.com's customizer API.
+ *
+ * This class is not useful on its own. It is intended to be used in tandem
+ * with a CustomizerBuilder.
+ */
 export default class CustomSettingsBuilder
     extends BaseBuilder<CustomOptions> {
     static readonly #default = customizerDefault.custom;
@@ -107,6 +114,16 @@ export default class CustomSettingsBuilder
         return this;
     }
 
+    /**
+     * Sets the region settings for this CustomSettingsBuilder.
+     *
+     * Refer to {@link RegionSettingsBuilder} for more comprehensive
+     * documation on valid settings.
+     *
+     * @param region The region options. This argument can be passed as an
+     * object literal, a RegionSettingsBuilder, or a callback function.
+     * @returns The current object for chaining.
+     */
     setRegion(region: RegionSettingsBuilder): this
     setRegion(region: (builder: RegionSettingsBuilder) => RegionSettingsBuilder): this
     setRegion(region: RegionSettingsBuilder | Partial<CustomizerRegionOptions> | BuilderCallback<RegionSettingsBuilder>): this {
@@ -121,6 +138,16 @@ export default class CustomSettingsBuilder
         return this;
     }
 
+    /**
+     * Sets the custom item settings for this CustomSettingsBuilder.
+     *
+     * Refer to {@link ItemSettingsBuilder} for more comprehensive
+     * documentation on valid settings.
+     *
+     * @param item The item options. This argument can be passed as an object
+     * literal, an ItemSettingsBuilder, or a callback function.
+     * @returns The current object for chaining.
+     */
     setItemSettings(item: ItemSettingsBuilder): this;
     setItemSettings(item: CustomizerItemOptions): this;
     setItemSettings(item: (builder: ItemSettingsBuilder) => ItemSettingsBuilder): this;
@@ -135,6 +162,16 @@ export default class CustomSettingsBuilder
         return this;
     }
 
+    /**
+     * Sets the custom ROM settings for this CustomSettingsBuilder.
+     *
+     * Refer to {@link RomSettingsBuilder} for more comprehensive documentation
+     * on valid settings.
+     *
+     * @param rom The ROM options. This argument can be passed as an object
+     * literal, a RomSettingsBuilder, or a callback function.
+     * @returns The current object for chaining.
+     */
     setRomSettings(rom: RomSettingsBuilder): this;
     setRomSettings(rom: CustomizerRomOptions): this;
     setRomSettings(rom: (builder: RomSettingsBuilder) => RomSettingsBuilder): this;
@@ -149,6 +186,12 @@ export default class CustomSettingsBuilder
         return this;
     }
 
+    /**
+     * Sets the prize options for this CustomSettingsBuilder.
+     *
+     * @param prize A partial object literal of options to set.
+     * @returns The current object for chaining.
+     */
     setPrize(prize: Partial<CustomizerPrizeOptions>): this {
         const { prize: def } = CustomSettingsBuilder.#default;
         for (const key of Object.keys(def) as Keys<typeof def>) {
@@ -157,6 +200,17 @@ export default class CustomSettingsBuilder
         return this;
     }
 
+    /**
+     * Sets the drop pool counts for this CustomSettingsBuilder.
+     *
+     * Has no effect if `this.customPrizePacks` is `false`.
+     *
+     * **NOTE:** This method and CustomizerBuilder.setDrops do not sync
+     * automatically. It is recommended to use only one of these two methods.
+     *
+     * @param drop A partial object literal of drop pool modifications.
+     * @returns The current object for chaining.
+     */
     setDrop(drop: Partial<CustomDropCounts>): this {
         const rep = super._deepCopy(CustomSettingsBuilder.#default.drop.count);
         for (const key of Object.keys(drop) as Keys<typeof drop>) {

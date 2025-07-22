@@ -9,6 +9,13 @@ import {
 } from "../../types/structures.js";
 import { customizerDefault } from "../../types/symbol/payloads.js";
 
+/**
+ * An instance of this class represents a prize pack collection to be supplied
+ * to alttpr.com's customizer API.
+ *
+ * This class is not useful on its own. It is intended to be used in tandem
+ * with a CustomizerBuilder.
+ */
 export default class PrizePackBuilder
     extends BaseBuilder<PrizePackGroups> {
     static readonly #def = customizerDefault.drops;
@@ -88,11 +95,23 @@ export default class PrizePackBuilder
         return this;
     }
 
+    /**
+     * Sets the stun prize for this PrizePackBuilder.
+     *
+     * @param stun The stun prize.
+     * @returns The current object for chaining.
+     */
     setStun(stun: Drop): this {
         this._body.stun[0] = stun;
         return this;
     }
 
+    /**
+     * Sets the prize for throwing a fish into water.
+     *
+     * @param fish The fish prize.
+     * @returns The current object for chaining.
+     */
     setFish(fish: Drop): this {
         this._body.fish[0] = fish;
         return this;

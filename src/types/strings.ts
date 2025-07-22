@@ -53,7 +53,7 @@ export type CustomizerSettings = "l" | "eq" | "drops" | "custom" | "texts";
 export type RequiredRomBoolSettings = "freeItemMenu" | "freeItemText" | "mapOnPickup" | "rupeeBow" | "genericKeys";
 export type RequiredRomSettings = "dungeonCount" | "timerMode" | "timerStart" | "logicMode";
 export type RequiredRegionSettings = "bossNormalLocation" | "wildBigKeys" | "wildCompasses" | "wildKeys" | "wildMaps";
-export type RegionSettings = "requireBetterBow" | "requireBetterSword" | "forceSkullWoodsKey" | "swordsInPool" | "bossHeartsInPool" | "bossesHaveItem" | "takeAnys";
+export type RegionSettings = "forceSkullWoodsKey" | "bossHeartsInPool" | "bossesHaveItem" | "takeAnys";
 export type CustomSettings = "item" | "prize" | "region" | "rom" | "spoil.BootsLocation" | "drop";
 export type Restrictable = "Sword" | "Armor" | "Bow" | "Shield" | "BossHeartContainer" | "PieceOfHeart" | "Bottle";
 

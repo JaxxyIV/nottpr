@@ -244,7 +244,7 @@ export default class Seed
             log["Ganons Tower"] = this.#spoiler["Ganons Tower"];
             log.Entrances = this.#spoiler.Entrances;
 
-            for (const key in log.Prizes) {
+            for (const key of Object.keys(log.Prizes)) {
                 const values: string[] = Object.values(this.#spoiler[key as keyof SpoilerAPIData]);
                 log.Prizes[key] = values.find(v =>
                     v.startsWith("Crystal") || v.endsWith("Pendant"));
@@ -328,7 +328,13 @@ export default class Seed
             .encode(JSON.stringify(log, undefined, 4));
     }
 
-    // Thanks clearmouse
+    /**
+     * Reads through a Seed's patch data and returns information about prize packs.
+     *
+     * Credit: clearmouse
+     *
+     * @returns The prize packs as a JSON object.
+     */
     #readDrops(): DropsSpoilerData {
         const offsets = {
             stun: 227731,
@@ -363,26 +369,25 @@ export default class Seed
         };
 
         // Tree Pulls
-        const treePulls = this.#seekInPatch(offsets.tree, 3);
-        for (let i = 1; i <= treePulls.length; ++i) {
-            const byte = treePulls[i - 1];
-            drops.Tree[i as keyof PullTiers] = getDropSprite(byte);
-        }
+        this.#seekInPatch(offsets.tree, 3).forEach((byte, i) => {
+            drops.Tree[i + 1 as keyof PullTiers] = byteToSprite(byte);
+        });
 
         // Stun
-        drops.Stun = getDropSprite(this.#seekInPatch(offsets.stun, 1)[0]);
+        drops.Stun = byteToSprite(this.#seekInPatch(offsets.stun, 1)[0]);
 
         // Fish
-        drops.Fish = getDropSprite(this.#seekInPatch(offsets.fish, 1)[0]);
+        drops.Fish = byteToSprite(this.#seekInPatch(offsets.fish, 1)[0]);
 
         // Crab
-        drops.Crab.Main = getDropSprite(this.#seekInPatch(offsets.crab[0], 1)[0]);
-        drops.Crab.Last = getDropSprite(this.#seekInPatch(offsets.crab[1], 1)[0]);
+        drops.Crab.Main = byteToSprite(this.#seekInPatch(offsets.crab[0], 1)[0]);
+        drops.Crab.Last = byteToSprite(this.#seekInPatch(offsets.crab[1], 1)[0]);
 
         // Enemy Packs
         const packs: DropByte[][] = [[], [], [], [], [], [], [],];
         const rowLimit = 8;
 
+        // TODO: Optimize this. (Currently O(n), could be O(n/7))
         const prizePackDrops = this.#seekInPatch(offsets.enemy);
         for (let i = 0; i < prizePackDrops.length; ++i) {
             packs[Math.floor(i / rowLimit)].push(prizePackDrops[i]);
@@ -390,12 +395,12 @@ export default class Seed
 
         for (let i = 0; i < packs.length; ++i) {
             const key = Object.keys(prizePacks)[i] as EnemyGroup;
-            drops.Packs[key] = getPrizePackName(packs[i]);
+            drops.Packs[key] = getPackName(packs[i]);
         }
 
         return drops;
 
-        function getDropSprite(byte: DropByte): Drop {
+        function byteToSprite(byte: DropByte): Drop {
             if (byte in itemSprites) {
                 return itemSprites[byte];
             } else {
@@ -403,20 +408,24 @@ export default class Seed
             }
         }
 
-        function getPrizePackName(pack: DropByte[]): string {
+        function getPackName(pack: DropByte[]): string {
             // If the array contains one of these two bytes, we can safely assume
             // that the pack is not vanilla.
             if (pack.some(b => b === DropByte.Bee || b === DropByte.GoodBee)) {
-                return pack.map(b => getDropSprite(b)).join(", ");
+                return pack.map(b => byteToSprite(b)).join(", ");
             }
 
             for (const [key, values] of Object.entries(prizePacks)) {
-                if (pack.toString() === values.toString()) {
+                if (pack.toString() === values.map(spriteToByte).toString()) {
                     return key;
                 }
             }
 
-            return pack.map(b => getDropSprite(b)).join(", ");
+            return pack.map(b => byteToSprite(b)).join(", ");
+
+            function spriteToByte(drop: Drop): DropByte {
+                return parseInt(Object.entries(itemSprites).find(([,d]) => d === drop)[0]);
+            }
         }
     }
 
@@ -467,27 +476,27 @@ export default class Seed
      *
      * Precondition: `array` is sorted in ascending order.
      *
-     * @param array The array to search.
+     * @param arr The array to search.
      * @param target The value to find.
      * @param low The lower bound.
      * @param high The upper bound.
      * @returns The index of the closest value to the target.
      */
-    static #binarySearch(array: number[], target: number, low: number = 0,
-        high: number = array.length - 1): number {
+    static #binarySearch(arr: number[], target: number, low = 0,
+        high = arr.length - 1): number {
         if (low > high) {
             // Return whichever result is closest to the target.
-            return array[low] - target < target - array[high] ? low : high;
+            return arr[low] - target < target - arr[high] ? low : high;
         }
 
         const middle = Math.floor((low + high) / 2);
 
-        if (array[middle] === target) {
+        if (arr[middle] === target) {
             return middle;
-        } else if (array[middle] > target) {
-            return this.#binarySearch(array, target, low, middle - 1);
+        } else if (arr[middle] > target) {
+            return this.#binarySearch(arr, target, low, middle - 1);
         } else { // array[middle] < target
-            return this.#binarySearch(array, target, middle + 1, high);
+            return this.#binarySearch(arr, target, middle + 1, high);
         }
     }
 }

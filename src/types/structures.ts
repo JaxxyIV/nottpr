@@ -276,7 +276,6 @@ export interface CustomizerRomOptions extends RequiredRomOptions {
     vanillaBigKeys?: boolean,
     vanillaCompasses?: boolean,
     vanillaMaps?: boolean,
-    hudItemCounter?: boolean,
 }
 
 export type CustomItemCounts = Record<strings.RequiredItemCountOptions, number> & {

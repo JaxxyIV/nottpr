@@ -2,7 +2,7 @@ import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import Request from "../util/Request.js";
 import { BaseSeedOptions } from "../../types/optionObjs.js";
 import { APIPreset, RandomizerPayload } from "../../types/structures.js";
-import { Entrances } from "../../types/enums.js";
+import { Entrances, Toggle } from "../../types/enums.js";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -20,7 +20,7 @@ import { Entrances } from "../../types/enums.js";
  *
  * // Inverted AD Keys
  * const builder = new SeedBuilder()
- *     .setMode(WorldState.Inverted)
+ *     .setWorldState(WorldState.Inverted)
  *     .setGoal(Goals.Dungeons)
  *     .setDungeonItems(Keysanity.Full);
  * const seed = await ALTTPR.generate(builder);
@@ -86,13 +86,13 @@ export default class SeedBuilder
             .setEntrances(selected.entrance_shuffle)
             .setGlitches(selected.glitches_required)
             .setGoal(selected.goal)
-            .setHints(selected.hints)
+            .setHints(selected.hints === Toggle.On)
             .setItem({
                 functionality: selected.item_functionality,
                 pool: selected.item_pool,
+                placement: selected.item_placement
             })
-            .setItemPlacement(selected.item_placement)
-            .setMode(selected.world_state)
+            .setWorldState(selected.world_state)
             .setWeapons(selected.weapons);
     }
 }

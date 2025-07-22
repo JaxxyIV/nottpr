@@ -2,7 +2,7 @@ import * as strings from "./strings.js";
 import * as structs from "./structures.js";
 import * as enums from "./enums.js";
 
-export type BaseSeedOptions = {
+export interface BaseSeedOptions {
     accessibility?: enums.Accessibility
     allow_quickswap?: boolean
     crystals?: CrystalOptions
@@ -11,7 +11,7 @@ export type BaseSeedOptions = {
     glitches?: enums.Glitches
     goal?: enums.Goals
     hints?: enums.Toggle
-    item?: ItemOptions
+    item?: Partial<structs.ItemPayloadData>
     item_placement?: enums.ItemPlacement
     lang?: enums.Language
     mode?: enums.WorldState
@@ -22,11 +22,15 @@ export type BaseSeedOptions = {
     spoilers?: enums.Spoilers
     tournament?: boolean
     weapons?: enums.Weapons
-};
+}
 
 export type CrystalOptions = Partial<structs.CrystalPayloadData>;
 export type EnemizerOptions = Partial<structs.EnemizerPayloadData>;
-export type ItemOptions = Partial<structs.ItemPayloadData>;
+export interface ItemOptions {
+    placement?: enums.ItemPlacement
+    pool?: enums.ItemPool
+    functionality?: enums.ItemFunctionality
+}
 
 export type CustomizerSeedOptions = BaseSeedOptions & {
     custom?: CustomizerCustomOptions

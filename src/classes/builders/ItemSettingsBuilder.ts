@@ -10,6 +10,13 @@ import {
 } from "../../types/structures.js";
 import { customizerDefault } from "../../types/symbol/payloads.js";
 
+/**
+ * An instance of this class represents an item settings payload supplied to
+ * alttpr.com's customizer API.
+ *
+ * The class is not useful on its own. It is intended to be used in tandem
+ * with a CustomSettingsBuilder.
+ */
 export default class ItemSettingsBuilder
     extends BaseBuilder<CustomizerItemOptions> {
     static readonly #default = customizerDefault.custom.item;
@@ -64,7 +71,8 @@ export default class ItemSettingsBuilder
      * Sets the maximum upgrades the player can pick up in a seed and their
      * replacement items.
      *
-     * @param overflow The overflow options.
+     * @param overflow The overflow options. This argument can be passed as an
+     * object literal, an OverflowBuilder, or a callback function.
      * @returns The current object for chaining.
      */
     setOverflow(overflow: OverflowBuilder): this;
@@ -80,6 +88,23 @@ export default class ItemSettingsBuilder
         return this;
     }
 
+    /**
+     * Sets the value of items like clocks and rupoors.
+     *
+     * @param value A partial object literal of new item values.
+     * @returns The current object for chaining.
+     * @example
+     * ```js
+     * // Setting clock time values:
+     * import { ItemSettingsBuilder } from "nottpr";
+     * const item = new ItemSettingsBuilder()
+     *     .setItemValue({
+     *         RedClock: -200,
+     *         GreenClock: 400,
+     *         BlueClock: 100
+     *     });
+     * ```
+     */
     setItemValue(value: Partial<CustomItemValues>): this {
         const vDefs = super._deepCopy(ItemSettingsBuilder.#default.value);
         for (const key of Object.keys(vDefs) as Keys<typeof vDefs>) {
@@ -90,7 +115,7 @@ export default class ItemSettingsBuilder
                 value[key] = "" as never;
             }
         }
-        this._body.value = value as CustomItemValues;
+        this._body.value = super._deepCopy(value) as CustomItemValues;
         return this;
     }
 
