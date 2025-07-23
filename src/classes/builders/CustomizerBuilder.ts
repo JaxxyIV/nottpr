@@ -40,8 +40,9 @@ import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
  * however, you can use callback functions to avoid importing multiple builder
  * classes.
  *
- * Item pool counts will sync with placed items and starting equipment when
- * calling the `toJSON` method.
+ * Item and drop pool counts will sync with placed items/starting equipment and
+ * prize packs respectively when calling the `toJSON()` method. If you need to
+ * disable this behavior, use the `disableSync()` method.
  *
  * @example
  * ```js
@@ -94,6 +95,7 @@ export default class CustomizerBuilder
     static readonly #default = this.#createDefault();
 
     #forcedItems: ItemTuple[] = [];
+    #sync = true;
 
     constructor(data?: CustomizerSeedOptions) {
         super();
@@ -402,6 +404,22 @@ export default class CustomizerBuilder
     }
 
     /**
+     * Disables item and drop pool counts from syncing with equipment/placed
+     * items and prize packs.
+     *
+     * Disabling syncing is useful when your preset is constructed from an
+     * external source such as a customizer .json file or a SahasrahBot preset
+     * YAML. These sources often have API-ready payloads, negating the need for
+     * pool syncing.
+     *
+     * @returns The current object for chaining.
+     */
+    disableSync(): this {
+        this.#sync = false;
+        return this;
+    }
+
+    /**
      * Returns the JSON representation of this CustomizerBuilder.
      *
      * If `setForcedItems` is used on this builder, this method will also roll
@@ -409,11 +427,13 @@ export default class CustomizerBuilder
      *
      * @returns The JSON representation of this CustomizerBuilder.
      */
-    toJSON(): CustomizerPayload {
+    override toJSON(): CustomizerPayload {
         const res = super._deepCopy(this._body) as CustomizerPayload;
         res.l = this.#rollLocations();
-        this.#syncItemCounts(res);
-        this.#syncDropCounts(res);
+        if (this.#sync) {
+            this.#syncItemCounts(res);
+            this.#syncDropCounts(res);
+        }
         return res;
     }
 

@@ -34,6 +34,8 @@
   "license": "MIT",
   "dependencies": {
     "center-align": "^1.0.1",
+    "flat": "^6.0.1",
+    "yaml": "^2.8.0",
     "z3r-patch": "^1.0.4"
   },
   "devDependencies": {

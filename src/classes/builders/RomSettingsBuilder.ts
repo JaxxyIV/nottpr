@@ -109,7 +109,7 @@ export default class RomSettingsBuilder
         return this;
     }
 
-    toJSON(): CustomizerRomOptions {
+    override toJSON(): CustomizerRomOptions {
         return super._deepCopy(this._body) as CustomizerRomOptions;
     }
 }

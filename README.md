@@ -125,11 +125,13 @@ Both examples result in the same value being passed to the generator.
 Customizer seeds are also generated through the `ALTTPR.generate` method. Like
 regular seeds, you can provide a complete payload or use a `CustomizerBuilder`.
 Customizer JSON files created on alttpr.com can be converted to a builder
-through the static `CustomizerBuilder.fromCustomizerJSON` method.
+through the `CustomizerBuilder.fromCustomizerJSON` static method.
 
 When using a `CustomizerBuilder`, it is important to note that the item pool and
 drop pool counts will sync with starting equipment/placed items and prize packs
-respectively. You do not need to provide these counts manually.
+respectively. You do not need to provide these counts manually. If your preset
+is imported from an external source like SahasrahBot, you should disable syncing
+with the `CustomizerBuilder.disableSync` instance method to speed up performance.
 
 ```js
 import ALTTPR, {
@@ -221,10 +223,9 @@ import ALTTPR, {
     Hash,
     HeartColor.
     HeartSpeed,
-    Keysanity,
-    MenuSpeed
+    Keysanity
 } from "nottpr";
-import fs from "fs/promises";
+import * as fs from "fs/promises";
 
 // MC boss with pseudoboots
 const builder = new SeedBuilder()
@@ -246,4 +247,60 @@ const patched = await seed.patch(pathToJp10Rom, {
 
 await fs.writeFile(`./seeds/${seed.hash}.sfc`, patched);
 await fs.writeFile(`./seeds/logs/spoiler_${seed.hash}.json`, seed.spoilerLog(true));
+```
+
+### Importing Presets
+
+#### SahasrahBot
+
+nottpr allows you to convert most SahasrahBot preset YAMLs into native builder
+objects with the `util.fromSahasrahBotPreset` function. Door randomizer presets
+are currently not supported.
+
+The object returned from `util.fromSahasrahBotPreset` will be typed as a
+`BaseSeedBuilder`. If you are using TypeScript or want to make further adjustments
+to the preset after importing, use `instanceof` to narrow the object to a
+`SeedBuilder` or `CustomizerBuilder`:
+
+```js
+import ALTTPR, { util, CustomizerBuilder } from "nottpr";
+
+// We know this is a CustomizerBuilder. The editor does not.
+const builder = util.fromSahasrahBotPreset("./invrosia.yaml");
+
+if (builder instanceof CustomizerBuilder) {
+    builder.disableSync(); // Disable sync since the settings are imported
+}
+
+const seed = await ALTTPR.generate(builder);
+console.log(seed.permalink);
+```
+
+#### alttpr.com
+
+You can import alttpr.com's built-in presets with the static async method
+`SeedBuilder.fromWebPreset`:
+
+```js
+import ALTTPR, {
+    SeedBuilder,
+    Accessibility,
+    Goals,
+    ItemPlacement,
+    Weapons
+} from "nottpr";
+
+// Import VT OWG and change settings to OWG assured:
+const builder = (await SeedBuilder.fromWebPreset("veetorp"))
+    .setAccessibility(Accessibility.Items)
+    .setGoal(Goals.DefeatGanon)
+    .setItem({
+        placement: ItemPlacement.Advanced
+    })
+    .setWeapons(Weapons.Assured);
+
+const seed = await ALTTPR.generate(builder);
+
+console.log(seed.permalink);
+console.log(seed.hashCode);
 ```
