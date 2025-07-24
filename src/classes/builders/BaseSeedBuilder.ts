@@ -26,10 +26,6 @@ import { ItemOptions } from "../../types/optionObjs.js";
 export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
     extends BaseBuilder<S> {
 
-    constructor() {
-        super();
-    }
-
     get accessibility(): Accessibility {
         return this._body.accessibility;
     }
@@ -62,12 +58,12 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this._body.hints;
     }
 
-    get item(): Readonly<ItemPayloadData> {
-        return this._body.item;
-    }
-
-    get itemPlacement(): ItemPlacement {
-        return this._body.item_placement;
+    get item(): Readonly<ItemOptions> {
+        return {
+            pool: this._body.item.pool,
+            functionality: this._body.item.functionality,
+            placement: this._body.item_placement,
+        };
     }
 
     get lang(): Language {
@@ -96,10 +92,6 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
 
     get spoilers(): Spoilers {
         return this._body.spoilers;
-    }
-
-    get tournament(): boolean {
-        return this._body.tournament;
     }
 
     get weapons(): Weapons {
@@ -134,7 +126,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * value.
      * @returns The current object for chaining.
      */
-    setCrystals(...crystals: Crystals[]): this {
+    setCrystals(...crystals: Crystals[]): this { // TODO: Allow this method to accept numbers
         const [arg0, arg1] = crystals;
         if (arg0 && arg1) {
             this._body.crystals = {
@@ -271,13 +263,18 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this;
     }
 
+    /**
+     * Sets the spoiler settings for this seed.
+     *
+     * By default, spoilers are set to `Spoilers.Off`. Setting this value to
+     * anything other than `Spoilers.Off` will enable tournament mode.
+     *
+     * @param spoilers The type of spoiler setting for this seed.
+     * @returns The current object for chaining.
+     */
     setSpoilers(spoilers: Spoilers): this {
         this._body.spoilers = spoilers;
-        return this;
-    }
-
-    setTournament(tournament: boolean): this {
-        this._body.tournament = tournament;
+        this._body.tournament = spoilers === Spoilers.Off;
         return this;
     }
 

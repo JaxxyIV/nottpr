@@ -248,6 +248,7 @@ export default class CustomizerBuilder
      *
      * **Note:** Passing an array will replace the stored array's contents
      * exactly, including starting health.
+     *
      * @param equipment The starting equipment for the preset described by this
      * builder. The argument can be either an array, EquipmentBuilder, or a
      * callback function.
