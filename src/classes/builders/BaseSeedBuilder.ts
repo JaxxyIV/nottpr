@@ -274,7 +274,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      */
     setSpoilers(spoilers: Spoilers): this {
         this._body.spoilers = spoilers;
-        this._body.tournament = spoilers === Spoilers.Off;
+        this._body.tournament = spoilers !== Spoilers.Off;
         return this;
     }
 
