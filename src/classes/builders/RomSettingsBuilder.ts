@@ -6,15 +6,17 @@ const { custom: { rom: def } } = customizerDefault;
 
 export default class RomSettingsBuilder
     extends BaseBuilder<CustomizerRomOptions> {
-    constructor(opts?: Partial<CustomizerRomOptions>) {
+    constructor(options?: Partial<CustomizerRomOptions>) {
         super();
-        this._body = super._deepCopy(def);
+        if (!options) return;
+        this._body = { ...options };
+        // this._body = super._deepCopy(def);
 
-        if (typeof opts !== "object") return;
+        // if (typeof options !== "object") return;
 
-        for (const [key, val] of Object.entries(opts) as Pairs<typeof def>) {
-            this._body[key] = val as never;
-        }
+        // for (const [key, val] of Object.entries(options) as Pairs<typeof def>) {
+        //     this._body[key] = val as never;
+        // }
     }
 
     get freeItemText(): boolean {
@@ -107,9 +109,5 @@ export default class RomSettingsBuilder
     setGanonAgaRNG(normal: boolean): this {
         this._body.GanonAgRNG = normal ? "none" : "table";
         return this;
-    }
-
-    override toJSON(): CustomizerRomOptions {
-        return super._deepCopy(this._body) as CustomizerRomOptions;
     }
 }

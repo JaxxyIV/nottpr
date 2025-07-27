@@ -12,6 +12,7 @@ import {
     CustomizerRegionOptions,
     CustomizerRomOptions,
     CustomOptions,
+    DeepPartial,
     Keys,
 } from "../../types/structures.js";
 
@@ -44,37 +45,39 @@ export default class CustomSettingsBuilder
         canWaterFairyRevive: false,
     };
 
-    constructor() {
-        super();
-        this._body = super._deepCopy(CustomSettingsBuilder.#default);
-    }
+    #allow: Partial<AllowedGlitches> = {};
+
+    // constructor() {
+    //     super();
+    //     this._body = super._deepCopy(CustomSettingsBuilder.#default);
+    // }
 
     get customPrizePacks(): boolean {
         return this._body.customPrizePacks;
     }
 
-    get item(): Readonly<CustomizerItemOptions> {
+    get item(): Readonly<DeepPartial<CustomizerItemOptions>> {
         return this._body.item;
     }
 
-    get prize(): Readonly<CustomizerPrizeOptions> {
+    get prize(): Readonly<Partial<CustomizerPrizeOptions>> {
         return this._body.prize;
     }
 
-    get region(): Readonly<CustomizerRegionOptions> {
+    get region(): Readonly<Partial<CustomizerRegionOptions>> {
         return this._body.region;
     }
 
-    get rom(): Readonly<CustomizerRomOptions> {
+    get rom(): Readonly<Partial<CustomizerRomOptions>> {
         return this._body.rom;
     }
 
-    get drop(): Readonly<CustomDropCounts> {
-        return this._body.drop.count;
+    get drop(): Readonly<Partial<CustomDropCounts>> {
+        return this._body.drop?.count;
     }
 
     get spoilBootsLocation(): boolean {
-        return this._body.spoil.BootsLocation;
+        return this._body.spoil?.BootsLocation;
     }
 
     /**
@@ -84,9 +87,7 @@ export default class CustomSettingsBuilder
      * @returns The current object for chaining.
      */
     setAllowedGlitches(options: Partial<AllowedGlitches>): this {
-        for (const key of Object.keys(CustomSettingsBuilder.#defGlit) as Keys<AllowedGlitches>) {
-            this._body[key] = options[key] ?? CustomSettingsBuilder.#defGlit[key];
-        }
+        this.#allow = { ...options };
         return this;
     }
 
@@ -110,6 +111,9 @@ export default class CustomSettingsBuilder
      * @returns The current object for chaining.
      */
     setSpoilBoots(spoil: boolean): this {
+        if (typeof this._body.spoil !== "object") {
+            this._body.spoil = {};
+        }
         this._body.spoil.BootsLocation = spoil;
         return this;
     }
@@ -126,15 +130,14 @@ export default class CustomSettingsBuilder
      */
     setRegion(region: RegionSettingsBuilder): this
     setRegion(region: (builder: RegionSettingsBuilder) => RegionSettingsBuilder): this
+    setRegion(region: Partial<CustomizerRegionOptions>): this;
     setRegion(region: RegionSettingsBuilder | Partial<CustomizerRegionOptions> | BuilderCallback<RegionSettingsBuilder>): this {
         if (typeof region === "function") {
             region = region(new RegionSettingsBuilder()).toJSON();
         } else if (region instanceof RegionSettingsBuilder) {
             region = region.toJSON();
-        } else {
-            region = new RegionSettingsBuilder(region).toJSON();
         }
-        this._body.region = region as CustomizerRegionOptions;
+        this._body.region = region;
         return this;
     }
 
@@ -193,10 +196,7 @@ export default class CustomSettingsBuilder
      * @returns The current object for chaining.
      */
     setPrize(prize: Partial<CustomizerPrizeOptions>): this {
-        const { prize: def } = CustomSettingsBuilder.#default;
-        for (const key of Object.keys(def) as Keys<typeof def>) {
-            this._body.prize[key] = prize[key] ?? def[key];
-        }
+        this._body.prize = { ...prize };
         return this;
     }
 
@@ -209,11 +209,14 @@ export default class CustomSettingsBuilder
      * @returns The current object for chaining.
      */
     setDrop(drop: Partial<CustomDropCounts>): this {
-        const rep = super._deepCopy(CustomSettingsBuilder.#default.drop.count);
-        for (const key of Object.keys(drop) as Keys<typeof drop>) {
-            rep[key] = drop[key];
+        if (typeof this._body.drop !== "object") {
+            this._body.drop = {};
         }
-        this._body.drop.count = rep;
+        this._body.drop.count = { ...drop };
         return this;
+    }
+
+    override toJSON(): CustomOptions {
+        return { ...this.#allow, ...this._body } as CustomOptions;
     }
 }

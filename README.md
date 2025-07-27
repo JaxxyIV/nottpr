@@ -106,9 +106,7 @@ Both examples result in the same value being passed to the generator.
 
 #### Customizer Seeds
 
-Customizer seeds are also generated through the `ALTTPR.generate` method. Like regular seeds, you can provide a complete payload or use a `CustomizerBuilder`. Customizer JSON files created on alttpr.com can be converted to a builder through the `CustomizerBuilder.fromCustomizerJSON` static method.
-
-When using a `CustomizerBuilder`, it is important to note that the item pool and drop pool counts will sync with starting equipment/placed items and prize packs respectively. You do not need to provide these counts manually. If your preset is imported from an external source like SahasrahBot, you should disable syncing with the `CustomizerBuilder.disableSync` instance method to speed up performance.
+Customizer seeds are also generated through the `ALTTPR.generate` method. Like regular seeds, you can provide a complete payload or use a `CustomizerBuilder`.
 
 ```js
 import ALTTPR, {
@@ -126,7 +124,12 @@ import ALTTPR, {
 const preset = new CustomizerBuilder()
     .setAccessibility(Accessibility.Locations)
     .setCustom(custom => custom
-        .setCustomPrizePacks(false))
+        .setCustomPrizePacks(false)
+        .setItemSettings(item => item
+            .setItemCounts({
+                [Item.BigKeyGT]: 0,
+                [Item.SmallKeyCT]: 0
+            })))
     .setDungeonItems(Keysanity.Full)
     .setEquipment(equipment => equipment
         .setStartingBoots(true))
@@ -176,7 +179,7 @@ Adding custom sprites to the cache is currently unsupported. You can still pass 
 
 ### Patching
 
-nottpr allows you to patch randomizer seeds yourself with the `Seed.patch` method. Be advised that when patching a ROM, it is returned as a buffer. It will not create a new file on your system. How the buffered data is handled is up to the implementer.
+nottpr allows you to patch randomizer seeds yourself with the `Seed.patch` method. Be advised that when patching a ROM, it is returned as a memory buffer. It will not create a new file on your system. How the buffered data is handled is up to the implementer.
 
 You can also retrieve a seed's spoiler log by using the `Seed.spoilerLog` method. It accepts an optional boolean parameter to output additional information about prize packs. By default, this behavior is disabled.
 
@@ -184,8 +187,7 @@ You can also retrieve a seed's spoiler log by using the `Seed.spoilerLog` method
 import ALTTPR, {
     SeedBuilder,
     BossShuffle,
-    Hash,
-    HeartColor.
+    HeartColor,
     HeartSpeed,
     Keysanity
 } from "nottpr";
@@ -213,27 +215,37 @@ await fs.writeFile(`./seeds/${seed.hash}.sfc`, patched);
 await fs.writeFile(`./seeds/logs/spoiler_${seed.hash}.json`, seed.spoilerLog(true));
 ```
 
-### Importing Presets
+### Presets
+
+You can export a builder's settings as a preset YAML by using the `toYAML` instance method on `SeedBuilder` and `CustomizerBuilder` objects.
+
+```js
+import { SeedBuilder, Goals, Keysanity, WorldState } from "nottpr";
+import * as fs from "fs/promises";
+
+// Inverted AD Keys
+const preset = new SeedBuilder()
+    .setDungeonItems(Keysanity.Full)
+    .setGoal(Goals.Dungeons)
+    .setWorldState(WorldState.Inverted);
+
+await fs.writeFile("./inv_adkeys.yaml", preset.toYAML());
+```
+
+```yaml
+settings:
+  dungeon_items: full
+  goal: dungeons
+  mode: inverted
+```
+
+nottpr YAMLs work a little different from SahasrahBot YAMLs. nottpr YAMLs only record the changes that you have made in the builder, resulting in a *partial preset*. You can reimport the YAML using the `fromYAML` static methods on the `SeedBuilder` and `CustomizerBuilder` classes.
+
+Partial presets are not compatible with SahasrahBot. However, you can create a *complete preset* by passing `true` as an argument in the `toYAML` method. Complete presets are SahasrahBot-compatible.
 
 #### SahasrahBot
 
-nottpr allows you to convert most SahasrahBot preset YAMLs into native builder objects with the `util.fromSahasrahBotPreset` function. Door randomizer presets are currently not supported.
-
-The object returned from `util.fromSahasrahBotPreset` will be typed as a `BaseSeedBuilder`. If you are using TypeScript or want to make further adjustments to the preset after importing, use `instanceof` to narrow the object to a `SeedBuilder` or `CustomizerBuilder`:
-
-```js
-import ALTTPR, { util, CustomizerBuilder } from "nottpr";
-
-// We know this is a CustomizerBuilder. The editor does not.
-const builder = util.fromSahasrahBotPreset("./invrosia.yaml");
-
-if (builder instanceof CustomizerBuilder) {
-    builder.disableSync(); // Disable sync since the settings are imported
-}
-
-const seed = await ALTTPR.generate(builder);
-console.log(seed.permalink);
-```
+Most existing SahasrahBot YAMLs are compatible with nottpr. Presets for door randomizer and other external branches of the randomizer are not currently supported.
 
 #### alttpr.com
 
@@ -262,3 +274,5 @@ const seed = await ALTTPR.generate(builder);
 console.log(seed.permalink);
 console.log(seed.hashCode);
 ```
+
+Customizer JSON files created on alttpr.com can be converted to a builder through the `CustomizerBuilder.fromCustomizerJSON` static method.

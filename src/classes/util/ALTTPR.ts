@@ -7,10 +7,12 @@ import SeedBuilder from "../builders/SeedBuilder.js";
 import {
     CustomizerPayload,
     DailyAPIData,
+    GenerationOptions,
     RandomizerPayload,
     SeedAPIData,
     SpriteAPIData,
 } from "../../types/structures.js";
+import { Spoilers, Toggle } from "../../types/enums.js";
 
 /**
  * The ALTTPR class is the main class for interacting with alttpr.com's API.
@@ -77,16 +79,23 @@ export default class ALTTPR {
      *
      * @param data The data to supply to the API. This argument can be passed
      * as a JSON object, a SeedBuilder, or a CustomizerBuilder.
+     * @param options Optional pre-generation options.
      * @returns The resulting Seed object.
      */
-    static async generate(data: SeedBuilder): Promise<Seed>
-    static async generate(data: CustomizerBuilder): Promise<Seed>
-    static async generate(data: RandomizerPayload): Promise<Seed>
-    static async generate(data: CustomizerPayload): Promise<Seed>
-    static async generate(data: SeedBuilder | RandomizerPayload | CustomizerPayload | CustomizerBuilder): Promise<Seed> {
+    static async generate(data: SeedBuilder, options?: GenerationOptions): Promise<Seed>
+    static async generate(data: CustomizerBuilder, options?: GenerationOptions): Promise<Seed>
+    static async generate(data: RandomizerPayload, options?: GenerationOptions): Promise<Seed>
+    static async generate(data: CustomizerPayload, options?: GenerationOptions): Promise<Seed>
+    static async generate(data: SeedBuilder | RandomizerPayload | CustomizerPayload | CustomizerBuilder, options: GenerationOptions = {}): Promise<Seed> {
         if (data instanceof BaseSeedBuilder) {
             data = data.toJSON(); // Force as literal to check customizer
         }
+
+        data.allow_quickswap = options.allow_quickswap ?? data.allow_quickswap ?? true;
+        data.hints = options.hints ? Toggle.On : Toggle.Off;
+        data.spoilers = options.spoilers ?? Spoilers.On;
+        data.tournament = data.spoilers !== Spoilers.On;
+
         const endpoint = "custom" in data ? "customizer" : "randomizer";
         const response = await new Request(`/api/${endpoint}`)
             .post(JSON.stringify(data), "json", this.#postHeaders) as SeedAPIData;

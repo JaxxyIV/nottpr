@@ -1115,8 +1115,3 @@ export enum RomMode {
     MajorGlitches = "MajorGlitches",
     NoLogic = "NoLogic",
 };
-
-export enum Icon {
-    Triforce = "triforce",
-    Star = "star",
-};

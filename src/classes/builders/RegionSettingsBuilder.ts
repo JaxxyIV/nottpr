@@ -11,16 +11,12 @@ import { customizerDefault } from "../../types/symbol/payloads.js";
  */
 export default class RegionSettingsBuilder
     extends BaseBuilder<CustomizerRegionOptions> {
-    static readonly #default: CustomizerRegionOptions = customizerDefault.custom.region;
+    static readonly #default = customizerDefault.custom.region;
 
-    constructor(data?: Partial<CustomizerRegionOptions>) {
+    constructor(options?: Partial<CustomizerRegionOptions>) {
         super();
-        this._body = super._deepCopy(RegionSettingsBuilder.#default);
-        if (data) {
-            for (const key of Object.keys(data) as Keys<CustomizerRegionOptions>) {
-                this._body[key] = data[key];
-            }
-        }
+        if (!options) return;
+        this._body = { ...options };
     }
 
     get bossHeartsInPool(): boolean {
@@ -95,7 +91,7 @@ export default class RegionSettingsBuilder
     /**
      * Sets whether take any caves will be enabled for the seed.
      *
-     * @param enable
+     * @param enable Should take any caves be enabled?
      * @returns The current object for chaining.
      */
     setTakeAnys(enable: boolean): this {
@@ -126,8 +122,9 @@ export default class RegionSettingsBuilder
     }
 
     /**
+     * Sets whether small keys can be shuffled outside their vanilla dungeons.
      *
-     * @param shuffle
+     * @param shuffle Should small key shuffle be enabled?
      * @returns The current object for chaining.
      */
     setWildKeys(shuffle: boolean): this {
@@ -136,8 +133,9 @@ export default class RegionSettingsBuilder
     }
 
     /**
+     * Sets whether maps can be shuffled outside their vanilla dungeons.
      *
-     * @param shuffle
+     * @param shuffle Should map shuffle be enabled?
      * @returns The current object for chaining.
      */
     setWildMaps(shuffle: boolean): this {

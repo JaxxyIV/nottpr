@@ -260,7 +260,7 @@ export const customizerDefault: Partial<CustomizerPayload> = {
             timerStart: "",
             rupeeBow: false,
             genericKeys: false,
-            logicMode: "NoGlitches",
+            logicMode: enums.RomMode.NoGlitches,
         },
         spoil: {
             BootsLocation: false,

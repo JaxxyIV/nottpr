@@ -1,13 +1,6 @@
 import BaseBuilder from "./BaseBuilder.js";
 import { Drop, EnemyGroup } from "../../types/enums.js";
-import {
-    CrabTuple,
-    Keys,
-    PackTuple,
-    PrizePackGroups,
-    TreePullTuple,
-} from "../../types/structures.js";
-import { customizerDefault } from "../../types/symbol/payloads.js";
+import { PrizePackGroups } from "../../types/structures.js";
 
 /**
  * An instance of this class represents a prize pack collection to be supplied
@@ -18,38 +11,32 @@ import { customizerDefault } from "../../types/symbol/payloads.js";
  */
 export default class PrizePackBuilder
     extends BaseBuilder<PrizePackGroups> {
-    static readonly #def = customizerDefault.drops;
 
     constructor(packs?: Partial<PrizePackGroups>) {
         super();
-        this._body = super._deepCopy(PrizePackBuilder.#def);
-
-        for (const key of Object.keys(packs) as Keys<PrizePackGroups>) {
-            for (let i = 0; i < packs[key].length; ++i) {
-                this._body[key][i] = packs[key][i];
-            }
-        }
+        if (!packs) return;
+        this._body = { ...packs };
     }
 
-    getPack(pack: EnemyGroup): Readonly<PackTuple> {
+    getPack(pack: EnemyGroup): ReadonlyArray<Drop> {
         const g = PrizePackBuilder.#groupToIndex(pack);
-        return super._deepCopy(this._body[g]);
+        return this.#check(g);
     }
 
-    get treePull(): Readonly<TreePullTuple> {
-        return super._deepCopy(this._body.pull);
+    get treePull(): ReadonlyArray<Drop> {
+        return this.#check("pull");
     }
 
-    get crab(): Readonly<CrabTuple> {
-        return super._deepCopy(this._body.crab);
+    get crab(): ReadonlyArray<Drop> {
+        return this.#check("crab");
     }
 
     get stun(): Drop {
-        return this._body.stun[0];
+        return this._body.stun?.[0];
     }
 
     get fish(): Drop {
-        return this._body.fish[0];
+        return this._body.fish?.[0];
     }
 
     /**
@@ -62,7 +49,10 @@ export default class PrizePackBuilder
      */
     setPack(group: EnemyGroup, pack: Drop[]): this {
         const g = PrizePackBuilder.#groupToIndex(group);
-        for (let i = 0; i < this._body[g].length; ++i) {
+        if (!Array.isArray(this._body[g])) {
+            this._body[g] = [];
+        }
+        for (let i = 0; i < 8; ++i) {
             this._body[g][i] = pack[i] ?? Drop.Random;
         }
         return this;
@@ -76,7 +66,10 @@ export default class PrizePackBuilder
      * @returns The current object for chaining.
      */
     setTreePull(...pull: Drop[]): this {
-        for (let i = 0; i < this._body.pull.length; ++i) {
+        if (!Array.isArray(this._body.pull)) {
+            this._body.pull = [];
+        }
+        for (let i = 0; i < 3; ++i) {
             this._body.pull[i] = pull[i] ?? Drop.Random;
         }
         return this;
@@ -90,6 +83,9 @@ export default class PrizePackBuilder
      * @returns The current object for chaining.
      */
     setCrab(main: Drop, last = main): this {
+        if (!Array.isArray(this._body.crab)) {
+            this._body.crab = [];
+        }
         this._body.crab[0] = main;
         this._body.crab[1] = last;
         return this;
@@ -102,6 +98,9 @@ export default class PrizePackBuilder
      * @returns The current object for chaining.
      */
     setStun(stun: Drop): this {
+        if (!Array.isArray(this._body.stun)) {
+            this._body.stun = [];
+        }
         this._body.stun[0] = stun;
         return this;
     }
@@ -113,6 +112,9 @@ export default class PrizePackBuilder
      * @returns The current object for chaining.
      */
     setFish(fish: Drop): this {
+        if (!Array.isArray(this._body.fish)) {
+            this._body.fish = [];
+        }
         this._body.fish[0] = fish;
         return this;
     }
@@ -120,5 +122,11 @@ export default class PrizePackBuilder
     static #groupToIndex(group: EnemyGroup): keyof PrizePackGroups & number {
         return Object.values(EnemyGroup)
             .findIndex(g => g === group) as keyof PrizePackGroups & number;
+    }
+
+    #check(key: keyof typeof this._body): Drop[] {
+        return Array.isArray(this._body[key])
+            ? super._deepCopy(this._body[key])
+            : [];
     }
 }

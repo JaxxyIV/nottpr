@@ -1,3 +1,4 @@
+import Prando from "prando";
 import patch, { PatchOptions } from "z3r-patch";
 import Sprite from "./Sprite.js";
 import JSONTranslatable from "../interfaces/JSONTranslatable.js";
@@ -27,6 +28,7 @@ export default class Seed
     #patchMap = new Map<number, number[]>();
 
     readonly #sprites: Map<string, Sprite>;
+    readonly #rand: Prando;
 
     static readonly #HASH_STRINGS = [
         "Bow", "Boomerang", "Hookshot", "Bomb", "Mushroom",
@@ -48,6 +50,8 @@ export default class Seed
             generated: this.#generated,
             size: this.#size,
         } = json);
+
+        this.#rand = new Prando(this.#hash);
 
         // By converting the patch data in the JSON to a Map, operations like
         // obtaining the file select hash will be much easier.
@@ -145,6 +149,8 @@ export default class Seed
         } else if (!(options.sprite instanceof ArrayBuffer)) {
             throw new TypeError("Invalid argument for sprite.");
         }
+
+        // TODO: Add palette shuffle corrections.
 
         // Apparently, trying to write a different menu speed for a tournament
         // seed doesn't modify the menu speed (which is the intended behavior).

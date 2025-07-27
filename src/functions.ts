@@ -1,11 +1,5 @@
-import * as fs from "node:fs";
-import * as yaml from "yaml";
-import { unflatten } from "flat";
-import BaseSeedBuilder from "./classes/builders/BaseSeedBuilder.js";
-import SeedBuilder from "./classes/builders/SeedBuilder.js";
-import CustomizerBuilder from "./classes/builders/CustomizerBuilder.js";
+import Prando from "prando";
 import districts from "./types/symbol/districts.js";
-import { StartHashOverride } from "./types/structures.js";
 import { District, Drop, EnemyGroup, Hash, ItemLocation } from "./types/enums.js";
 import { prizePacks } from "./types/symbol/prizePacks.js";
 
@@ -13,14 +7,18 @@ import { prizePacks } from "./types/symbol/prizePacks.js";
  * Utility function that generates a pseudorandom start screen hash. Useful for
  * applying the same start screen hash to multiple seeds.
  *
+ * @param seed An optional PRNG seed.
  * @returns The generated hash.
  */
-export function randomStartHash(): StartHashOverride {
+export function randomStartHash(seed?: number | string): Hash[] {
+    const rand = typeof seed !== "undefined"
+        ? new Prando(seed)
+        : new Prando();
     const res = [];
     for (let i = 0; i < 5; ++i) {
-        res[i] = Math.floor(Math.random() * Object.keys(Hash).length);
+        res[i] = rand.nextInt(0, 31);
     }
-    return res as StartHashOverride;
+    return res;
 }
 
 /**
@@ -43,47 +41,4 @@ export function getDistrict(dist: District): ItemLocation[] {
  */
 export function getVanillaPack(pack: EnemyGroup): Drop[] {
     return Array.from(prizePacks[pack]);
-}
-
-/**
- * Converts a SahasrahBot preset YAML at the given file path into a builder
- * object.
- *
- * The returned object will be type-widened as a `BaseSeedBuilder`. Use
- * `instanceof` for type-narrowing to a `SeedBuilder` or `CustomizerBuilder`.
- *
- * Door randomizer presets are not supported. Attempting to parse one is a
- * `SyntaxError`.
- *
- * @param path The file path to the preset.
- * @returns The converted preset as a nottpr builder.
- */
-export function fromSahasrahBotPreset(path: string): BaseSeedBuilder {
-    const file = fs.readFileSync(path).toString();
-    const preset = yaml.parse(file);
-
-    if (typeof preset.settings === "undefined") {
-        throw new SyntaxError("YAML file is missing attribute 'settings'.");
-    }
-    if (preset.doors) {
-        throw new SyntaxError("Door presets are unsupported.");
-    }
-
-    let builder: SeedBuilder | CustomizerBuilder;
-    const settings: any = unflatten(preset.settings);
-
-    if (preset.customizer) { // CustomizerBuilder
-        settings.drops = { ...settings.drops };
-
-        builder = new CustomizerBuilder(settings);
-
-        if ("forced_locations" in preset && preset.forced_locations.length) {
-            const forced = preset.forced_locations.map((rec: { item: string, locations: string[] }) => ({ [rec.item.replace(":1", "")]: rec.locations }));
-            builder.setForcedItems(...forced);
-        }
-    } else { // SeedBuilder
-        builder = new SeedBuilder(settings);
-    }
-
-    return builder;
 }

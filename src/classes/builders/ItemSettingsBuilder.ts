@@ -21,24 +21,19 @@ export default class ItemSettingsBuilder
     extends BaseBuilder<CustomizerItemOptions> {
     static readonly #default = customizerDefault.custom.item;
 
-    constructor() {
-        super();
-        this._body = super._deepCopy(ItemSettingsBuilder.#default);
-    }
-
     get allowDarkRoomNav(): boolean {
-        return this._body.require.Lamp;
+        return this._body.require?.Lamp;
     }
 
     get requiredGoalCount(): number | "" {
-        return this._body.Goal.Required;
+        return this._body.Goal?.Required;
     }
 
-    get itemValue(): Readonly<CustomItemValues> {
+    get itemValue(): Readonly<Partial<CustomItemValues>> {
         return this._body.value;
     }
 
-    get overflow(): Readonly<ItemOverflowSettings> {
+    get overflow(): Readonly<Partial<ItemOverflowSettings>> {
         return this._body.overflow;
     }
 
@@ -49,6 +44,9 @@ export default class ItemSettingsBuilder
      * @returns The current object for chaining.
      */
     setAllowDarkRoomNav(allow: boolean): this {
+        if (typeof this._body.require !== "object") {
+            this._body.require = {};
+        }
         this._body.require.Lamp = allow;
         return this;
     }
@@ -62,6 +60,9 @@ export default class ItemSettingsBuilder
     setRequiredGoalCount(count: number): this {
         if (count < 0) {
             throw new Error("count must be positive.");
+        }
+        if (typeof this._body.Goal !== "object") {
+            this._body.Goal = {};
         }
         this._body.Goal.Required = count;
         return this;
@@ -106,16 +107,7 @@ export default class ItemSettingsBuilder
      * ```
      */
     setItemValue(value: Partial<CustomItemValues>): this {
-        const vDefs = super._deepCopy(ItemSettingsBuilder.#default.value);
-        for (const key of Object.keys(vDefs) as Keys<typeof vDefs>) {
-            if (!(key in value)) {
-                if (key.startsWith("Bomb") || key.startsWith("Arrow")) {
-                    continue;
-                }
-                value[key] = "" as never;
-            }
-        }
-        this._body.value = super._deepCopy(value) as CustomItemValues;
+        this._body.value = { ...value };
         return this;
     }
 
@@ -134,17 +126,15 @@ export default class ItemSettingsBuilder
      * @returns The current object for chaining.
      */
     setItemCounts(counts: Partial<CustomItemCounts>, zero = false): this {
-        const res = super._deepCopy(ItemSettingsBuilder.#default.count);
-        if (!zero) {
-            for (const key of Object.keys(counts) as Keys<typeof counts>) {
-                res[key] = counts[key];
-            }
-        } else {
+        if (zero) {
+            const res = super._deepCopy(ItemSettingsBuilder.#default.count);
             for (const key of Object.keys(res) as Keys<typeof res>) {
                 res[key] = counts[key] ?? 0;
             }
+            this._body.count = res;
+        } else {
+            this._body.count = { ...counts };
         }
-        this._body.count = res;
         return this;
     }
 }

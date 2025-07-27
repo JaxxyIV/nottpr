@@ -1,4 +1,5 @@
 import * as fs from "node:fs";
+import * as yaml from "yaml";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import CustomSettingsBuilder from "./CustomSettingsBuilder.js";
 import EquipmentBuilder from "./EquipmentBuilder.js";
@@ -10,8 +11,9 @@ import {
     CustomizerJSONEquipment,
     CustomizerPayload,
     CustomOptions,
-    Keys,
+    DeepPartial,
     LocationMap,
+    NottprYAML,
     PrizePackGroups,
     TextMap,
 } from "../../types/structures.js";
@@ -19,7 +21,6 @@ import { RupeeAmount, StartingEquipment } from "../../types/strings.js";
 import {
     Bottle,
     BottleLocation,
-    Drop,
     Item,
     ItemLocation,
     Medallion,
@@ -29,6 +30,7 @@ import {
 } from "../../types/enums.js";
 import { CustomizerSeedOptions } from "../../types/optionObjs.js";
 import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
+import { unflatten } from "flat";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -40,15 +42,13 @@ import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
  * however, you can use callback functions to avoid importing multiple builder
  * classes.
  *
- * Item and drop pool counts will sync with placed items/starting equipment and
- * prize packs respectively when calling the `toJSON()` method. If you need to
- * disable this behavior, use the `disableSync()` method.
+ * Item and drop pool counts do not sync with placed items/starting equipment
+ * and prize packs respectively when calling the `toJSON()` method.
  *
  * @example
  * ```js
  * import { CustomizerBuilder, Item } from "nottpr";
  *
- * // Works, but can be simplified.
  * const builder = new CustomizerBuilder()
  *     .setEquipment(equip => equip
  *         .setStartingBoots(true))
@@ -57,10 +57,6 @@ import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
  *             .setItemCounts({
  *                 [Item.PegasusBoots]: 0
  *             })));
- * // OK!
- * const builder = new CustomizerBuilder()
- *     .setEquipment(equip => equip
- *         .setStartingBoots(true));
  * ```
  * @extends BaseSeedBuilder
  */
@@ -95,20 +91,27 @@ export default class CustomizerBuilder
     static readonly #default = this.#createDefault();
 
     #forcedItems: ItemTuple[] = [];
-    #sync = true;
 
-    constructor(data?: CustomizerSeedOptions) {
+    constructor(options?: DeepPartial<CustomizerPayload>) {
         super();
-        this._body = super._deepCopy(CustomizerBuilder.#default);
+        if (!options) return;
+        this._body = { ...options } as typeof this._body;
+    }
 
-        if (!data) {
-            return;
+    static fromYAML(file: string): CustomizerBuilder {
+        const str = fs.readFileSync(file).toString();
+        const preset = yaml.parse(str);
+        if (preset.customizer !== true) {
+            throw new SyntaxError("Input file is not a customizer preset.");
+        } else if (preset.doors) {
+            throw new SyntaxError("Door randomizer presets are unsupported.");
         }
-
-        const vals = super._deepCopy(data);
-        for (const [key, val] of Object.entries(vals)) {
-            this._body[key as keyof CustomizerPayload] = val as never;
+        const settings = unflatten(preset.settings);
+        const obj = new this(settings);
+        if ("forced_locations" in preset) {
+            obj.setForcedItems(...preset.forced_locations);
         }
+        return obj;
     }
 
     /**
@@ -135,7 +138,7 @@ export default class CustomizerBuilder
             }
         };
         const copy = this.prototype._deepCopy(data);
-        const converted: CustomizerSeedOptions = {};
+        const converted: Partial<CustomizerPayload> = {};
 
         for (const [jsonKey, payloadKey] of this.#websiteJSONMap) {
             if (copy[jsonKey] !== null) {
@@ -206,16 +209,12 @@ export default class CustomizerBuilder
                 };
 
                 let rupees = parseInt(v);
-                for (const key of Object.keys(rupeeMap).reverse()) {
-                    const parsed = parseInt(key);
-                    const toAdd = Math.floor(rupees / parsed);
-
-                    for (let i = 0; i < toAdd; ++i) {
-                        eq.push(rupeeMap[parsed]);
-                    }
-
-                    rupees %= parsed;
-                }
+                Object.keys(rupeeMap).reverse().map(parseInt).forEach(key => {
+                    const toAdd = Math.floor(rupees / key);
+                    for (let i = 0; i < toAdd; ++i)
+                        eq.push(rupeeMap[key]);
+                    rupees %= key;
+                });
             }
         }
 
@@ -235,12 +234,12 @@ export default class CustomizerBuilder
         return this._body.texts;
     }
 
-    get custom(): Readonly<CustomOptions> {
+    get custom(): DeepPartial<CustomOptions> {
         return this._body.custom;
     }
 
-    get drops(): Readonly<PrizePackGroups> {
-        return this._body.drops;
+    get drops(): Readonly<Partial<PrizePackGroups>> {
+        return this._body.drops as Partial<PrizePackGroups>;
     }
 
     /**
@@ -365,18 +364,15 @@ export default class CustomizerBuilder
      * @returns The current object for chaining.
      */
     setCustom(custom: CustomSettingsBuilder): this;
-    setCustom(custom: Partial<CustomOptions>): this;
+    setCustom(custom: DeepPartial<CustomOptions>): this;
     setCustom(custom: (builder: CustomSettingsBuilder) => CustomSettingsBuilder): this;
-    setCustom(custom: Partial<CustomOptions> | CustomSettingsBuilder | BuilderCallback<CustomSettingsBuilder>): this {
+    setCustom(custom: DeepPartial<CustomOptions> | CustomSettingsBuilder | BuilderCallback<CustomSettingsBuilder>): this {
         if (typeof custom === "function") {
             this._body.custom = custom(new CustomSettingsBuilder()).toJSON();
         } else if (custom instanceof CustomSettingsBuilder) {
             this._body.custom = custom.toJSON();
         } else {
-            const res = super._deepCopy(CustomizerBuilder.#default.custom);
-            for (const [key, val] of Object.entries(custom)) {
-                res[key as keyof typeof res] = val as never;
-            }
+            this._body.custom = { ...custom };
         }
         return this;
     }
@@ -400,23 +396,7 @@ export default class CustomizerBuilder
             drops = new PrizePackBuilder(drops).toJSON();
         }
 
-        this._body.drops = super._deepCopy(drops) as PrizePackGroups;
-        return this;
-    }
-
-    /**
-     * Disables item and drop pool counts from syncing with equipment/placed
-     * items and prize packs.
-     *
-     * Disabling syncing is useful when your preset is constructed from an
-     * external source such as a customizer .json file or a SahasrahBot preset
-     * YAML. These sources often have API-ready payloads, negating the need for
-     * pool syncing.
-     *
-     * @returns The current object for chaining.
-     */
-    disableSync(): this {
-        this.#sync = false;
+        this._body.drops = super._deepCopy(drops);
         return this;
     }
 
@@ -429,56 +409,35 @@ export default class CustomizerBuilder
      * @returns The JSON representation of this CustomizerBuilder.
      */
     override toJSON(): CustomizerPayload {
-        const res = super._deepCopy(this._body) as CustomizerPayload;
-        res.l = this.#rollLocations();
-        if (this.#sync) {
-            this.#syncItemCounts(res);
-            this.#syncDropCounts(res);
+        const res = super._deepMerge(super._deepCopy(CustomizerBuilder.#default), super.toJSON());
+        if (this.#forcedItems.length > 0) {
+            res.l = this.#rollLocations();
         }
         return res;
     }
 
-    #syncItemCounts(json: CustomizerPayload): void {
-        for (const [loc, item] of Object.entries(json.l)) {
-            // Skip anything that isn't an item placement.
-            if (isPrize(item) ||
-                loc === BottleLocation.PyramidFairy || loc === BottleLocation.WaterfallFairy ||
-                loc === MedallionLocation.MiseryMire || loc === MedallionLocation.TurtleRock) {
-                continue;
-            }
-            if (json.custom.item.count[item as never] > 0) {
-                --json.custom.item.count[item as never];
-            }
-        }
-        let hearts = 0;
-        for (const item of json.eq) {
-            if (item.includes("Rupee") || isPrize(item as Item) ||
-                item.endsWith("e5") || item.endsWith("e10")) {
-                continue;
-            }
-            if (item === Item.HeartContainer) { // We don't want to remove the starting 3 hearts.
-                ++hearts;
-            }
-            if (json.custom.item.count[item as never] > 0) {
-                if (item !== Item.HeartContainer || hearts > 3) {
-                    --json.custom.item.count[item as never];
-                }
-            }
+    override toYAML(complete?: boolean): string {
+        const struct: Partial<NottprYAML> = {
+            customizer: true,
+            forced_locations: [],
+        };
+        if (complete) {
+            const hold = this.#forcedItems;
+            this.#forcedItems = [];
+            struct.settings = this.toJSON();
+            this.#forcedItems = hold;
+        } else {
+            struct.settings = this._body;
         }
 
-        function isPrize(item: Item | Bottle | Medallion | Prize) {
-            return item.startsWith("Crystal") || item.startsWith("Pendant");
+        for (const [k, v] of this.#forcedItems) {
+            struct.forced_locations.push({
+                item: k,
+                locations: v,
+            });
         }
-    }
 
-    #syncDropCounts(json: CustomizerPayload): void {
-        const placed: Drop[] = Object.values(json.drops).flat()
-            .filter(d => d !== Drop.Random);
-        for (const drop of placed as Exclude<Drop, Drop.Random>[]) {
-            if (json.custom.drop.count[drop] > 0) {
-                --json.custom.drop.count[drop];
-            }
-        }
+        return yaml.stringify(struct);
     }
 
     #rollLocations(): LocationMap {
@@ -510,11 +469,7 @@ export default class CustomizerBuilder
     }
 
     static #createDefault(): CustomizerPayload {
-        const payload: Partial<CustomizerPayload> = this.prototype._deepCopy(baseDefault);
-        for (const key of Object.keys(customizerDefault) as Keys<CustomizerPayload>) {
-            payload[key] = customizerDefault[key] as never;
-        }
-        return payload as CustomizerPayload;
+        return Object.assign(this.prototype._deepCopy(baseDefault), customizerDefault) as CustomizerPayload;
     }
 }
 

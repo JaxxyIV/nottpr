@@ -1,8 +1,11 @@
+import * as fs from "node:fs";
+import * as yaml from "yaml";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import Request from "../util/Request.js";
 import { BaseSeedOptions } from "../../types/optionObjs.js";
-import { APIPreset, RandomizerPayload } from "../../types/structures.js";
+import { APIPreset, DeepPartial, RandomizerPayload } from "../../types/structures.js";
 import { Entrances, Toggle } from "../../types/enums.js";
+import { baseDefault } from "../../types/symbol/payloads.js";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -35,10 +38,9 @@ export default class SeedBuilder
      *
      * @param data An optional partial payload object.
      */
-    constructor(data?: SeedOptions) {
+    constructor(data?: DeepPartial<RandomizerPayload>) {
         super();
         if (!data) return;
-
         this._body = super._deepCopy(data) as typeof this._body;
     }
 
@@ -94,6 +96,31 @@ export default class SeedBuilder
             })
             .setWorldState(selected.world_state)
             .setWeapons(selected.weapons);
+    }
+
+    static fromYAML(file: string): SeedBuilder {
+        const str = fs.readFileSync(file).toString();
+        const preset = yaml.parse(str);
+        if (preset.customizer) {
+            throw new SyntaxError("Attempted to pass customizer preset.");
+        } else if (preset.doors) {
+            throw new SyntaxError("Door randomizer presets are unsupported.");
+        }
+        return new this(preset.settings);
+    }
+
+    override toJSON(): RandomizerPayload {
+        const res: Partial<RandomizerPayload> = super.toJSON();
+        if (!("entrances" in res)) {
+            res.entrances = Entrances.None;
+        }
+        return res as RandomizerPayload;
+    }
+
+    override toYAML(complete?: boolean): string {
+        return yaml.stringify({
+            settings: complete ? this.toJSON() : this._body
+        });
     }
 }
 

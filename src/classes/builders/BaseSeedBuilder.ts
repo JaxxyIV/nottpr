@@ -4,7 +4,7 @@ import {
     Crystals,
     Glitches,
     Goals,
-    ItemPlacement,
+    Hash,
     Keysanity,
     Language,
     Spoilers,
@@ -16,14 +16,11 @@ import {
     BasePayload,
     CrystalPayloadData,
     EnemizerPayloadData,
-    ItemPayloadData,
-    Keys,
-    StartHashOverride,
 } from "../../types/structures.js";
 import { baseDefault } from "../../types/symbol/payloads.js";
 import { ItemOptions } from "../../types/optionObjs.js";
 
-export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
+export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayload>
     extends BaseBuilder<S> {
 
     get accessibility(): Accessibility {
@@ -34,7 +31,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this._body.allow_quickswap;
     }
 
-    get crystals(): Readonly<CrystalPayloadData> {
+    get crystals(): Readonly<Partial<CrystalPayloadData>> {
         return this._body.crystals;
     }
 
@@ -42,7 +39,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this._body.dungeon_items;
     }
 
-    get enemizer(): Readonly<EnemizerPayloadData> {
+    get enemizer(): Readonly<Partial<EnemizerPayloadData>> {
         return this._body.enemizer;
     }
 
@@ -82,7 +79,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
         return this._body.notes;
     }
 
-    get startHashCode(): StartHashOverride {
+    get startHashCode(): Hash[] {
         return this._body.override_start_screen;
     }
 
@@ -126,9 +123,13 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * value.
      * @returns The current object for chaining.
      */
-    setCrystals(...crystals: Crystals[]): this { // TODO: Allow this method to accept numbers
+    setCrystals(...crystals: Crystals[]): this;
+    setCrystals(...crystals: number[]): this;
+    setCrystals(...crystals: Crystals[] | number[]): this {
+        this.#validateCrystals(crystals);
         const [arg0, arg1] = crystals;
-        if (arg0 && arg1) {
+        // Need to account for "0" as falsy
+        if (typeof arg0 === "string" && typeof arg1 === "string") {
             this._body.crystals = {
                 ganon: arg0,
                 tower: arg1,
@@ -154,14 +155,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * @returns The current object for chaining.
      */
     setEnemizer(options: Partial<EnemizerPayloadData>): this {
-        const settings = super._deepCopy(baseDefault.enemizer);
-        const keys = Object.keys(options) as Keys<EnemizerPayloadData>;
-
-        for (const key of keys) {
-            settings[key] = options[key] as never; // errors unless asserted as never
-        }
-
-        this._body.enemizer = settings;
+        this._body.enemizer = { ...options };
         return this;
     }
 
@@ -197,18 +191,11 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * ```
      */
     setItem(options: ItemOptions): this {
-        const settings = super._deepCopy(baseDefault.item);
         if ("placement" in options) {
             this._body.item_placement = options.placement;
+            delete options.placement;
         }
-        if ("functionality" in options) {
-            settings.functionality = options.functionality;
-        }
-        if ("pool" in options) {
-            settings.pool = options.pool;
-        }
-
-        this._body.item = settings;
+        this._body.item = { ...options };
         return this;
     }
 
@@ -223,12 +210,12 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
     }
 
     setName(name: string): this {
-        this._body.name = name;
+        this._body.name = String(name);
         return this;
     }
 
     setNotes(notes: string): this {
-        this._body.notes = notes;
+        this._body.notes = String(notes);
         return this;
     }
 
@@ -238,15 +225,16 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * @param hash A 5-element array of numbers between 0 and 31.
      * @returns The current object for chaining.
      */
-    setHashCode(hash: StartHashOverride): this {
+    setHashCode(hash: Hash[]): this {
         if (!Array.isArray(hash)) {
             throw new TypeError("Parameter hash must be an array.");
         } else if (hash.length < 5) {
             throw new Error("Array must contain 5 elements.");
         }
+        hash.length = 5;
 
         // Deep copy to not modify original arg
-        this._body.override_start_screen = Array.from(hash) as StartHashOverride;
+        this._body.override_start_screen = Array.from(hash);
         return this;
     }
 
@@ -259,7 +247,7 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
      * @returns The current object for chaining.
      */
     setPseudoboots(enable: boolean): this {
-        this._body.pseudoboots = enable;
+        this._body.pseudoboots = Boolean(enable);
         return this;
     }
 
@@ -284,19 +272,47 @@ export default class BaseSeedBuilder<S extends BasePayload = BasePayload>
     }
 
     toJSON(): S {
-        function fill(ret: any, add: any): any {
-            for (const key in add) {
-                if (typeof ret[key] === "object" &&
-                    !Array.isArray(ret[key])) {
-                    ret[key] = fill(ret[key], add[key]);
+        return this._deepMerge(super._deepCopy(baseDefault), this._body);
+    }
+
+    /**
+     * Returns the YAML representation of this builder preset.
+     *
+     * @param complete Include options not explicitly set on this builder.
+     * @returns This builder as a YAML string.
+     */
+    abstract toYAML(complete?: boolean): string;
+
+    protected _deepMerge(target: any, src: any): any {
+        const isObj = (obj: any) => obj
+            && typeof obj === "object"
+            && !Array.isArray(obj);
+        if (isObj(target) && isObj(src)) {
+            for (const key of Object.keys(src)) {
+                if (isObj(src[key])) {
+                    if (!(key in target)) {
+                        Object.assign(target, { [key]: {} });
+                    }
+                    this._deepMerge(target[key], src[key]);
                 } else {
-                    ret[key] = add[key];
+                    Object.assign(target, { [key]: src[key] });
                 }
             }
-            return ret;
         }
-        const payload = super._deepCopy(baseDefault) as S;
-        fill(payload, this._body);
-        return payload;
+        return target;
+    }
+
+    #validateCrystals(crystals: Crystals[] | number[]): asserts crystals is Crystals[] {
+        for (let i = 0; i < Math.min(crystals.length, 2); ++i) {
+            // This is the only string value we care about. We are going to
+            // treat all other values as at least parseable values.
+            if (crystals[i] === Crystals.Random) continue;
+            let val = crystals[i];
+            if (typeof val === "string") val = parseInt(val);
+            val = Math.floor(val);
+            if (isNaN(val) || val < 0 || val > 7)
+                throw new RangeError("Numeric value must be in range [0,7]");
+            crystals[i] = val.toString() as Crystals;
+        }
     }
 }

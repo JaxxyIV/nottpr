@@ -32,7 +32,7 @@ export interface ItemOptions {
     functionality?: enums.ItemFunctionality
 }
 
-export type CustomizerSeedOptions = BaseSeedOptions & {
+export interface CustomizerSeedOptions extends BaseSeedOptions {
     custom?: CustomizerCustomOptions
     drops?: {
         0?: [
@@ -92,9 +92,53 @@ export type CustomizerCustomOptions = Partial<structs.AllowedGlitches> & {
         }
     }
     item?: {
+        Require?: {
+            Lamp?: boolean
+        }
+        Goal?: {
+            Required?: string
+        }
         count?: {
             [x in keyof structs.CustomItemCounts]?: number
         }
+        value?: {
+            BlueClock?: number
+            RedClock?: number
+            GreenClock?: number
+            Rupoor?: number
+        }
+        overflow?: {
+            count?: {
+                Armor?: number
+                BossHeartContainer?: number
+                Bow?: number
+                PieceOfHeart?: number
+                Shield?: number
+                Sword?: number
+                Bottle?: number
+            }
+            replacement?: {
+                Armor?: enums.Item
+                BossHeartContainer?: enums.Item
+                Bow?: enums.Item
+                PieceOfHeart?: enums.Item
+                Shield?: enums.Item
+                Sword?: enums.Item
+                Bottle?: enums.Item
+            }
+        }
+    }
+    prize?: {
+        crossWorld?: boolean
+        shufflePendants?: boolean
+        shuffleCrystals?: boolean
+    }
+    region?: {
+        bossNormalLocation?: boolean
+        wildBigKeys?: boolean
+        wildKeys?: boolean
+        wildMaps?: boolean
+        wildCompasses?: boolean
     }
     /* In an ideal world, the customizer would pass this and a bunch of other
      * values below as numbers. But for some reason, they are passed as strings.
