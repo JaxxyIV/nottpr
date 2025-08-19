@@ -4,6 +4,8 @@ import {
     BossShuffle,
     Bottle,
     BottleLocation,
+    ClockMode,
+    CompassMode,
     Crystals,
     Drop,
     EnemyDamage,
@@ -13,6 +15,7 @@ import {
     Glitches,
     Goals,
     Hash,
+    Item,
     ItemFunctionality,
     ItemLocation,
     ItemPlacement,
@@ -23,15 +26,12 @@ import {
     MedallionLocation,
     Prize,
     PrizeLocation,
+    RomMode,
     Spoilers,
     TextDialog,
     Toggle,
     Weapons,
     WorldState,
-    Item,
-    ClockMode,
-    CompassMode,
-    RomMode,
 } from "./enums.js";
 
 /* Type definitions for various API structures on alttpr.com. */
@@ -217,15 +217,15 @@ export interface Entrance {
 export type WorldRegion = Record<string, string>;
 export type BossLocations = Record<string, strings.Boss>;
 
-export interface ShopData {
-    item_0: string | ShopItemData
-    item_1: string | ShopItemData
-    item_2?: string | ShopItemData
+export interface Shop {
+    item_0: string | ShopItem
+    item_1: string | ShopItem
+    item_2?: string | ShopItem
     location: string
     type: string
 }
 
-export interface ShopItemData {
+export interface ShopItem {
     item: string
     price: number
 }
@@ -234,8 +234,6 @@ export interface SpoilerSpecialData {
     ["Misery Mire"]: Medallion
     ["Turtle Rock"]: Medallion
 }
-
-export type StartHashOverride = [Hash, Hash, Hash, Hash, Hash];
 
 export interface CustomizerPrizeOptions {
     crossWorld: boolean
@@ -442,10 +440,6 @@ export interface PrizePackGroups {
     fish: Drop[]
 }
 
-export type PackTuple = [Drop, Drop, Drop, Drop, Drop, Drop, Drop, Drop];
-export type TreePullTuple = [Drop, Drop, Drop];
-export type CrabTuple = [Drop, Drop];
-
 export type LocationMap = Partial<Record<ItemLocation, Item> &
     Record<PrizeLocation, Prize> &
     Record<MedallionLocation, Medallion> &
@@ -485,6 +479,36 @@ export interface CustomizerJSONCustomSettings {
     "spoil.BootsLocation": boolean
 }
 
+export interface BaseSpoiler {
+    meta: SeedMeta
+}
+
+export interface BaseSpoilerAPIData extends BaseSpoiler {
+    Bosses: BossLocations
+    "Dark World": WorldRegion
+    "Desert Palace": WorldRegion
+    "Eastern Palace": WorldRegion
+    "Ganons Tower": WorldRegion
+    "Hyrule Castle": WorldRegion
+    "Ice Palace": WorldRegion
+    "Light World": WorldRegion
+    "Misery Mire": WorldRegion
+    Shops: Shop[]
+    "Skull Woods": WorldRegion
+    Special: SpoilerSpecialData
+    "Swamp Palace": WorldRegion
+    "Thieves Town": WorldRegion
+    "Turtle Rock": WorldRegion
+}
+
+export interface EntranceSpoilerAPIData extends BaseSpoilerAPIData {
+    "Agahnims Tower": WorldRegion
+    Entrances: Entrance[]
+    "Palace of Darkness": WorldRegion
+    "Tower of Hera": WorldRegion
+    paths: EntrancePaths
+}
+
 export interface SpoilerAPIData {
     "Agahnims Tower"?: WorldRegion
     Bosses?: BossLocations
@@ -502,7 +526,7 @@ export interface SpoilerAPIData {
     ["Light World"]?: WorldRegion
     ["Misery Mire"]?: WorldRegion
     ["Palace of Darkness"]?: WorldRegion
-    Shops?: ShopData[]
+    Shops?: Shop[]
     ["Skull Woods"]?: WorldRegion
     Special?: SpoilerSpecialData
     ["Swamp Palace"]?: WorldRegion
@@ -578,8 +602,15 @@ export interface GenerationOptions {
 }
 
 export interface SpoilerOptions {
+    formatted?: boolean
     drops?: boolean
-    noMod?: boolean
+}
+
+export interface KeysanityOptions {
+    maps?: boolean
+    compasses?: boolean
+    keys?: boolean
+    bigKeys?: boolean
 }
 
 export interface NottprYAML {

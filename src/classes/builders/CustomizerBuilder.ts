@@ -1,9 +1,11 @@
 import * as fs from "node:fs";
 import * as yaml from "yaml";
+import { unflatten } from "flat";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import CustomSettingsBuilder from "./CustomSettingsBuilder.js";
 import EquipmentBuilder from "./EquipmentBuilder.js";
 import PrizePackBuilder from "./PrizePackBuilder.js";
+import SeedBuilder from "./SeedBuilder.js";
 import {
     AllowedGlitches,
     BuilderCallback,
@@ -14,7 +16,9 @@ import {
     DeepPartial,
     LocationMap,
     NottprYAML,
+    PartialRecord,
     PrizePackGroups,
+    RandomizerPayload,
     TextMap,
 } from "../../types/structures.js";
 import { RupeeAmount, StartingEquipment } from "../../types/strings.js";
@@ -28,9 +32,8 @@ import {
     Prize,
     PrizeLocation,
 } from "../../types/enums.js";
-import { CustomizerSeedOptions } from "../../types/optionObjs.js";
+// import { CustomizerSeedOptions } from "../../types/optionObjs.js";
 import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
-import { unflatten } from "flat";
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -62,6 +65,7 @@ import { unflatten } from "flat";
  */
 export default class CustomizerBuilder
     extends BaseSeedBuilder<CustomizerPayload> {
+    static #default: CustomizerPayload;
     static #websiteJSONMap: [keyof CustomizerJSON, string][] = [
         ["randomizer.accessibility", "accessibility"],
         ["randomizer.boss_shuffle", "enemizer.boss_shuffle"],
@@ -87,32 +91,79 @@ export default class CustomizerBuilder
         ["vt.custom.prizepacks", "drops"],
         ["vt.custom.settings", "custom"],
     ];
+    static readonly #calls: PartialRecord<keyof CustomizerPayload, Function> = {
+        custom: this.prototype.setCustom,
+        drops: this.prototype.setDrops,
+        eq: this.prototype.setEquipment,
+        l: this.prototype.setLocations,
+        texts: this.prototype.setTexts
+    };
 
-    static readonly #default = this.#createDefault();
+    static {
+        this.#default = Object.assign(this.prototype._deepCopy(baseDefault),
+            customizerDefault) as CustomizerPayload;
+    }
 
     #forcedItems: ItemTuple[] = [];
 
-    constructor(options?: DeepPartial<CustomizerPayload>) {
-        super();
-        if (!options) return;
-        this._body = { ...options } as typeof this._body;
+    static from(data: CustomizerOptions | string): CustomizerBuilder {
+        let builder: CustomizerBuilder;
+        if (typeof data === "string") { // Assume yaml file
+            const preset = yaml.parse(data);
+            if (preset.customizer !== true)
+                throw new SyntaxError("Input file is not a customizer preset.");
+            if (preset.doors)
+                throw new SyntaxError("Door randomizer presets are unsupported.");
+            builder = this.from(preset.settings); // Convert yaml to object, redo the call
+
+            if ("forced_locations" in preset) {
+                builder.setForcedItems(...preset.forced_locations
+                    .map((v: { item: string, locations: string[] }) =>
+                        ({ [v.item]: v.locations })));
+            }
+        } else {
+            if (typeof data !== "object") {
+                throw new TypeError("data must be an object literal.");
+            }
+
+            if ("entrances" in data) {
+                throw new SyntaxError("entrances is incompatible with customizer.");
+            }
+
+            // Obtain the partial by using SeedBuilder's from method. The
+            // customizer properties will be skipped in this call.
+            builder = new CustomizerBuilder();
+            builder.#body = SeedBuilder.from(data).toPartial();
+
+            const negation = Object.entries(data).filter(([k]) => k in this.#calls) as [keyof CustomizerPayload, unknown][];
+            for (const [k, v] of negation) {
+                this.#calls[k].call(builder, v);
+            }
+        }
+
+        return builder;
     }
 
-    static fromYAML(file: string): CustomizerBuilder {
-        const str = fs.readFileSync(file).toString();
-        const preset = yaml.parse(str);
-        if (preset.customizer !== true) {
-            throw new SyntaxError("Input file is not a customizer preset.");
-        } else if (preset.doors) {
-            throw new SyntaxError("Door randomizer presets are unsupported.");
-        }
-        const settings = unflatten(preset.settings);
-        const obj = new this(settings);
-        if ("forced_locations" in preset) {
-            obj.setForcedItems(...preset.forced_locations);
-        }
-        return obj;
-    }
+    // static fromYAML(file: string): CustomizerBuilder {
+    //     const str = fs.readFileSync(file).toString();
+    //     const preset = yaml.parse(str);
+    //     if (preset.customizer !== true) {
+    //         throw new SyntaxError("Input file is not a customizer preset.");
+    //     }
+    //     if (preset.doors) {
+    //         throw new SyntaxError("Door randomizer presets are unsupported.");
+    //     }
+    //     const settings = unflatten(preset.settings);
+    //     const obj = new this(settings);
+    //     if ("forced_locations" in preset) {
+    //         obj.setForcedItems(...preset.forced_locations
+    //             .map(({ item, locations }: {
+    //                 item: string,
+    //                 locations: string[]
+    //             }) => ({ [item]: locations })));
+    //     }
+    //     return obj;
+    // }
 
     /**
      * Accepts a file path to a customizer .json file or an object literal and
@@ -146,7 +197,7 @@ export default class CustomizerBuilder
                 if (props.length > 1) {
                     nest(converted, props, copy[jsonKey]);
                 } else {
-                    converted[payloadKey as keyof CustomizerSeedOptions] = copy[jsonKey] as never;
+                    converted[payloadKey as keyof CustomizerOptions] = copy[jsonKey] as never;
                 }
             }
         }
@@ -219,10 +270,10 @@ export default class CustomizerBuilder
         }
 
         converted.eq = eq;
-        return new this(converted);
+        return this.from(converted);
     }
 
-    get eq(): ReadonlyArray<StartingEquipment> {
+    get equipment(): ReadonlyArray<StartingEquipment> {
         return Array.from(this._body.eq);
     }
 
@@ -442,7 +493,7 @@ export default class CustomizerBuilder
 
     #rollLocations(): LocationMap {
         const pick = (arr: unknown[]) => Math.floor(Math.random() * arr.length);
-        const result: LocationMap = super._deepCopy(this._body.l);
+        const result = super._deepCopy(this._body.l);
         const remaining = super._deepCopy(this.#forcedItems);
 
         while (remaining.length != 0) {
@@ -468,10 +519,12 @@ export default class CustomizerBuilder
         return result;
     }
 
-    static #createDefault(): CustomizerPayload {
-        return Object.assign(this.prototype._deepCopy(baseDefault), customizerDefault) as CustomizerPayload;
+    set #body(data: CustomizerOptions) {
+        this._body = data;
     }
 }
+
+interface CustomizerOptions extends DeepPartial<CustomizerPayload> {}
 
 type ForcedItem = Partial<Record<Item, ItemLocation[]> |
     Record<Bottle, BottleLocation[]> |

@@ -82,17 +82,24 @@ export default class ALTTPR {
      * @param options Optional pre-generation options.
      * @returns The resulting Seed object.
      */
-    static async generate(data: SeedBuilder, options?: GenerationOptions): Promise<Seed>
-    static async generate(data: CustomizerBuilder, options?: GenerationOptions): Promise<Seed>
-    static async generate(data: RandomizerPayload, options?: GenerationOptions): Promise<Seed>
-    static async generate(data: CustomizerPayload, options?: GenerationOptions): Promise<Seed>
+    static async generate(data: SeedBuilder, options?: GenerationOptions): Promise<Seed>;
+    static async generate(data: CustomizerBuilder, options?: GenerationOptions): Promise<Seed>;
+    static async generate(data: RandomizerPayload, options?: GenerationOptions): Promise<Seed>;
+    static async generate(data: CustomizerPayload, options?: GenerationOptions): Promise<Seed>;
     static async generate(data: SeedBuilder | RandomizerPayload | CustomizerPayload | CustomizerBuilder, options: GenerationOptions = {}): Promise<Seed> {
+        if (typeof data !== "object") {
+            throw new TypeError(`Expected data to be of type object (found ${typeof data})`);
+        } else if (typeof options !== "object" && typeof options !== "undefined") {
+            throw new TypeError(`Expected options to be of type object (found ${typeof data})`);
+        }
         if (data instanceof BaseSeedBuilder) {
             data = data.toJSON(); // Force as literal to check customizer
         }
 
         data.allow_quickswap = options.allow_quickswap ?? data.allow_quickswap ?? true;
-        data.hints = options.hints ? Toggle.On : Toggle.Off;
+        if (typeof options.hints !== "undefined") {
+            data.hints = options.hints ? Toggle.On : Toggle.Off;
+        }
         data.spoilers = options.spoilers ?? Spoilers.On;
         data.tournament = data.spoilers !== Spoilers.On;
 
@@ -121,6 +128,9 @@ export default class ALTTPR {
      * @returns The requested Seed.
      */
     static async fetchSeed(hash: string): Promise<Seed> {
+        if (typeof hash !== "string") {
+            throw new TypeError("hash must be a string.");
+        }
         if (this.#seeds.has(hash)) {
             return this.#seeds.get(hash);
         }
@@ -131,7 +141,7 @@ export default class ALTTPR {
         try {
             parsed = JSON.parse(response);
         } catch (e) {
-            throw new Error("No seed found.");
+            throw new Error(`Seed "${hash}" does not exist.`);
         }
 
         const seed = new Seed(parsed, this.#sprites);

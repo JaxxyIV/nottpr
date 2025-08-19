@@ -1,8 +1,9 @@
 import Prando from "prando";
 import patch, { PatchOptions } from "z3r-patch";
 import Sprite from "./Sprite.js";
+import Request from "./Request.js";
 import JSONTranslatable from "../interfaces/JSONTranslatable.js";
-import { SpoilerAPIData, SeedAPIData } from "../../types/structures.js";
+import { SpoilerAPIData, SeedAPIData, PatchAPIData } from "../../types/structures.js";
 import {
     Drop,
     DropByte,
@@ -27,16 +28,18 @@ export default class Seed
     #origPatch: Record<number, number[]>[];
     #patchMap = new Map<number, number[]>();
 
+    #baseRom: string;
+
     readonly #sprites: Map<string, Sprite>;
-    readonly #rand: Prando;
+    readonly #prngInt: number;
 
     static readonly #HASH_STRINGS = [
         "Bow", "Boomerang", "Hookshot", "Bomb", "Mushroom",
         "Powder", "Ice Rod", "Pendant", "Bombos", "Ether",
         "Quake", "Lantern", "Hammer", "Shovel", "Ocarina",
-        "Bug Net", "Book", "Bottle", "Green Potion", "Somaria",
+        "Bug Net", "Book", "Bottle", "Potion", "Somaria",
         "Cape", "Mirror", "Boots", "Glove", "Flippers",
-        "Moon Pearl", "Shield", "Mail", "Heart", "Map",
+        "Pearl", "Shield", "Mail", "Heart", "Map",
         "Compass", "Big Key",
     ];
 
@@ -51,7 +54,7 @@ export default class Seed
             size: this.#size,
         } = json);
 
-        this.#rand = new Prando(this.#hash);
+        this.#prngInt = new Prando(this.#hash).nextInt(0, 4294967295);
 
         // By converting the patch data in the JSON to a Map, operations like
         // obtaining the file select hash will be much easier.
@@ -62,6 +65,8 @@ export default class Seed
             }
         }
 
+        Object.freeze(this.#origPatch);
+
         if ("current_rom_hash" in json) {
             this.#current_rom_hash = json.current_rom_hash;
         }
@@ -69,14 +74,6 @@ export default class Seed
 
     get logic(): string {
         return this.#logic;
-    }
-
-    /**
-     * Returns this Seed's JSON patch data as a Map object. Elements in the Map
-     * are keyed by their offsets.
-     */
-    get patchMap(): ReadonlyMap<number, ReadonlyArray<number>> {
-        return this.#patchMap;
     }
 
     get hash(): string {
@@ -106,11 +103,17 @@ export default class Seed
     }
 
     /**
+     * Returns the start screen hash of this Seed as an int array.
+     */
+    get hashInts(): number[] {
+        return Array.from(this.#seekInPatch(1573397, 5));
+    }
+
+    /**
      * Returns the start screen hash of this Seed as a string array.
      */
-    get hashCode(): ReadonlyArray<string> {
-        return this.#seekInPatch(1573397, 5)
-            .map(b => Seed.#HASH_STRINGS[b]);
+    get hashCode(): string[] {
+        return this.hashInts.map(b => Seed.#HASH_STRINGS[b]);
     }
 
     /**
@@ -137,34 +140,49 @@ export default class Seed
      * @returns The patched ROM as buffered data.
      */
     async patch(base: string, options: PostGenOptions = {}): Promise<Uint8Array> {
+        if (typeof this.#baseRom === "undefined") {
+            await this.#fetchBaseRom();
+        }
+
+        const baseRom = Buffer.from(this.#baseRom, "base64").buffer;
+
+        const corrections: PatchOptions = {
+            heartSpeed: options.heartSpeed,
+            heartColor: options.heartColor,
+            quickswap: options.quickswap,
+            backgroundMusic: options.backgroundMusic,
+            msu1Resume: options.msu1Resume,
+            reduceFlash: options.reduceFlash,
+        };
+
         // Correct the value provided for sprite (if necessary)
-        if (options.sprite === undefined) { // Empty if-statement to account for undefined
-        } else if (typeof options.sprite === "string") {
-            if (!this.#sprites.has(options.sprite)) {
-                throw new ReferenceError("Sprite does not exist in local cache.");
-            }
-            options.sprite = await this.#sprites.get(options.sprite).fetch();
-        } else if (options.sprite instanceof Sprite) {
-            options.sprite = await options.sprite.fetch();
-        } else if (!(options.sprite instanceof ArrayBuffer)) {
-            throw new TypeError("Invalid argument for sprite.");
+        if (options.sprite instanceof ArrayBuffer) {
+            corrections.sprite = options.sprite;
+        } else if ("sprite" in options) {
+            corrections.sprite = await this.#correctSprite(options);
         }
 
-        // TODO: Add palette shuffle corrections.
-
-        // Apparently, trying to write a different menu speed for a tournament
-        // seed doesn't modify the menu speed (which is the intended behavior).
-        // However, it DOES (for some reason) modify the menu's sound effect.
-        // This would obviously not be 1:1 with alttpr.com, so we have to add a
-        // proper sanity check here for race seeds.
-        if (this.#spoiler.meta.tournament) {
-            delete options.menuSpeed;
+        // z3r-patch has a more expansive surface for palette shuffle than the
+        // VT site does, but nottpr won't be taking advantage of that.
+        if (options.paletteShuffle) {
+            corrections.paletteShuffle = {
+                mode: "maseya",
+                randomize_overworld: true,
+                randomize_dungeon: true,
+                seed: this.#prngInt,
+            };
         }
 
-        return patch(base, this.toJSON(), options as PatchOptions);
+        // These options are not legal to set in a race seed.
+        if (!this.#spoiler.meta.tournament) {
+            corrections.menuSpeed = options.menuSpeed;
+            corrections.sfxShuffle = options.sfxShuffle;
+        }
+
+        return await patch(base, this.toJSON(), corrections);
     }
 
-    toJSON(): Readonly<SeedAPIData> {
+    toJSON(): SeedAPIData {
         const res: SeedAPIData = {
             logic: this.#logic,
             generated: this.#generated,
@@ -180,13 +198,13 @@ export default class Seed
     }
 
     /**
-     * Formats the spoiler log for this Seed and outputs the data as a Uint8Array.
+     * Formats the spoiler log for this Seed and outputs the data as a string.
      *
      * @param showDrops Should additional data about prize packs and tree pulls
      * be included?
-     * @returns The formatted spoiler log as a Uint8Array.
+     * @returns The formatted spoiler log as a string.
      */
-    spoilerLog(showDrops = false): Uint8Array {
+    spoilerLog(showDrops = false): string {
         // if "off" or "mystery", nothing special happens. Just return the
         // spoiler as-is.
         if (this.#spoiler.meta.spoilers === "off" ||
@@ -195,8 +213,7 @@ export default class Seed
             log.meta.hash = this.#hash;
             log.meta.permalink = this.permalink;
             log.meta.code = this.hashCode.join(", ");
-            return new TextEncoder()
-                .encode(JSON.stringify(this.#spoiler, undefined, 4));
+            return JSON.stringify(this.#spoiler, undefined, 4);
         }
 
         const log: Record<string, any> = {}; // TODO: Properly type this
@@ -330,8 +347,7 @@ export default class Seed
         log.meta.permalink = this.permalink;
         log.meta.code = this.hashCode.join(", ");
 
-        return new TextEncoder()
-            .encode(JSON.stringify(log, undefined, 4));
+        return JSON.stringify(log, undefined, 4);
     }
 
     /**
@@ -435,6 +451,19 @@ export default class Seed
         }
     }
 
+    async #correctSprite({ sprite }: PostGenOptions) {
+        if (typeof sprite === "string") {
+            if (!this.#sprites.has(sprite)) {
+                throw new ReferenceError("Sprite does not exist in local cache.");
+            }
+            return await this.#sprites.get(sprite).fetch();
+        } else if (sprite instanceof Sprite) {
+            return await sprite.fetch();
+        } else if (!(sprite instanceof ArrayBuffer)) {
+            throw new TypeError("Invalid argument for sprite.");
+        }
+    }
+
     /**
      * Searches the patch data for the given byte offset. If the offset does
      * not exist in the map, the requested data at the next closest offset is
@@ -504,6 +533,18 @@ export default class Seed
         } else { // array[middle] < target
             return this.#binarySearch(arr, target, middle + 1, high);
         }
+    }
+
+    async #fetchBaseRom(): Promise<void> {
+        if (typeof this.#current_rom_hash === "undefined") {
+            const res = await new Request(`/api/h/${this.hash}`)
+                .get("json") as PatchAPIData;
+            this.#current_rom_hash = res.md5;
+        }
+
+        const res = await new Request(`/bps/${this.currentRomHash}.bps`)
+            .get("buffer") as ArrayBuffer;
+        this.#baseRom = Buffer.from(res).toString("base64");
     }
 }
 

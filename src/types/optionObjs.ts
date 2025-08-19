@@ -17,7 +17,7 @@ export interface BaseSeedOptions {
     mode?: enums.WorldState
     name?: string
     notes?: string
-    override_start_screen?: structs.StartHashOverride
+    override_start_screen?: enums.Hash[]
     pseudoboots?: boolean
     spoilers?: enums.Spoilers
     tournament?: boolean

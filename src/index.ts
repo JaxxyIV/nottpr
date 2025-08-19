@@ -9,7 +9,7 @@ export { default as PrizePackBuilder } from "./classes/builders/PrizePackBuilder
 export { default as RegionSettingsBuilder } from "./classes/builders/RegionSettingsBuilder.js";
 export { default as RomSettingsBuilder } from "./classes/builders/RomSettingsBuilder.js";
 export { default as SeedBuilder } from "./classes/builders/SeedBuilder.js";
-export * as util from "./functions.js";
+export { randomStartHash, getDistrict, getVanillaPack } from "./functions.js";
 export {
     Accessibility,
     BossShuffle,
@@ -38,7 +38,6 @@ export {
     Medallion,
     MedallionLocation,
     MenuSpeed,
-    PaletteAlgorithm,
     Prize,
     PrizeLocation,
     RomMode,

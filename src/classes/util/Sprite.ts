@@ -82,7 +82,7 @@ export default class Sprite
      *
      * @returns The image as a Blob.
      */
-    async image(): Promise<Readonly<Blob>> {
+    async image(): Promise<Blob> {
         if (!this.#blob) {
             this.#blob = await fetch(this.#preview)
                 .then(res => res.blob());

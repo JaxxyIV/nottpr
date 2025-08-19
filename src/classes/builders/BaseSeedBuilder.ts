@@ -15,6 +15,7 @@ import {
 import {
     BasePayload,
     CrystalPayloadData,
+    DeepPartial,
     EnemizerPayloadData,
 } from "../../types/structures.js";
 import { baseDefault } from "../../types/symbol/payloads.js";
@@ -22,7 +23,6 @@ import { ItemOptions } from "../../types/optionObjs.js";
 
 export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayload>
     extends BaseBuilder<S> {
-
     get accessibility(): Accessibility {
         return this._body.accessibility;
     }
@@ -227,11 +227,10 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
      */
     setHashCode(hash: Hash[]): this {
         if (!Array.isArray(hash)) {
-            throw new TypeError("Parameter hash must be an array.");
-        } else if (hash.length < 5) {
-            throw new Error("Array must contain 5 elements.");
+            throw new TypeError("hash must be an array.");
+        } else if (hash.length !== 5) {
+            throw new Error("hash must contain 5 elements.");
         }
-        hash.length = 5;
 
         // Deep copy to not modify original arg
         this._body.override_start_screen = Array.from(hash);
@@ -269,6 +268,10 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
     setWeapons(weapons: Weapons): this {
         this._body.weapons = weapons;
         return this;
+    }
+
+    toPartial(): DeepPartial<S> {
+        return super._deepCopy(this._body);
     }
 
     toJSON(): S {
@@ -316,3 +319,5 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
         }
     }
 }
+
+interface BaseSeedOptions extends DeepPartial<BasePayload> {};
