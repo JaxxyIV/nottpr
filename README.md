@@ -78,7 +78,7 @@ const seed = await ALTTPR.generate({
 console.log(seed.permalink);
 ```
 
-While this works, it is substantially more work to type out. A builder solves this problem by prefilling settings by default as an open 7/7. In essence, if you're fine with a default setting as it is, you don't have to specify it later.
+While this works, it is substantially more work to type out. A builder solves this problem by prefilling settings as an open 7/7. In essence, if you're fine with a default setting as it is, you don't have to specify it later.
 
 Builders come equipped with setter methods whose return value is the current object. As such, they can be chained.
 
@@ -104,13 +104,30 @@ console.log(seed.permalink);
 
 Both examples result in the same value being passed to the generator.
 
+You can also create builder objects from API payload data by using the `from` static method:
+
+```js
+import { SeedBuilder } from "nottpr";
+
+// Hard enemizer
+const builder = SeedBuilder.from({
+    enemizer: {
+        enemy_shuffle: "shuffled",
+        boss_shuffle: "full"
+    },
+    item: {
+        pool: "hard"
+    }
+});
+```
+
 #### Customizer Seeds
 
 Customizer seeds are also generated through the `ALTTPR.generate` method. Like regular seeds, you can provide a complete payload or use a `CustomizerBuilder`.
 
 ```js
 import ALTTPR, {
-    util,
+    getDistrict,
     CustomizerBuilder,
     Accessibility,
     District,
@@ -134,7 +151,7 @@ const preset = new CustomizerBuilder()
     .setEquipment(equipment => equipment
         .setStartingBoots(true))
     .setForcedItems({
-        [Item.BigKeyGT]: util.getDistrict(District.GanonsTowerNoBK)
+        [Item.BigKeyGT]: getDistrict(District.GanonsTowerNoBK)
     })
     .setGoal(Goals.Dungeons)
     .setLocations({
@@ -165,7 +182,7 @@ Seeds are cached locally upon generation or retrieval in the `ALTTPR.seeds` obje
 
 ### Fetching Sprites
 
-Sprites are cached in the `ALTTPR.sprites` object to allow for easy retrieval. The `ALTTPR.fetchSprites` method can be used to fetch all sprites on alttpr.com. The cache will be empty on program initialization, so it must be populated first by fetching from the API.
+Sprites are cached in the `ALTTPR.sprites` object to allow for easy retrieval. The `ALTTPR.fetchSprites` static method can be used to fetch all sprites on alttpr.com. The cache will be empty on program initialization, so it must be populated first by fetching from the API.
 
 ```js
 import ALTTPR from "nottpr";
@@ -179,11 +196,12 @@ Adding custom sprites to the cache is currently unsupported. You can still pass 
 
 ### Patching
 
-nottpr allows you to patch randomizer seeds yourself with the `Seed.patch` method. Be advised that when patching a ROM, it is returned as a memory buffer. It will not create a new file on your system. How the buffered data is handled is up to the implementer.
+nottpr allows you to patch randomizer seeds yourself with the `Seed.patch` instance method. Be advised that when patching a ROM, it is returned as a memory buffer. It will not create a new file on your system. How the buffered data is handled is up to the implementer.
 
-You can also retrieve a seed's spoiler log by using the `Seed.spoilerLog` method. It accepts an optional boolean parameter to output additional information about prize packs. By default, this behavior is disabled.
+You can also retrieve a seed's spoiler log by using the `Seed.spoilerLog` instance method. It accepts an optional boolean parameter to output additional information about prize packs. By default, this behavior is disabled.
 
 ```js
+import * as fs from "fs/promises";
 import ALTTPR, {
     SeedBuilder,
     BossShuffle,
@@ -191,7 +209,6 @@ import ALTTPR, {
     HeartSpeed,
     Keysanity
 } from "nottpr";
-import * as fs from "fs/promises";
 
 // MC boss with pseudoboots
 const builder = new SeedBuilder()
@@ -220,8 +237,8 @@ await fs.writeFile(`./seeds/logs/spoiler_${seed.hash}.json`, seed.spoilerLog(tru
 You can export a builder's settings as a preset YAML by using the `toYAML` instance method on `SeedBuilder` and `CustomizerBuilder` objects.
 
 ```js
-import { SeedBuilder, Goals, Keysanity, WorldState } from "nottpr";
 import * as fs from "fs/promises";
+import { SeedBuilder, Goals, Keysanity, WorldState } from "nottpr";
 
 // Inverted AD Keys
 const preset = new SeedBuilder()
@@ -239,7 +256,18 @@ settings:
   mode: inverted
 ```
 
-nottpr YAMLs work a little different from SahasrahBot YAMLs. nottpr YAMLs only record the changes that you have made in the builder, resulting in a *partial preset*. You can reimport the YAML using the `fromYAML` static methods on the `SeedBuilder` and `CustomizerBuilder` classes.
+nottpr YAMLs work a little different from SahasrahBot YAMLs. nottpr YAMLs only record the changes that you have made in the builder, resulting in a *partial preset*. You can reimport the YAML using the `from` static methods on the `SeedBuilder` and `CustomizerBuilder` classes.
+
+```js
+import * as fs from "fs/promises";
+import ALTTPR, { SeedBuilder } from "nottpr";
+
+const file = await fs.readFile("./presets/hard_enemizer.yaml");
+const preset = SeedBuilder.from(file.toString()); // The file string is parsed as a yaml file
+
+const seed = await ALTTPR.generate(preset);
+console.log(seed.permalink);
+```
 
 Partial presets are not compatible with SahasrahBot. However, you can create a *complete preset* by passing `true` as an argument in the `toYAML` method. Complete presets are SahasrahBot-compatible.
 
@@ -249,7 +277,7 @@ Most existing SahasrahBot YAMLs are compatible with nottpr. Presets for door ran
 
 #### alttpr.com
 
-You can import alttpr.com's built-in presets with the static async method `SeedBuilder.fromWebPreset`:
+You can import alttpr.com's built-in presets with the `SeedBuilder.fromWebPreset` static async method:
 
 ```js
 import ALTTPR, {
