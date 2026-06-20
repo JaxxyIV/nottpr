@@ -7,7 +7,10 @@ import { RupeeAmount, StartingEquipment } from "../../types/strings.js";
  * customizer seed.
  *
  * Several methods are designed as syntactic sugar either to expose popular
- * starting options, or for ease of use.
+ * starting options or for ease of use.
+ *
+ * This class is not useful on its own. It is designed to be used with a
+ * CustomizerBuilder.
  */
 export default class EquipmentBuilder
     implements JSONTranslatable<StartingEquipment[]> {
@@ -18,6 +21,9 @@ export default class EquipmentBuilder
         20: "TwentyRupees",
         5: "FiveRupees",
         1: "OneRupee",
+    };
+    static readonly #calls = {
+
     };
 
     static readonly #MAX_CAP = 40;

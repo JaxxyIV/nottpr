@@ -1,0 +1,8 @@
+meta:
+  source: nottpr
+  branch: main
+settings:
+  accessibility: locations
+  dungeon_items: full
+  entrances: crossed
+  goal: fast_ganon

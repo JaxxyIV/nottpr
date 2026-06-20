@@ -1,0 +1,10 @@
+meta:
+  source: nottpr
+  branch: main
+settings:
+  accessibility: none
+  crystals:
+    ganon: "0"
+    tower: "0"
+  goal: fast_ganon
+  weapons: assured

@@ -132,7 +132,7 @@ export default class ALTTPR {
             throw new TypeError("hash must be a string.");
         }
         if (this.#seeds.has(hash)) {
-            return this.#seeds.get(hash);
+            return this.#seeds.get(hash) as Seed;
         }
 
         const response = await new Request(`/hash/${hash}`).get("text") as string;
@@ -141,7 +141,7 @@ export default class ALTTPR {
         try {
             parsed = JSON.parse(response);
         } catch (e) {
-            throw new Error(`Seed "${hash}" does not exist.`);
+            throw new ReferenceError(`Seed "${hash}" does not exist.`);
         }
 
         const seed = new Seed(parsed, this.#sprites);

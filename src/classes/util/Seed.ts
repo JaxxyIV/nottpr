@@ -11,6 +11,7 @@ import {
     HeartColor,
     HeartSpeed,
     MenuSpeed,
+    PaletteAlgorithm,
 } from "../../types/enums.js";
 import { prizePacks } from "../../types/symbol/prizePacks.js";
 
@@ -164,9 +165,11 @@ export default class Seed
 
         // z3r-patch has a more expansive surface for palette shuffle than the
         // VT site does, but nottpr won't be taking advantage of that.
-        if (options.paletteShuffle) {
+        if (typeof options.paletteShuffle !== "undefined") {
             corrections.paletteShuffle = {
-                mode: "maseya",
+                mode: typeof options.paletteShuffle === "string" ? options.paletteShuffle
+                    : options.paletteShuffle ? PaletteAlgorithm.Maseya
+                    : "none",
                 randomize_overworld: true,
                 randomize_dungeon: true,
                 seed: this.#prngInt,
@@ -553,7 +556,7 @@ type PostGenOptions = {
     heartColor?: HeartColor,
     menuSpeed?: MenuSpeed,
     quickswap?: boolean,
-    paletteShuffle?: boolean,
+    paletteShuffle?: boolean | PaletteAlgorithm,
     backgroundMusic?: boolean,
     sfxShuffle?: boolean,
     msu1Resume?: boolean,

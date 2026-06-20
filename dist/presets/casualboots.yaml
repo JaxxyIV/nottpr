@@ -1,0 +1,18 @@
+meta:
+  source: nottpr
+  branch: customizer
+forced_locations: []
+settings:
+  custom:
+    customPrizePacks: false
+    item:
+      count:
+        PegasusBoots: 0
+        TwentyRupees2: 1
+  eq:
+    - PegasusBoots
+    - BossHeartContainer
+    - BossHeartContainer
+    - BossHeartContainer
+  weapons: assured
+  mode: standard

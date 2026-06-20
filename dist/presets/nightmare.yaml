@@ -1,0 +1,18 @@
+meta:
+  source: nottpr
+  branch: main
+settings:
+  accessibility: none
+  dungeon_items: full
+  enemizer:
+    boss_shuffle: random
+    enemy_shuffle: random
+    enemy_damage: random
+    enemy_health: expert
+  entrances: insanity
+  goal: fast_ganon
+  item:
+    pool: expert
+    functionality: expert
+  weapons: swordless
+  mode: inverted

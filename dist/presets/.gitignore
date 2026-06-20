@@ -1,0 +1,8 @@
+*.yaml
+!adkeys.yaml
+!beginner.yaml
+!casualboots.yaml
+!crosskeys.yaml
+!nightmare.yaml
+!owg.yaml
+!superquick.yaml

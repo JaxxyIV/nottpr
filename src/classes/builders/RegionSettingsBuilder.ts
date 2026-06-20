@@ -11,7 +11,7 @@ import { customizerDefault } from "../../types/symbol/payloads.js";
  */
 export default class RegionSettingsBuilder
     extends BaseBuilder<CustomizerRegionOptions> {
-    static readonly #default = customizerDefault.custom.region;
+    static readonly #default = customizerDefault.custom?.region;
 
     constructor(options?: Partial<CustomizerRegionOptions>) {
         super();
@@ -20,39 +20,39 @@ export default class RegionSettingsBuilder
     }
 
     get bossHeartsInPool(): boolean {
-        return this._body.bossHeartsInPool;
+        return this._body.bossHeartsInPool ?? false;
     }
 
     get bossNormalLocation(): boolean {
-        return this._body.bossNormalLocation;
+        return this._body.bossNormalLocation ?? true;
     }
 
     get bossesHaveItem(): boolean {
-        return this._body.bossesHaveItem;
+        return this._body.bossesHaveItem ?? true;
     }
 
     get forceSkullWoodsKey(): boolean {
-        return this._body.forceSkullWoodsKey;
+        return this._body.forceSkullWoodsKey ?? false;
     }
 
     get takeAnys(): boolean {
-        return this._body.takeAnys;
+        return this._body.takeAnys ?? false;
     }
 
     get wildBigKeys(): boolean {
-        return this._body.wildBigKeys;
+        return this._body.wildBigKeys ?? false;
     }
 
     get wildCompasses(): boolean {
-        return this._body.wildCompasses;
+        return this._body.wildCompasses ?? false;
     }
 
     get wildKeys(): boolean {
-        return this._body.wildKeys;
+        return this._body.wildKeys ?? false;
     }
 
     get wildMaps(): boolean {
-        return this._body.wildMaps;
+        return this._body.wildMaps ?? false;
     }
 
     /**

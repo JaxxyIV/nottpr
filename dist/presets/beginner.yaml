@@ -1,0 +1,8 @@
+meta:
+  source: nottpr
+  branch: main
+settings:
+  accessibility: locations
+  item_placement: basic
+  weapons: assured
+  mode: standard

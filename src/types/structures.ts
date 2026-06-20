@@ -614,7 +614,10 @@ export interface KeysanityOptions {
 }
 
 export interface NottprYAML {
-    customizer?: true
+    meta: {
+        source: string
+        branch: string
+    }
     forced_locations?: {
         item: string
         locations: string[]
@@ -626,8 +629,8 @@ export interface NottprYAML {
 export type BuilderCallback<B> = (builder: B) => typeof builder;
 export type PartialRecord<K extends string | number | symbol, V> = Partial<Record<K, V>>;
 export type Keys<T> = (keyof T)[];
-export type Values<T> = T[keyof T];
-export type Pairs<T> = [keyof T, Values<T>][];
+export type Values<T> = T[keyof T][];
+export type Pairs<T> = [keyof T, T[keyof T]][];
 export type DeepPartial<T> = T extends object ? {
     [K in keyof T]?: DeepPartial<T[K]>
 } : T;

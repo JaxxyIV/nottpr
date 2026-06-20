@@ -10,7 +10,8 @@
         "allowJs": false,
         "moduleDetection": "force",
         "moduleResolution": "node",
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "types": ["node"]
     },
     "include": ["src"]
 }

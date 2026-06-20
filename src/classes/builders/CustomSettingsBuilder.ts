@@ -53,31 +53,31 @@ export default class CustomSettingsBuilder
     // }
 
     get customPrizePacks(): boolean {
-        return this._body.customPrizePacks;
+        return this._body.customPrizePacks ?? true;
     }
 
     get item(): Readonly<DeepPartial<CustomizerItemOptions>> {
-        return this._body.item;
+        return this._body.item as DeepPartial<CustomizerItemOptions>;
     }
 
     get prize(): Readonly<Partial<CustomizerPrizeOptions>> {
-        return this._body.prize;
+        return this._body.prize as Partial<CustomizerPrizeOptions>;
     }
 
     get region(): Readonly<Partial<CustomizerRegionOptions>> {
-        return this._body.region;
+        return this._body.region as Partial<CustomizerRegionOptions>;
     }
 
     get rom(): Readonly<Partial<CustomizerRomOptions>> {
-        return this._body.rom;
+        return this._body.rom as Partial<CustomizerRomOptions>;
     }
 
     get drop(): Readonly<Partial<CustomDropCounts>> {
-        return this._body.drop?.count;
+        return this._body.drop?.count as Partial<CustomDropCounts>;
     }
 
     get spoilBootsLocation(): boolean {
-        return this._body.spoil?.BootsLocation;
+        return this._body.spoil?.BootsLocation ?? false;
     }
 
     /**

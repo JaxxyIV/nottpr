@@ -5,6 +5,7 @@ import {
     CustomItemCounts,
     CustomItemValues,
     CustomizerItemOptions,
+    CustomOptions,
     ItemOverflowSettings,
     Keys,
 } from "../../types/structures.js";
@@ -19,22 +20,22 @@ import { customizerDefault } from "../../types/symbol/payloads.js";
  */
 export default class ItemSettingsBuilder
     extends BaseBuilder<CustomizerItemOptions> {
-    static readonly #default = customizerDefault.custom.item;
+    static readonly #default = (customizerDefault.custom as CustomOptions).item;
 
     get allowDarkRoomNav(): boolean {
-        return this._body.require?.Lamp;
+        return this._body.require?.Lamp ?? false;
     }
 
     get requiredGoalCount(): number | "" {
-        return this._body.Goal?.Required;
+        return this._body.Goal?.Required ?? "";
     }
 
     get itemValue(): Readonly<Partial<CustomItemValues>> {
-        return this._body.value;
+        return this._body.value as Partial<CustomItemValues>;
     }
 
     get overflow(): Readonly<Partial<ItemOverflowSettings>> {
-        return this._body.overflow;
+        return this._body.overflow as Partial<ItemOverflowSettings>;
     }
 
     /**

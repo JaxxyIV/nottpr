@@ -38,6 +38,7 @@ export {
     Medallion,
     MedallionLocation,
     MenuSpeed,
+    PaletteAlgorithm,
     Prize,
     PrizeLocation,
     RomMode,

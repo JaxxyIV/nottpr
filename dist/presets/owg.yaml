@@ -1,0 +1,6 @@
+meta:
+  source: nottpr
+  branch: main
+settings:
+  glitches: overworld_glitches
+  weapons: assured

@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import BaseBuilder from "./BaseBuilder.js";
 import {
     Accessibility,
@@ -5,6 +8,8 @@ import {
     Glitches,
     Goals,
     Hash,
+    ItemFunctionality,
+    ItemPool,
     Keysanity,
     Language,
     Spoilers,
@@ -21,78 +26,91 @@ import {
 import { baseDefault } from "../../types/symbol/payloads.js";
 import { ItemOptions } from "../../types/optionObjs.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const presetPath = path.resolve(__dirname, "../..", "presets");
+const defPresets = [
+    "adkeys", "beginner", "casualboots", "crosskeys",
+    "nightmare", "owg", "superquick"
+];
+
 export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayload>
     extends BaseBuilder<S> {
     get accessibility(): Accessibility {
-        return this._body.accessibility;
+        return this._body.accessibility ?? Accessibility.Items;
     }
 
     get allowQuickswap(): boolean {
-        return this._body.allow_quickswap;
+        return this._body.allow_quickswap ?? false;
     }
 
-    get crystals(): Readonly<Partial<CrystalPayloadData>> {
+    get crystals(): Readonly<Partial<CrystalPayloadData>> | undefined {
         return this._body.crystals;
     }
 
     get dungeonItems(): Keysanity {
-        return this._body.dungeon_items;
+        return this._body.dungeon_items ?? Keysanity.Standard;
     }
 
     get enemizer(): Readonly<Partial<EnemizerPayloadData>> {
-        return this._body.enemizer;
+        return this._body.enemizer ?? {};
     }
 
     get glitches(): Glitches {
-        return this._body.glitches;
+        return this._body.glitches ?? Glitches.None;
     }
 
     get goal(): Goals {
-        return this._body.goal;
+        return this._body.goal ?? Goals.DefeatGanon;
     }
 
     get hints(): Toggle {
-        return this._body.hints;
+        return this._body.hints ?? Toggle.Off;
     }
 
     get item(): Readonly<ItemOptions> {
-        return {
-            pool: this._body.item.pool,
-            functionality: this._body.item.functionality,
-            placement: this._body.item_placement,
-        };
+        const result: ItemOptions = {};
+        if (typeof this._body.item === "object") {
+            result.pool = this._body.item.pool;
+            result.functionality = this._body.item.functionality;
+        } else {
+            result.pool = ItemPool.Normal;
+            result.functionality = ItemFunctionality.Normal;
+        }
+        result.placement = this._body.item_placement;
+        return result;
     }
 
     get lang(): Language {
-        return this._body.lang;
+        return this._body.lang ?? Language.English;
     }
 
     get worldState(): WorldState {
-        return this._body.mode;
+        return this._body.mode ?? WorldState.Open;
     }
 
-    get name(): string {
+    get name(): string | undefined {
         return this._body.name;
     }
 
-    get notes(): string {
+    get notes(): string | undefined {
         return this._body.notes;
     }
 
     get startHashCode(): Hash[] {
-        return this._body.override_start_screen;
+        return (this._body.override_start_screen as Hash[]) ?? [];
     }
 
     get pseudoboots(): boolean {
-        return this._body.pseudoboots;
+        return this._body.pseudoboots ?? false;
     }
 
     get spoilers(): Spoilers {
-        return this._body.spoilers;
+        return this._body.spoilers ?? Spoilers.On;
     }
 
     get weapons(): Weapons {
-        return this._body.weapons;
+        return this._body.weapons ?? Weapons.Randomized;
     }
 
     setAccessibility(access: Accessibility): this {
@@ -195,7 +213,9 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
             this._body.item_placement = options.placement;
             delete options.placement;
         }
-        this._body.item = { ...options };
+        if (Object.keys(options).length) {
+            this._body.item = { ...options };
+        }
         return this;
     }
 
@@ -276,6 +296,35 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
 
     toJSON(): S {
         return this._deepMerge(super._deepCopy(baseDefault), this._body);
+    }
+
+    /**
+     * Saves the settings in this builder to the local nottpr module. A locally
+     * saved preset may then be loaded by calling the appropriate builder's
+     * `fromNottpr` static function. Slashes are not allowed in preset names.
+     * Preset names will always be forced to lowercase.
+     * @example
+     * ```js
+     * new SeedBuilder()
+     *     .setWorldState(WorldState.Standard)
+     *     .setItem({ pool: ItemPool.Hard })
+     *     .save("mt21");
+     * // ...
+     * const preset = SeedBuilder.fromNottpr("mt21");
+     * ```
+     * @param name The preset name
+     */
+    save(name: string): void {
+        name = name.toLowerCase();
+        if (defPresets.includes(name)) {
+            throw new Error(`Default preset "${name}" cannot be overwritten`);
+        }
+        if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+            throw new Error('Invalid preset name');
+        }
+        const filePath = path.join(presetPath, `${name}.yaml`);
+        console.log(`Saving `)
+        fs.writeFileSync(filePath, this.toYAML());
     }
 
     /**

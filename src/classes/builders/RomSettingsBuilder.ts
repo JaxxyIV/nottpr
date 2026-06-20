@@ -2,7 +2,7 @@ import BaseBuilder from "./BaseBuilder.js";
 import { CustomizerRomOptions, Pairs } from "../../types/structures.js";
 import { customizerDefault } from "../../types/symbol/payloads.js";
 import { ClockMode, CompassMode } from "../../types/enums.js";
-const { custom: { rom: def } } = customizerDefault;
+// const { custom: { rom: def } } = customizerDefault;
 
 export default class RomSettingsBuilder
     extends BaseBuilder<CustomizerRomOptions> {
@@ -20,39 +20,39 @@ export default class RomSettingsBuilder
     }
 
     get freeItemText(): boolean {
-        return this._body.freeItemText;
+        return this._body.freeItemText ?? false;
     }
 
     get freeItemMenu(): boolean {
-        return this._body.freeItemMenu;
+        return this._body.freeItemMenu ?? false;
     }
 
     get mapOnPickup(): boolean {
-        return this._body.mapOnPickup;
+        return this._body.mapOnPickup ?? false;
     }
 
     get rupeeBow(): boolean {
-        return this._body.rupeeBow;
+        return this._body.rupeeBow ?? false;
     }
 
     get genericKeys(): boolean {
-        return this._body.genericKeys;
+        return this._body.genericKeys ?? false;
     }
 
     get timerMode(): ClockMode {
-        return this._body.timerMode;
+        return this._body.timerMode ?? ClockMode.Off;
     }
 
-    get timerStart(): number {
-        return !this._body.timerStart ? undefined : this._body.timerStart;
+    get timerStart(): number | string {
+        return this._body.timerStart ?? "";
     }
 
     get dungeonCount(): CompassMode {
-        return this._body.dungeonCount;
+        return this._body.dungeonCount ?? CompassMode.Off;
     }
 
     get ganonAgRNG(): "none" | "table" {
-        return this._body.GanonAgRNG;
+        return this._body.GanonAgRNG ?? "table";
     }
 
     setFreeItemText(enable: boolean): this {

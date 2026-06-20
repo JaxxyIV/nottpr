@@ -1,0 +1,7 @@
+meta:
+  source: nottpr
+  branch: main
+settings:
+  accessibility: locations
+  dungeon_items: full
+  goal: dungeons

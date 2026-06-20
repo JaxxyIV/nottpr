@@ -1,6 +1,7 @@
-import * as fs from "node:fs";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as yaml from "yaml";
-import { unflatten } from "flat";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import CustomSettingsBuilder from "./CustomSettingsBuilder.js";
 import EquipmentBuilder from "./EquipmentBuilder.js";
@@ -18,7 +19,6 @@ import {
     NottprYAML,
     PartialRecord,
     PrizePackGroups,
-    RandomizerPayload,
     TextMap,
 } from "../../types/structures.js";
 import { RupeeAmount, StartingEquipment } from "../../types/strings.js";
@@ -32,8 +32,11 @@ import {
     Prize,
     PrizeLocation,
 } from "../../types/enums.js";
-// import { CustomizerSeedOptions } from "../../types/optionObjs.js";
 import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const presetPath = path.resolve(__dirname, "../..", "presets");
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -41,9 +44,8 @@ import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
  * default settings to mimic an open 7/7 defeat Ganon.
  *
  * Like SeedBuilder objects, settings can be modified through the use of setters.
- * These setters often expect smaller builder objects to be supplied as arguments;
- * however, you can use callback functions to avoid importing multiple builder
- * classes.
+ * These setters often expect smaller builder objects to be supplied as arguments.
+ * You can use callback functions to avoid importing multiple builder classes.
  *
  * Item and drop pool counts do not sync with placed items/starting equipment
  * and prize packs respectively when calling the `toJSON()` method.
@@ -106,14 +108,31 @@ export default class CustomizerBuilder
 
     #forcedItems: ItemTuple[] = [];
 
+    /**
+     * Constructs a CustomizerBuilder from a partial payload or stringified YAML file.
+     *
+     * Strings will have their settings constructed via {@link yaml.parse}.
+     *
+     * @param data The resolvable data to create a new CustomizerBuilder object.
+     * @returns The newly constructed CustomizerBuilder.
+     */
+    static from(data: CustomizerOptions): CustomizerBuilder;
+    static from(data: string): CustomizerBuilder;
     static from(data: CustomizerOptions | string): CustomizerBuilder {
         let builder: CustomizerBuilder;
         if (typeof data === "string") { // Assume yaml file
             const preset = yaml.parse(data);
-            if (preset.customizer !== true)
-                throw new SyntaxError("Input file is not a customizer preset.");
-            if (preset.doors)
+            if (preset.doors) {
                 throw new SyntaxError("Door randomizer presets are unsupported.");
+            }
+            if ("meta" in preset) {
+                if (preset.meta.branch !== "customizer") {
+                    throw new Error(`Branch mismatch: expected "customizer" (found "${preset.meta.branch}")`);
+                }
+            } else if (preset.customizer !== true) {
+                throw new SyntaxError("Input file is not a customizer preset.");
+            }
+
             builder = this.from(preset.settings); // Convert yaml to object, redo the call
 
             if ("forced_locations" in preset) {
@@ -124,72 +143,60 @@ export default class CustomizerBuilder
         } else {
             if (typeof data !== "object") {
                 throw new TypeError("data must be an object literal.");
-            }
-
-            if ("entrances" in data) {
+            } else if ("entrances" in data) {
                 throw new SyntaxError("entrances is incompatible with customizer.");
             }
 
             // Obtain the partial by using SeedBuilder's from method. The
-            // customizer properties will be skipped in this call.
+            // customizer properties are skipped in this call.
             builder = new CustomizerBuilder();
             builder.#body = SeedBuilder.from(data).toPartial();
 
             const negation = Object.entries(data).filter(([k]) => k in this.#calls) as [keyof CustomizerPayload, unknown][];
             for (const [k, v] of negation) {
-                this.#calls[k].call(builder, v);
+                this.#calls[k]?.call(builder, v);
             }
         }
 
         return builder;
     }
 
-    // static fromYAML(file: string): CustomizerBuilder {
-    //     const str = fs.readFileSync(file).toString();
-    //     const preset = yaml.parse(str);
-    //     if (preset.customizer !== true) {
-    //         throw new SyntaxError("Input file is not a customizer preset.");
-    //     }
-    //     if (preset.doors) {
-    //         throw new SyntaxError("Door randomizer presets are unsupported.");
-    //     }
-    //     const settings = unflatten(preset.settings);
-    //     const obj = new this(settings);
-    //     if ("forced_locations" in preset) {
-    //         obj.setForcedItems(...preset.forced_locations
-    //             .map(({ item, locations }: {
-    //                 item: string,
-    //                 locations: string[]
-    //             }) => ({ [item]: locations })));
-    //     }
-    //     return obj;
-    // }
+    static fromNottpr(preset: string): CustomizerBuilder {
+        if (!/^[a-zA-Z0-9_-]+$/.test(preset)) {
+            throw new Error('Invalid preset name');
+        }
+        const filePath = path.join(presetPath, `${preset}.yaml`);
+        if (!fs.existsSync(filePath)) {
+            throw new ReferenceError(`Preset "${preset}" does not exist.`);
+        }
+        const yStr = fs.readFileSync(filePath).toString("utf8");
+        return CustomizerBuilder.from(yStr);
+    }
 
     /**
-     * Accepts a file path to a customizer .json file or an object literal and
-     * converts it to a CustomizerBuilder.
+     * Converts an object literal provided from a customizer JSON file to a
+     * CustomizerBuilder.
      *
      * @param data The data to be parsed.
      * @returns The settings converted to a builder.
      */
-    static fromCustomizerJSON(data: string | CustomizerJSON): CustomizerBuilder {
-        if (typeof data === "string") {
-            data = JSON.parse(fs.readFileSync(data).toString()) as CustomizerJSON;
+    static convertJSON(data: CustomizerJSON): CustomizerBuilder {
+        if (typeof data !== "object") {
+            throw new TypeError("Expected data to be an object literal.");
         }
-
         const nest = (obj: any, keys: string[], value: unknown): void => {
             let temp = obj;
             for (let i = 0; i < keys.length; ++i) {
-                if (i === keys.length - 1) {
+                if (i === keys.length - 1)
                     temp[keys[i]] = value;
-                } else if (!(keys[i] in temp)) {
+                else if (!(keys[i] in temp))
                     temp[keys[i]] = {};
-                }
                 temp = temp[keys[i]];
             }
         };
+
         const copy = this.prototype._deepCopy(data);
-        const converted: Partial<CustomizerPayload> = {};
+        const converted: DeepPartial<CustomizerPayload> = {};
 
         for (const [jsonKey, payloadKey] of this.#websiteJSONMap) {
             if (copy[jsonKey] !== null) {
@@ -203,14 +210,19 @@ export default class CustomizerBuilder
         }
 
         for (const [k, v] of Object.entries(copy["vt.custom.glitches"])) {
-            converted.custom[k as keyof AllowedGlitches] = v;
+            (converted.custom as CustomOptions)[k as keyof AllowedGlitches] = v;
         }
 
         const eq: StartingEquipment[] = [];
+
+        if (copy["vt.custom.equipment"] === null) {
+            return CustomizerBuilder.from(converted);
+        }
+
+        // TODO: Refactor
         for (const [k, v] of Object.entries(copy["vt.custom.equipment"])) {
-            if (k === "empty") {
-                continue;
-            } else if (typeof v === "boolean" && v) {
+            if (k === "empty") continue;
+            if (typeof v === "boolean" && v) {
                 eq.push(k as StartingEquipment);
             } else if (typeof v === "number") {
                 if (v <= 0) {
@@ -270,23 +282,23 @@ export default class CustomizerBuilder
         }
 
         converted.eq = eq;
-        return this.from(converted);
+        return CustomizerBuilder.from(converted);
     }
 
     get equipment(): ReadonlyArray<StartingEquipment> {
-        return Array.from(this._body.eq);
+        return Array.from(this._body.eq as StartingEquipment[]);
     }
 
     get locations(): Readonly<LocationMap> {
-        return this._body.l;
+        return this._body.l as LocationMap;
     }
 
     get texts(): Readonly<TextMap> {
-        return this._body.texts;
+        return this._body.texts as TextMap;
     }
 
     get custom(): DeepPartial<CustomOptions> {
-        return this._body.custom;
+        return this._body.custom as CustomOptions;
     }
 
     get drops(): Readonly<Partial<PrizePackGroups>> {
@@ -469,7 +481,10 @@ export default class CustomizerBuilder
 
     override toYAML(complete?: boolean): string {
         const struct: Partial<NottprYAML> = {
-            customizer: true,
+            meta: {
+                source: "nottpr",
+                branch: "customizer"
+            },
             forced_locations: [],
         };
         if (complete) {
@@ -482,7 +497,7 @@ export default class CustomizerBuilder
         }
 
         for (const [k, v] of this.#forcedItems) {
-            struct.forced_locations.push({
+            struct.forced_locations?.push({
                 item: k,
                 locations: v,
             });
@@ -493,10 +508,10 @@ export default class CustomizerBuilder
 
     #rollLocations(): LocationMap {
         const pick = (arr: unknown[]) => Math.floor(Math.random() * arr.length);
-        const result = super._deepCopy(this._body.l);
+        const result = super._deepCopy(this._body.l) as Partial<LocationMap>;
         const remaining = super._deepCopy(this.#forcedItems);
 
-        while (remaining.length != 0) {
+        while (remaining.length !== 0) {
             const randInd = pick(remaining);
             const [item, locs] = remaining[randInd];
             let ok = false;

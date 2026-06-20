@@ -11,15 +11,15 @@ export default class OverflowBuilder
         this._body = super._deepCopy(data);
     }
 
-    get limits(): Readonly<Partial<Record<Restrictable, number>>> {
-        return super._deepCopy(this._body.count);
+    get limits(): Readonly<PartialRecord<Restrictable, number>> {
+        return super._deepCopy(this._body.count) as PartialRecord<Restrictable, number>;
     }
 
     get replacements(): Readonly<PartialRecord<Restrictable, Item>> {
-        return super._deepCopy(this._body.replacement);
+        return super._deepCopy(this._body.replacement) as PartialRecord<Restrictable, Item>;
     }
 
-    setLimits(limits: Partial<Record<Restrictable, number>>): this {
+    setLimits(limits: PartialRecord<Restrictable, number>): this {
         this._body.count = super._deepCopy(limits);
         return this;
     }

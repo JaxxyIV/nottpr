@@ -32,11 +32,11 @@ export default class PrizePackBuilder
     }
 
     get stun(): Drop {
-        return this._body.stun?.[0];
+        return this._body.stun?.[0] as Drop;
     }
 
     get fish(): Drop {
-        return this._body.fish?.[0];
+        return this._body.fish?.[0] as Drop;
     }
 
     /**
@@ -126,7 +126,7 @@ export default class PrizePackBuilder
 
     #check(key: keyof typeof this._body): Drop[] {
         return Array.isArray(this._body[key])
-            ? super._deepCopy(this._body[key])
+            ? super._deepCopy(this._body[key]) as Drop[]
             : [];
     }
 }
