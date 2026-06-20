@@ -323,7 +323,7 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
             throw new Error('Invalid preset name');
         }
         const filePath = path.join(presetPath, `${name}.yaml`);
-        console.log(`Saving `)
+        console.log(`Saving preset "${name}"`);
         fs.writeFileSync(filePath, this.toYAML());
     }
 

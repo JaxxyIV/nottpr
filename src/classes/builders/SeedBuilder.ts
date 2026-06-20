@@ -142,6 +142,7 @@ export default class SeedBuilder
         if (!fs.existsSync(filePath)) {
             throw new ReferenceError(`Preset "${preset}" does not exist.`);
         }
+        console.log(`Attempting to load main preset "${preset}"`);
         const yStr = fs.readFileSync(filePath).toString("utf8");
         return SeedBuilder.from(yStr);
     }
