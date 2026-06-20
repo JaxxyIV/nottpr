@@ -3,7 +3,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as yaml from "yaml";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
-import Request from "../util/Request.js";
 import { DeepPartial, Keys, RandomizerPayload } from "../../types/structures.js";
 import { Crystals, Entrances } from "../../types/enums.js";
 
