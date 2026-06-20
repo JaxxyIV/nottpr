@@ -25,32 +25,7 @@ import {
  */
 export default class CustomSettingsBuilder
     extends BaseBuilder<CustomOptions> {
-    static readonly #default = customizerDefault.custom;
-    static readonly #defGlit: AllowedGlitches = {
-        canBombJump: false,
-        canBootsClip: false,
-        canBunnyRevive: false,
-        canBunnySurf: false,
-        canDungeonRevive: false,
-        canFakeFlipper: false,
-        canMirrorClip: false,
-        canMirrorWrap: false,
-        canTransitionWrapped: false,
-        canOneFrameClipOW: false,
-        canOneFrameClipUW: false,
-        canOWYBA: false,
-        canSuperBunny: false,
-        canSuperSpeed: false,
-        canWaterWalk: false,
-        canWaterFairyRevive: false,
-    };
-
     #allow: Partial<AllowedGlitches> = {};
-
-    // constructor() {
-    //     super();
-    //     this._body = super._deepCopy(CustomSettingsBuilder.#default);
-    // }
 
     get customPrizePacks(): boolean {
         return this._body.customPrizePacks ?? true;

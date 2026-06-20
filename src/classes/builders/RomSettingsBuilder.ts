@@ -1,8 +1,6 @@
 import BaseBuilder from "./BaseBuilder.js";
 import { CustomizerRomOptions, Pairs } from "../../types/structures.js";
-import { customizerDefault } from "../../types/symbol/payloads.js";
 import { ClockMode, CompassMode } from "../../types/enums.js";
-// const { custom: { rom: def } } = customizerDefault;
 
 export default class RomSettingsBuilder
     extends BaseBuilder<CustomizerRomOptions> {
@@ -10,13 +8,6 @@ export default class RomSettingsBuilder
         super();
         if (!options) return;
         this._body = { ...options };
-        // this._body = super._deepCopy(def);
-
-        // if (typeof options !== "object") return;
-
-        // for (const [key, val] of Object.entries(options) as Pairs<typeof def>) {
-        //     this._body[key] = val as never;
-        // }
     }
 
     get freeItemText(): boolean {

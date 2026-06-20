@@ -22,9 +22,6 @@ export default class EquipmentBuilder
         5: "FiveRupees",
         1: "OneRupee",
     };
-    static readonly #calls = {
-
-    };
 
     static readonly #MAX_CAP = 40;
 

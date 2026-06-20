@@ -368,5 +368,3 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
         }
     }
 }
-
-interface BaseSeedOptions extends DeepPartial<BasePayload> {};

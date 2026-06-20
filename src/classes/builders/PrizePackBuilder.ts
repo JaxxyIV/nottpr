@@ -11,7 +11,6 @@ import { PrizePackGroups } from "../../types/structures.js";
  */
 export default class PrizePackBuilder
     extends BaseBuilder<PrizePackGroups> {
-
     constructor(packs?: Partial<PrizePackGroups>) {
         super();
         if (!packs) return;

@@ -1,6 +1,5 @@
 import BaseBuilder from "./BaseBuilder.js";
 import { CustomizerRegionOptions, Keys } from "../../types/structures.js";
-import { customizerDefault } from "../../types/symbol/payloads.js";
 
 /**
  * An instance of this class represents a region settings payload supplied to
@@ -11,8 +10,6 @@ import { customizerDefault } from "../../types/symbol/payloads.js";
  */
 export default class RegionSettingsBuilder
     extends BaseBuilder<CustomizerRegionOptions> {
-    static readonly #default = customizerDefault.custom?.region;
-
     constructor(options?: Partial<CustomizerRegionOptions>) {
         super();
         if (!options) return;
