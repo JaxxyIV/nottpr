@@ -53,6 +53,9 @@ export default class Presets {
     static save(name: string, preset: SeedBuilder): void
     static save(name: string, preset: CustomizerBuilder): void
     static save(name: string, preset: SeedBuilder | CustomizerBuilder): void {
+        if (!name.trim().length || !/^[a-zA-Z0-9_-]+$/.test(name)) {
+            throw new Error('Invalid preset name');
+        }
         if (!(preset instanceof BaseSeedBuilder)) {
             throw new TypeError("preset is not a nottpr-compatible object");
         }
@@ -71,6 +74,9 @@ export default class Presets {
     static load(preset: string, custom: true): CustomizerBuilder
     static load(preset: string, custom: false): SeedBuilder
     static load(preset: string, custom?: boolean): SeedBuilder | CustomizerBuilder {
+        if (!preset.trim().length || !/^[a-zA-Z0-9_-]+$/.test(preset)) {
+            throw new Error('Invalid preset name');
+        }
         const buf = fs.readFileSync(path.join(this.#getPath(), `${preset}.yaml`));
         const str = buf.toString("utf8");
         const obj = yaml.parse(str);

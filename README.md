@@ -266,25 +266,24 @@ await fs.writeFile(`./seeds/logs/spoiler_${seed.hash}.json`, seed.spoilerLog(tru
 ### Presets
 
 You can save created presets directly to your local install of nottpr by using
-a `SeedBuilder` or `CustomizerBuilder` object's `save` function. You can load
-globally saved presets via the `fromNottpr` static method on the `SeedBuilder`
-and `CustomizerBuilder` classes. Some default presets are included for the most
-commonly played modes like adkeys, casualboots, and crosskeys.
+`Presets.save`. You can load globally saved presets by using `Presets.load`.
+Some default presets are included for the most commonly played modes like
+adkeys, casualboots, and crosskeys.
 
 ```js
-import { SeedBuilder, WorldState, ItemPool } from "nottpr";
+import { Presets, SeedBuilder, WorldState, ItemPool } from "nottpr";
 
 // Main Tournament 2021 (StandHard)
-new SeedBuilder()
+const preset = new SeedBuilder()
     .setWorldState(WorldState.Standard)
-    .setItem({ pool: ItemPool.Hard })
-    .save("mt21");
+    .setItem({ pool: ItemPool.Hard });;
+Presets.save("mt21", preset);
 
 // ...
 
-import ALTTPR, { SeedBuilder } from "nottpr";
+import ALTTPR, { Presets } from "nottpr";
 
-const preset = SeedBuilder.fromNottpr("mt21");
+const preset = Presets.load("mt21");
 const seed = ALTTPR.generate(preset);
 ```
 
