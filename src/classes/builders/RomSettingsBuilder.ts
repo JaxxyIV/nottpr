@@ -1,5 +1,5 @@
 import BaseBuilder from "./BaseBuilder.js";
-import { CustomizerRomOptions, Pairs } from "../../types/structures.js";
+import { CustomizerRomOptions } from "../../types/structures.js";
 import { ClockMode, CompassMode } from "../../types/enums.js";
 
 export default class RomSettingsBuilder

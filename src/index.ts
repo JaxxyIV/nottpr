@@ -1,5 +1,6 @@
 export { default } from "./classes/util/ALTTPR.js";
 export { default as Formatter } from "./classes/util/Formatter.js";
+export { default as Presets } from "./classes/util/Presets.js";
 export { default as CustomizerBuilder } from "./classes/builders/CustomizerBuilder.js";
 export { default as CustomSettingsBuilder } from "./classes/builders/CustomSettingsBuilder.js";
 export { default as EquipmentBuilder } from "./classes/builders/EquipmentBuilder.js"

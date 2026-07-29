@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import * as yaml from "yaml";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import CustomSettingsBuilder from "./CustomSettingsBuilder.js";
@@ -33,10 +30,6 @@ import {
     PrizeLocation,
 } from "../../types/enums.js";
 import { baseDefault, customizerDefault } from "../../types/symbol/payloads.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const presetPath = path.resolve(__dirname, "../..", "presets");
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -159,19 +152,6 @@ export default class CustomizerBuilder
         }
 
         return builder;
-    }
-
-    static fromNottpr(preset: string): CustomizerBuilder {
-        if (!/^[a-zA-Z0-9_-]+$/.test(preset)) {
-            throw new Error('Invalid preset name');
-        }
-        const filePath = path.join(presetPath, `${preset}.yaml`);
-        if (!fs.existsSync(filePath)) {
-            throw new ReferenceError(`Preset "${preset}" does not exist.`);
-        }
-        console.log(`Attempting to load customizer preset "${preset}"`);
-        const yStr = fs.readFileSync(filePath).toString("utf8");
-        return CustomizerBuilder.from(yStr);
     }
 
     /**
@@ -484,7 +464,8 @@ export default class CustomizerBuilder
         const struct: Partial<NottprYAML> = {
             meta: {
                 source: "nottpr",
-                branch: "customizer"
+                branch: "customizer",
+                ...this.meta,
             },
             forced_locations: [],
         };

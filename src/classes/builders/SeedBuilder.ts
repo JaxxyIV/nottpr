@@ -1,14 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import * as yaml from "yaml";
 import BaseSeedBuilder from "./BaseSeedBuilder.js";
 import { DeepPartial, Keys, RandomizerPayload } from "../../types/structures.js";
 import { Crystals, Entrances } from "../../types/enums.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const presetPath = path.resolve(__dirname, "../..", "presets");
 
 /**
  * An instance of this class represents a payload object to be supplied to
@@ -133,19 +126,6 @@ export default class SeedBuilder
         return builder;
     }
 
-    static fromNottpr(preset: string): SeedBuilder {
-        if (!/^[a-zA-Z0-9_-]+$/.test(preset)) {
-            throw new Error('Invalid preset name');
-        }
-        const filePath = path.join(presetPath, `${preset}.yaml`);
-        if (!fs.existsSync(filePath)) {
-            throw new ReferenceError(`Preset "${preset}" does not exist.`);
-        }
-        console.log(`Attempting to load main preset "${preset}"`);
-        const yStr = fs.readFileSync(filePath).toString("utf8");
-        return SeedBuilder.from(yStr);
-    }
-
     get entrances(): Entrances | undefined {
         return this._body.entrances;
     }
@@ -167,7 +147,8 @@ export default class SeedBuilder
         return yaml.stringify({
             meta: {
                 source: "nottpr",
-                branch: "main"
+                branch: "main",
+                ...this.meta,
             },
             settings: complete ? this.toJSON() : this._body
         });

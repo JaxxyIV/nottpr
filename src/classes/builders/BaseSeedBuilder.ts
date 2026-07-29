@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import BaseBuilder from "./BaseBuilder.js";
 import {
     Accessibility,
@@ -26,16 +23,10 @@ import {
 import { baseDefault } from "../../types/symbol/payloads.js";
 import { ItemOptions } from "../../types/optionObjs.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const presetPath = path.resolve(__dirname, "../..", "presets");
-const defPresets = [
-    "adkeys", "beginner", "casualboots", "crosskeys",
-    "nightmare", "owg", "superquick"
-];
-
 export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayload>
     extends BaseBuilder<S> {
+    #presetMeta: Record<string, any> = {};
+
     get accessibility(): Accessibility {
         return this._body.accessibility ?? Accessibility.Items;
     }
@@ -111,6 +102,10 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
 
     get weapons(): Weapons {
         return this._body.weapons ?? Weapons.Randomized;
+    }
+
+    get meta(): Record<string, any> {
+        return this.#presetMeta;
     }
 
     setAccessibility(access: Accessibility): this {
@@ -290,41 +285,20 @@ export default abstract class BaseSeedBuilder<S extends BasePayload = BasePayloa
         return this;
     }
 
+    setMeta(meta: Record<string, any>): this {
+        if ("source" in meta || "branch" in meta) {
+            throw new Error("Cannot set source or branch meta properties");
+        }
+        this.#presetMeta = meta;
+        return this;
+    }
+
     toPartial(): DeepPartial<S> {
         return super._deepCopy(this._body);
     }
 
     toJSON(): S {
         return this._deepMerge(super._deepCopy(baseDefault), this._body);
-    }
-
-    /**
-     * Saves the settings in this builder to the local nottpr module. A locally
-     * saved preset may then be loaded by calling the appropriate builder's
-     * `fromNottpr` static function. Slashes are not allowed in preset names.
-     * Preset names will always be forced to lowercase.
-     * @example
-     * ```js
-     * new SeedBuilder()
-     *     .setWorldState(WorldState.Standard)
-     *     .setItem({ pool: ItemPool.Hard })
-     *     .save("mt21");
-     * // ...
-     * const preset = SeedBuilder.fromNottpr("mt21");
-     * ```
-     * @param name The preset name
-     */
-    save(name: string): void {
-        name = name.toLowerCase();
-        if (defPresets.includes(name)) {
-            throw new Error(`Default preset "${name}" cannot be overwritten`);
-        }
-        if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
-            throw new Error('Invalid preset name');
-        }
-        const filePath = path.join(presetPath, `${name}.yaml`);
-        console.log(`Saving preset "${name}"`);
-        fs.writeFileSync(filePath, this.toYAML());
     }
 
     /**
