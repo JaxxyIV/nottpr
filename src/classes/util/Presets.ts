@@ -11,7 +11,6 @@ import SeedBuilder from "../builders/SeedBuilder.js";
  * nottpr presets.
  */
 export default class Presets {
-    static #presetPath: string;
     static #default: string;
     static {
         const __filename = fileURLToPath(import.meta.url);
@@ -20,64 +19,44 @@ export default class Presets {
     }
 
     /**
-     * Overrides the path for saving and loading presets.
-     *
-     * The default path for saving and loading presets is located in the local
-     * nottpr module.
-     *
-     * @param path the new file path
-     */
-    static setPath(path: string): void {
-        this.#presetPath = path;
-    }
-
-    /**
-     * Reverts the save/load path for presets back to nottpr.
-     */
-    static resetPath(): void {
-        this.#presetPath = this.#default;
-    }
-
-    /**
      * Saves a main or customizer preset to the local nottpr install with the
      * given name.
      *
-     * The preset will be saved to the current path value. If `setPath` is not
-     * used, the default behavior is to save the preset to the local nottpr
-     * module, else the preset is saved to the path declared by the user in
-     * `setPath`.
-     *
      * @param name the preset name
      * @param preset the builder to save as a preset
+     * @param pathname an optional path to override the default save location
      */
-    static save(name: string, preset: SeedBuilder): void
-    static save(name: string, preset: CustomizerBuilder): void
-    static save(name: string, preset: SeedBuilder | CustomizerBuilder): void {
+    static save(name: string, preset: SeedBuilder, pathname?: string): void
+    static save(name: string, preset: CustomizerBuilder, pathname?: string): void
+    static save(name: string, preset: SeedBuilder | CustomizerBuilder, pathname?: string): void {
         if (!name.trim().length || !/^[a-zA-Z0-9_-]+$/.test(name)) {
             throw new Error('Invalid preset name');
         }
         if (!(preset instanceof BaseSeedBuilder)) {
             throw new TypeError("preset is not a nottpr-compatible object");
         }
-        fs.writeFileSync(path.join(this.#getPath(), `${name}.yaml`), preset.toYAML());
+        fs.writeFileSync(path.join(pathname ?? this.#default, `${name}.yaml`), preset.toYAML());
     }
 
     /**
      * Loads a saved preset from the local nottpr install.
      *
      * @param preset the name of the preset to load
-     * @param [custom] a boolean to indicate the return type of this call. This
+     * @param pathname an optional path to override the default load location
+     * @param custom a boolean to indicate the return type of this call. This
      * does not change the return value and is mainly for asserting the return
      * type
+     * @returns the SeedBuilder or CustomizerBuilder object associated with the
+     * given preset
      */
     static load(preset: string): SeedBuilder | CustomizerBuilder
-    static load(preset: string, custom: true): CustomizerBuilder
-    static load(preset: string, custom: false): SeedBuilder
-    static load(preset: string, custom?: boolean): SeedBuilder | CustomizerBuilder {
+    static load(preset: string, pathname?: string, custom?: true): CustomizerBuilder
+    static load(preset: string, pathname?: string, custom?: false): SeedBuilder
+    static load(preset: string, pathname?: string, custom?: boolean): SeedBuilder | CustomizerBuilder {
         if (!preset.trim().length || !/^[a-zA-Z0-9_-]+$/.test(preset)) {
             throw new Error('Invalid preset name');
         }
-        const buf = fs.readFileSync(path.join(this.#getPath(), `${preset}.yaml`));
+        const buf = fs.readFileSync(path.join(pathname ?? this.#default, `${preset}.yaml`));
         const str = buf.toString("utf8");
         const obj = yaml.parse(str);
         if (!("meta" in obj)) {
@@ -100,13 +79,14 @@ export default class Presets {
      * indicating the success or failure of the operation.
      *
      * @param preset the preset to remove
+     * @param pathname an optional path to override the default remove location
      * @returns a boolean indicating the success or failure of the operation
      */
-    static remove(preset: string): boolean {
-        if (!this.listAll().includes(preset)) {
+    static remove(preset: string, pathname?: string): boolean {
+        if (!this.listAll(pathname).includes(preset)) {
             return false;
         }
-        fs.rmSync(path.join(this.#getPath(), `${preset}.yaml`));
+        fs.rmSync(path.join(pathname ?? this.#default, `${preset}.yaml`));
         return true;
     }
 
@@ -115,15 +95,12 @@ export default class Presets {
      * Returns a list of all existing presets stored on the local nottpr
      * install.
      *
+     * @param pathname an optional path to override the default read location
      * @returns
      */
-    static listAll(): string[] {
-        return fs.readdirSync(this.#getPath())
+    static listAll(pathname?: string): string[] {
+        return fs.readdirSync(pathname ?? this.#default)
             .filter(f => f.endsWith(".yaml"))
             .map(f => f.substring(0, f.indexOf(".")));
-    }
-
-    static #getPath() {
-        return this.#presetPath ?? this.#default;
     }
 }

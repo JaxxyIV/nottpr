@@ -283,7 +283,7 @@ Presets.save("mt21", preset);
 
 import ALTTPR, { Presets } from "nottpr";
 
-const preset = Presets.load("mt21");
+const preset = SeedBuilder.fromNottpr("mt21");
 const seed = ALTTPR.generate(preset);
 ```
 
