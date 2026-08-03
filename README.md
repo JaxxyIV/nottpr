@@ -198,9 +198,7 @@ console.log(seed.hashCode);
 ```
 
 Seeds are cached locally upon generation or retrieval in the `ALTTPR.seeds`
-object. When fetching a seed, nottpr will first check if a seed with the given
-hash is cached. If it is, that data is returned. Otherwise, the API is called
-and the fetched seed is added to the cache.
+object. nottpr does not cache to the file system.
 
 ### Fetching Sprites
 
@@ -266,9 +264,9 @@ await fs.writeFile(`./seeds/logs/spoiler_${seed.hash}.json`, seed.spoilerLog(tru
 ### Presets
 
 You can save created presets directly to your local install of nottpr by using
-`Presets.save`. You can load globally saved presets by using `Presets.load`.
-Some default presets are included for the most commonly played modes like
-adkeys, casualboots, and crosskeys.
+`Presets.save`. You can load saved presets by using `Presets.load`. Some default
+presets are included for the most commonly played modes like adkeys, casualboots,
+and crosskeys.
 
 ```js
 import { Presets, SeedBuilder, WorldState, ItemPool } from "nottpr";
@@ -304,6 +302,9 @@ await fs.writeFile("./inv_adkeys.yaml", preset.toYAML());
 ```
 
 ```yaml
+meta:
+  source: nottpr
+  branch: main
 settings:
   dungeon_items: full
   goal: dungeons
@@ -334,16 +335,15 @@ Complete presets *are* SahasrahBot-compatible.
 #### SahasrahBot
 
 Most existing SahasrahBot YAMLs are compatible with nottpr. Presets for door
-randomizer and other external branches of the randomizer are not currently
-supported.
+randomizer and other external branches of the randomizer are not supported.
 
 #### alttpr.com
 
 Customizer JSON files created on alttpr.com can be converted to a builder
-through the `CustomizerBuilder.fromCustomizerJSON` static method.
+through the `CustomizerBuilder.convertJSON` static method.
 
-All presets on the website (except open) can be loaded using
-`SeedBuilder.fromNottpr`. These preset names are:
+All presets on the website (except open) can be loaded using `Presets.load`.
+These preset names are:
 
 * beginner
 * crosskeys
