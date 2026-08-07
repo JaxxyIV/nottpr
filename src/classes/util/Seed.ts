@@ -29,7 +29,7 @@ export default class Seed
     #origPatch: Record<number, number[]>[];
     #patchMap = new Map<number, number[]>();
 
-    #baseRom: string;
+    #baseRom: string | undefined;
 
     readonly #sprites: Map<string, Sprite>;
     readonly #prngInt: number;
@@ -55,7 +55,7 @@ export default class Seed
             size: this.#size,
         } = json);
 
-        this.#prngInt = new Prando(this.#hash).nextInt(0, 4294967295);
+        this.#prngInt = new Prando.default(this.#hash).nextInt(0, 4294967295);
 
         // By converting the patch data in the JSON to a Map, operations like
         // obtaining the file select hash will be much easier.
@@ -99,7 +99,7 @@ export default class Seed
         return this.#size;
     }
 
-    get currentRomHash(): string {
+    get currentRomHash(): string | undefined {
         return this.#current_rom_hash;
     }
 
@@ -144,8 +144,6 @@ export default class Seed
         if (typeof this.#baseRom === "undefined") {
             await this.#fetchBaseRom();
         }
-
-        const baseRom = Buffer.from(this.#baseRom, "base64").buffer;
 
         const corrections: PatchOptions = {
             heartSpeed: options.heartSpeed,
@@ -271,7 +269,7 @@ export default class Seed
             log.Entrances = this.#spoiler.Entrances;
 
             for (const key of Object.keys(log.Prizes)) {
-                const values: string[] = Object.values(this.#spoiler[key as keyof SpoilerAPIData]);
+                const values: string[] = Object.values(this.#spoiler[key as keyof SpoilerAPIData] as any);
                 log.Prizes[key] = values.find(v =>
                     v.startsWith("Crystal") || v.endsWith("Pendant"));
             }
@@ -313,7 +311,7 @@ export default class Seed
                 }
 
                 const entries: [string, string][] =
-                    Object.entries(this.#spoiler[key as keyof SpoilerAPIData]);
+                    Object.entries(this.#spoiler[key as keyof SpoilerAPIData] as any);
                 for (const [rawLoc, rawItem] of entries) {
                     const loc = rawLoc.replace(":1", "");
                     let item = rawItem.replace(":1", "");
@@ -362,11 +360,11 @@ export default class Seed
      */
     #readDrops(): DropsSpoilerData {
         const offsets = {
-            stun: 227731,
-            tree: 981972,
-            crab: [207304, 207300], // main, last
-            fish: 950988,
-            enemy: 227960,
+            stun: 0x37993,
+            tree: 0xEFBD4,
+            crab: [0x329C8, 0x329C4], // main, last
+            fish: 0xE82CC,
+            enemy: 0x37A78,
         };
         const itemSprites: Record<DropByte, Drop> = {
             [DropByte.Bee]: Drop.BeeSwarm,
@@ -449,7 +447,7 @@ export default class Seed
             return pack.map(b => byteToSprite(b)).join(", ");
 
             function spriteToByte(drop: Drop): DropByte {
-                return parseInt(Object.entries(itemSprites).find(([,d]) => d === drop)[0]);
+                return parseInt(Object.entries(itemSprites).find(([,d]) => d === drop)?.[0] as string);
             }
         }
     }
@@ -459,7 +457,7 @@ export default class Seed
             if (!this.#sprites.has(sprite)) {
                 throw new ReferenceError("Sprite does not exist in local cache.");
             }
-            return await this.#sprites.get(sprite).fetch();
+            return await (this.#sprites.get(sprite) as Sprite).fetch();
         } else if (sprite instanceof Sprite) {
             return await sprite.fetch();
         } else if (!(sprite instanceof ArrayBuffer)) {
@@ -479,8 +477,8 @@ export default class Seed
     #seekInPatch(offset: number, byteCount?: number): number[] {
         if (this.#patchMap.has(offset)) {
             return typeof byteCount === "number"
-                ? this.#patchMap.get(offset).slice(0, byteCount)
-                : this.#patchMap.get(offset);
+                ? (this.#patchMap.get(offset) as number[]).slice(0, byteCount)
+                : this.#patchMap.get(offset) as number[];
         }
 
         // If the offset does not exist here, then we know we are dealing with
@@ -501,7 +499,7 @@ export default class Seed
         // Binary search for the closest result. The element with the least
         // difference compared to the target is the one we're going with.
         const closest = Seed.#binarySearch(offsets, offset);
-        const data = this.#patchMap.get(offsets[closest]);
+        const data = this.#patchMap.get(offsets[closest]) as number[];
         const i = offset - offsets[closest];
 
         return typeof byteCount === "number"
@@ -545,9 +543,9 @@ export default class Seed
             this.#current_rom_hash = res.md5;
         }
 
-        const res = await new Request(`/bps/${this.currentRomHash}.bps`)
-            .get("buffer") as ArrayBuffer;
-        this.#baseRom = Buffer.from(res).toString("base64");
+        // const res = await new Request(`/bps/${this.currentRomHash}.bps`)
+        //     .get("buffer") as ArrayBuffer;
+        // this.#baseRom = Buffer.from(res).toString("base64");
     }
 }
 
@@ -564,14 +562,14 @@ type PostGenOptions = {
     reduceFlash?: boolean,
 };
 type DropsSpoilerData = {
-    Tree?: PullTiers
-    Crab?: {
+    Tree: PullTiers
+    Crab: {
         Main?: Drop
         Last?: Drop
     }
-    Stun?: Drop
-    Fish?: Drop
-    Packs?: Partial<Record<EnemyGroup, string>>
+    Stun: Drop | undefined
+    Fish: Drop | undefined
+    Packs: Partial<Record<EnemyGroup, string>>
 
 };
 type PullTiers = Partial<Record<1 | 2 | 3, Drop>>;

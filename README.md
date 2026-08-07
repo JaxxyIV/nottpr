@@ -6,8 +6,15 @@ nottpr is a Node.js module for the ALTTPR API written in TypeScript. It is
 written with an object-oriented approach in mind, providing structured objects
 to make requests to ALTTPR's API be streamlined and easy to write.
 
-Additional ROM patching functionality is included to allow you to patch ROMs
-yourself.
+Other features of nottpr:
+
+- Seed and sprite caching is local to the library. nottpr never writes to your
+  file system unless you tell it to.
+- Patch seeds with any post-generation feature included on alttpr.com (even
+  palette shuffle!)
+- Built-in preset management. Write it once, use it later.
+- A lightweight preset YAML definition that emphasizes modifications over
+  boilerplate.
 
 This module is based on v31 of the randomizer. If a major change to the
 randomizer causes something in this module to break, please open a new GitHub
@@ -53,7 +60,7 @@ const { "default": ALTTPR } = require("nottpr");
 nottpr offers two ways you can create payloads: the manual way or with a
 builder. All seed generation is done through the `ALTTPR.generate` method.
 
-The manual way is similar to pyz3r:
+The manual way is similar to pyz3r and expects a complete payload:
 
 ```js
 import ALTTPR from "nottpr";
@@ -91,9 +98,9 @@ const seed = await ALTTPR.generate({
 console.log(seed.permalink);
 ```
 
-While this works, it is substantially more work to type out. A builder solves
-this problem by prefilling settings as an open 7/7. In essence, if you're fine
-with a default setting as it is, you don't have to specify it later.
+Builders are nottpr-native structures that initialize to default settings that
+mimic an open 7/7. If you're fine with a default setting as it is, you don't
+need to specify it later.
 
 Builders come equipped with setter methods whose return value is the current
 object. As such, they can be chained.
@@ -188,7 +195,9 @@ builder due to the large amount of settings in the customizer.
 
 ### Fetching Previously Generated Seeds
 
-Similar to pyz3r, you can fetch seeds by their hash:
+Seeds are fetched according to their hashes. Seeds are cached locally upon
+generation or retrieval in the `ALTTPR.seeds` object. nottpr does not cache to
+the file system.
 
 ```js
 import ALTTPR from "nottpr";
@@ -196,9 +205,6 @@ import ALTTPR from "nottpr";
 const seed = await ALTTPR.fetchSeed("ry08zA75y5");
 console.log(seed.hashCode);
 ```
-
-Seeds are cached locally upon generation or retrieval in the `ALTTPR.seeds`
-object. nottpr does not cache to the file system.
 
 ### Fetching Sprites
 
@@ -274,14 +280,16 @@ import { Presets, SeedBuilder, WorldState, ItemPool } from "nottpr";
 // Main Tournament 2021 (StandHard)
 const preset = new SeedBuilder()
     .setWorldState(WorldState.Standard)
-    .setItem({ pool: ItemPool.Hard });;
+    .setItem({
+        pool: ItemPool.Hard
+    });
 Presets.save("mt21", preset);
 
 // ...
 
 import ALTTPR, { Presets } from "nottpr";
 
-const preset = SeedBuilder.fromNottpr("mt21");
+const preset = Presets.load("mt21");
 const seed = ALTTPR.generate(preset);
 ```
 

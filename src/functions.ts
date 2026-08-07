@@ -12,8 +12,8 @@ import { prizePacks } from "./types/symbol/prizePacks.js";
  */
 export function randomStartHash(seed?: number | string): Hash[] {
     const rand = typeof seed !== "undefined"
-        ? new Prando(seed)
-        : new Prando();
+        ? new Prando.default(seed)
+        : new Prando.default();
     const res = [];
     for (let i = 0; i < 5; ++i) {
         res[i] = rand.nextInt(0, 31);
